@@ -31,7 +31,7 @@ private:
 	void SetCurrentInputType(const EDevInputType InInputType);
 
 	//~ Begin IInputProcessor interface.
-	virtual const TCHAR* GetDebugName() const override { return TEXT("Dev Input Processor"); }
+	virtual const TCHAR* GetDebugName() const override { return TEXT("DevInput Processor"); }
 	virtual bool HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent) override;
 	virtual bool HandleKeyUpEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent) override;
 	virtual bool HandleAnalogInputEvent(FSlateApplication& SlateApp, const FAnalogInputEvent& InAnalogInputEvent) override;

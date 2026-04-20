@@ -145,6 +145,11 @@ EDevInputType UDevInputs::GetCurrentInputType() const
 	return InputProcessor->CurrentInputType;
 }
 
+void UDevInputs::ConsumeCurrentInputEvent() const
+{
+	// TODO: Implement event consumption.
+}
+
 void UDevInputs::EmulateKeyPress(const FKey& InKey) const
 {
 	InputProcessor->EmulateKeyPress(InKey);

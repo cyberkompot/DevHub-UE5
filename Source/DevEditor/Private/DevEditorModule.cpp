@@ -33,6 +33,9 @@ void FDevEditorModule::StartupModule()
 
 	PropertyModule.RegisterCustomPropertyTypeLayout(FDevMenuEntryId::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevMenuEntryIdCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();
+
+	/** Dev Pad. */
+	AssetTools.RegisterAssetTypeActions((DevMenuAssetTypeActions = MakeShared<FAssetTypeActions_DevPadPage>()).ToSharedRef());
 }
 
 void FDevEditorModule::ShutdownModule()

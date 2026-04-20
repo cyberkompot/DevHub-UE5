@@ -35,6 +35,7 @@ const FDevInputToken PairedModifiers::Command("Command");
 #define DEBUG_INPUTS_ADD_ONE_ALIAS(Token, Alias1) { Alias1, Token }
 #define DEBUG_INPUTS_ADD_TWO_ALIASES(Token, Alias1, Alias2) { Alias1, Token }, { Alias2, Token }
 #define DEBUG_INPUTS_ADD_THREE_ALIASES(Token, Alias1, Alias2, Alias3) { Alias1, Token }, { Alias2, Token }, { Alias3, Token }
+#define DEBUG_INPUTS_ADD_FOUR_ALIASES(Token, Alias1, Alias2, Alias3, Alias4) { Alias1, Token }, { Alias2, Token }, { Alias3, Token }, { Alias4, Token }
 
 static const TMap<FDevInputToken, TSharedPtr<FKeyDetails>> InputTokens
 {
@@ -53,9 +54,11 @@ static const TMap<FDevInputToken, TSharedPtr<FKeyDetails>> InputTokens
 static TMap<FString, FDevInputToken> InputAliases
 {
 	// Mouse.
+	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::LeftMouseButton, TEXT("Left Mouse Button"), TEXT("LMB")),
+	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::RightMouseButton, TEXT("Right Mouse Button"), TEXT("RMB")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::MiddleMouseButton, TEXT("Middle Mouse Button"), TEXT("MMB")),
-	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::ThumbMouseButton, TEXT("Thumb Mouse Button"), TEXT("TMB1")),
-	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::ThumbMouseButton2, TEXT("Thumb Mouse Button"), TEXT("TMB2")),
+	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::ThumbMouseButton, TEXT("Thumb Mouse Button One"), TEXT("TMB1")),
+	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::ThumbMouseButton2, TEXT("Thumb Mouse Button Two"), TEXT("TMB2")),
 
 	// Keyboard.
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::LeftControl, TEXT("Left Control"), TEXT("Left Ctrl")),
@@ -67,15 +70,15 @@ static TMap<FString, FDevInputToken> InputAliases
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Right, TEXT("Gamepad D-pad Right"), TEXT("D-pad Right")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Left, TEXT("Gamepad D-pad Left"), TEXT("D-pad Left")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftStick_Up, TEXT("Gamepad Left Thumbstick Up"), TEXT("L3 Up"), TEXT("LS Up")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftStick_Down, TEXT("Gamepad Left Thumbstick Down"), TEXT("L3 Down"), TEXT("LS Down")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftStick_Right, TEXT("Gamepad Left Thumbstick Right"), TEXT("L3 Right"), TEXT("LS Right")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftStick_Left, TEXT("Gamepad Left Thumbstick Left"), TEXT("L3 Left"), TEXT("LS Left")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftStick_Up, TEXT("Gamepad Left Thumbstick Up"), TEXT("Left Thumbstick Up"), TEXT("L3 Up"), TEXT("LS Up")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftStick_Down, TEXT("Gamepad Left Thumbstick Down"), TEXT("Left Thumbstick Down"), TEXT("L3 Down"), TEXT("LS Down")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftStick_Right, TEXT("Gamepad Left Thumbstick Right"), TEXT("Left Thumbstick Right"), TEXT("L3 Right"), TEXT("LS Right")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftStick_Left, TEXT("Gamepad Left Thumbstick Left"), TEXT("Left Thumbstick Left"), TEXT("L3 Left"), TEXT("LS Left")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightStick_Up, TEXT("Gamepad Right Thumbstick Up"), TEXT("R3 Up"), TEXT("RS Up")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightStick_Down, TEXT("Gamepad Right Thumbstick Down"), TEXT("R3 Down"), TEXT("RS Down")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightStick_Right, TEXT("Gamepad Right Thumbstick Right"), TEXT("R3 Right"), TEXT("RS Right")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightStick_Left, TEXT("Gamepad Right Thumbstick Left"), TEXT("R3 Left"), TEXT("RS Left")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightStick_Up, TEXT("Gamepad Right Thumbstick Up"), TEXT("Right Thumbstick Up"), TEXT("R3 Up"), TEXT("RS Up")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightStick_Down, TEXT("Gamepad Right Thumbstick Down"), TEXT("Right Thumbstick Down"), TEXT("R3 Down"), TEXT("RS Down")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightStick_Right, TEXT("Gamepad Right Thumbstick Right"), TEXT("Right Thumbstick Right"), TEXT("R3 Right"), TEXT("RS Right")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightStick_Left, TEXT("Gamepad Right Thumbstick Left"), TEXT("Right Thumbstick Left"), TEXT("R3 Left"), TEXT("RS Left")),
 
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_Special_Left, TEXT("Gamepad Special Left"), TEXT("Special Left")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_Special_Right, TEXT("Gamepad Special Right"), TEXT("Special Right")),
@@ -85,14 +88,14 @@ static TMap<FString, FDevInputToken> InputAliases
 	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Left, TEXT("Gamepad Face Button Left"), TEXT("Face Left"), TEXT("Square")),
 	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Top, TEXT("Gamepad Face Button Top"), TEXT("Face Top"), TEXT("Triangle")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftShoulder, TEXT("Gamepad Left Shoulder"), TEXT("L1"), TEXT("LB")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightShoulder, TEXT("Gamepad Right Shoulder"), TEXT("R1"), TEXT("RB")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftShoulder, TEXT("Gamepad Left Shoulder"), TEXT("Left Shoulder"), TEXT("L1"), TEXT("LB")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightShoulder, TEXT("Gamepad Right Shoulder"), TEXT("Right Shoulder"), TEXT("R1"), TEXT("RB")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftTrigger, TEXT("Gamepad Left Trigger"), TEXT("L2"), TEXT("LT")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightTrigger, TEXT("Gamepad Right Trigger"), TEXT("R2"), TEXT("RT")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftTrigger, TEXT("Gamepad Left Trigger"), TEXT("Left Trigger"), TEXT("L2"), TEXT("LT")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightTrigger, TEXT("Gamepad Right Trigger"), TEXT("Right Trigger"), TEXT("R2"), TEXT("RT")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_LeftThumbstick, TEXT("Gamepad Left Thumbstick"), TEXT("L3"), TEXT("LS")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_RightThumbstick, TEXT("Gamepad Right Thumbstick"), TEXT("R3"), TEXT("RS")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftThumbstick, TEXT("Gamepad Left Thumbstick"), TEXT("Left Thumbstick"), TEXT("L3"), TEXT("LS")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightThumbstick, TEXT("Gamepad Right Thumbstick"), TEXT("Right Thumbstick"), TEXT("R3"), TEXT("RS")),
 };
 
 #undef DEBUG_INPUTS_ADD_TOKEN

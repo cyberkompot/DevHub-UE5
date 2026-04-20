@@ -1,33 +1,8 @@
-﻿// Copyright (c) Alexandr Pereverzev.
+// Copyright (c) Alexandr Pereverzev.
 
 #pragma once
 
-#include "DevCoreCompatibility.h"
 #include "Misc/EngineVersionComparison.h"
-
-#ifndef DEV_HUB_AVAILABLE
-	#define DEV_HUB_AVAILABLE ALLOW_CONSOLE && !UE_BUILD_SHIPPING
-#endif
-
-/**
- * Log utilities.
- */
-#ifndef UE_LOG_FUNCTION
-	#define UE_LOG_FUNCTION(CategoryName, Verbosity, Format, ...) UE_LOG(CategoryName, Verbosity, TEXT("%s: ") Format, ANSI_TO_TCHAR(__FUNCTION__), ##__VA_ARGS__)
-#endif
-
-#ifndef UE_CLOG_FUNCTION
-	#define UE_CLOG_FUNCTION(Condition, CategoryName, Verbosity, Format, ...) UE_CLOG(Condition, CategoryName, Verbosity, TEXT("%s: ") Format, ANSI_TO_TCHAR(__FUNCTION__), ##__VA_ARGS__)
-#endif
-
-
-/**
- * Guarantees that the CPP macro is defined so Unreal types can be used together with C++ interfaces.
- */
-#ifndef CPP
-	#define CPP 1
-#endif // CPP
-
 
 /**
  * Unreal Engine version compatibility utilities.
@@ -75,6 +50,9 @@
 /** FInstancedStruct */
 #define UE_COMPATIBILITY_INSTANCED_STRUCT_BLUEPRINT_READ_WRITE UE_VERSION_AT_LEAST(5, 1, 0)
 
+/** ObjectPtrDecay() */
+#define UE_COMPATIBILITY_OBJECT_PTR_DECAY UE_VERSION_AT_LEAST(5, 3, 0)
+
 /** APlayerController::GetCurrentInputModeDebugString(), FInputModeDataBase::GetDebugDisplayName() */
 #define UE_COMPATIBILITY_SUPPORTED_INPUT_MODE_DATA_BASE_GET_DEBUG_DISPLAY_NAME (UE_ENABLE_DEBUG_DRAWING && UE_VERSION_AT_LEAST(5, 3, 0))
 
@@ -95,4 +73,3 @@
 
 /** UGameViewportClient::GetMouseLockMode() */
 #define UE_COMPATIBILITY_GAME_VIEWPORT_CLIENT_GET_MOUSE_LOCK_MODE UE_VERSION_AT_LEAST(5, 3, 0)
-

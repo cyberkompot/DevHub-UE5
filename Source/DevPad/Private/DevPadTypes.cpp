@@ -1,0 +1,20 @@
+﻿// Copyright (c) Alexandr Pereverzev.
+
+#include "DevPadTypes.h"
+
+#include "DevPadSettings.h"
+
+const TArray<UDevPadPage*> UDevPadStack::Empty {};
+
+TSoftClassPtr<UDevPadPageWidget> UDevPadPage::GetPageWidgetClass(const UObject* WorldContextObject) const
+{
+	return GetDefault<UDevPadSettings>()->GetPageWidgetClass(GetClass());
+}
+
+TAttribute<FText> UDevPadPage::GetPageTitle() const
+{
+	const FName PageName = GetPageName();
+	return (!GetPageName().IsNone())
+		? FText::FromString(FName::NameToDisplayString(PageName.ToString(), false))
+		: TAttribute<FText>();
+}

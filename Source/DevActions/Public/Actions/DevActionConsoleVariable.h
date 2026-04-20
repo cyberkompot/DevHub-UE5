@@ -46,7 +46,7 @@ struct DEVACTIONS_API FDevActionConsoleVariableView
  * Sets the specified Console Variable.
  */
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Console Variable")
-struct DEVACTIONS_API FDevActionConsoleVariable : public FDevAction
+struct DEVACTIONS_API FDevActionConsoleVariable : public FDevActionBase
 {
 	GENERATED_BODY()
 

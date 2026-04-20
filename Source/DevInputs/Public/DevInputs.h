@@ -84,6 +84,7 @@ public:
 public:
 	EDevInputType GetCurrentInputType() const;
 
+	void ConsumeCurrentInputEvent() const;
 	void EmulateKeyPress(const FKey& InKey) const;
 
 	FDevInputTypeChanged& OnInputTypeChanged() const;

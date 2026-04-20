@@ -13,6 +13,7 @@ public class DevEditor : ModuleRules
             {
                 "DevInputs",
                 "DevMenus",
+                "DevPad",
                 "AssetTools",
                 "Core",
                 "CoreUObject",

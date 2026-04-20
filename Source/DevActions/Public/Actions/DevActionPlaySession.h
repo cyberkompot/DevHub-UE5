@@ -5,10 +5,15 @@
 #include "DevActionTypes.h"
 #include "DevActionPlaySession.generated.h"
 
-USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Pause Game (Pause Play Session)")
-struct DEVACTIONS_API FDevActionPausePlaySession : public FDevAction
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Pause Game")
+struct DEVACTIONS_API FDevActionPausePlaySession : public FDevActionBase
 {
 	GENERATED_BODY()
+
+	FDevActionPausePlaySession()
+	{
+		Label = FText::FromString("Pause Game");
+	}
 
 protected:
 	//~ Begin FDevAction interface.
@@ -17,10 +22,15 @@ protected:
 	//~ End FDevAction interface.
 };
 
-USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Resume Game (Resume Play Session)")
-struct DEVACTIONS_API FDevActionResumePlaySession : public FDevAction
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Resume Game")
+struct DEVACTIONS_API FDevActionResumePlaySession : public FDevActionBase
 {
 	GENERATED_BODY()
+
+	FDevActionResumePlaySession()
+	{
+		Label = FText::FromString("Resume Game");
+	}
 
 protected:
 	//~ Begin FDevAction interface.
@@ -29,10 +39,15 @@ protected:
 	//~ End FDevAction interface.
 };
 
-USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Quit Game (Quit Play Session)")
-struct DEVACTIONS_API FDevActionStopPlaySession : public FDevAction
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Quit Game")
+struct DEVACTIONS_API FDevActionStopPlaySession : public FDevActionBase
 {
 	GENERATED_BODY()
+
+	FDevActionStopPlaySession()
+	{
+		Label = FText::FromString("Quit Game");
+	}
 
 protected:
 	//~ Begin FDevAction interface.

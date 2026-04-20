@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "DevCoreGameInstanceSubsystem.h"
 #include "DevMenus.generated.h"
 
 class UDevInputs;
@@ -15,7 +15,7 @@ class UDevMenuWidgetBuilder;
 struct FDevInputShortcut;
 
 UCLASS(NotBlueprintable, Category = "DevHub|Menu", DisplayName = "Dev Menus")
-class DEVMENUS_API UDevMenus final : public UGameInstanceSubsystem
+class DEVMENUS_API UDevMenus final : public UDevCoreGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -55,7 +55,6 @@ public:
 	//~ Begin USubsystem Interface
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	//~ End USubsystem Interface
 	
 private:

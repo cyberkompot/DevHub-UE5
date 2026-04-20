@@ -9,7 +9,7 @@
  * Executes the specified function from Blueprint.
  */
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Blueprint Function")
-struct DEVACTIONS_API FDevActionBlueprintFunction : public FDevAction
+struct DEVACTIONS_API FDevActionBlueprintFunction : public FDevActionBase
 {
 	GENERATED_BODY()
 

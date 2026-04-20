@@ -1,26 +1,29 @@
-﻿// Copyright (c) Alexandr Pereverzev.
+﻿using UnrealBuildTool;
 
-using UnrealBuildTool;
-
-public class DevCore : ModuleRules
+public class DevPad : ModuleRules
 {
-    public DevCore(ReadOnlyTargetRules Target) : base(Target)
+    public DevPad(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
+                "Core",
             }
         );
 
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "Core",
+                "DevCore",
+                "DevActions",
+                "DevInputs",
                 "CoreUObject",
+                "DeveloperSettings",
                 "Engine",
-                "Slate",
+                "StructUtils",
+                "UMG",
             }
         );
     }

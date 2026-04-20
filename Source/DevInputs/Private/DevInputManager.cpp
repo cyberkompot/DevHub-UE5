@@ -181,7 +181,7 @@ void FDevInputManager::OnInputEvent(const FInputKeyParams& InKeyParams)
 void FDevInputManager::RegisterFragment(FDevInputContextFragment* InFragment)
 {
 	bool bIsAnyKeyRegistered = false;
-	for (int i = InFragment->FragmentTokens.Num() - 1; i >= 0; --i)
+	for (int32 i = InFragment->FragmentTokens.Num() - 1; i >= 0; --i)
 	{
 		const FDevInputContextToken& Token = InFragment->FragmentTokens[i];
 		if (const bool bIsKey = (Token.TokenFlags == EDevInputContextTokenFlags::Key); bIsKey || !bIsAnyKeyRegistered)

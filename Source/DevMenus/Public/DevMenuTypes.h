@@ -4,6 +4,7 @@
 
 #include "DevCore.h"
 #include "DevCoreTypeTraits.h"
+#include UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
 #include UE_COMPATIBILITY_INCLUDE_VIEWPORT_CLIENT_PATH
 
 #include "DevActionTypes.h"

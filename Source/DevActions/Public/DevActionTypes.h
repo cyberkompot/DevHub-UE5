@@ -33,6 +33,7 @@ struct FDevAction
 
 	virtual ~FDevAction() = default;
 
+	FORCEINLINE TAttribute<FText> GetActionLabel(const UObject* WorldContextObject) const { return OnGetActionLabel(WorldContextObject); }
 	FORCEINLINE ECheckBoxState GetActionCheckState(const UObject* WorldContextObject) const { return OnGetActionCheckState(WorldContextObject); }
 	FORCEINLINE bool GetActionVisibility(const UObject* WorldContextObject) const { return OnGetActionVisibility(WorldContextObject); }
 	FORCEINLINE EUserInterfaceActionType GetActionUserInterfaceType(const UObject* WorldContextObject) const { return OnGetActionUserInterfaceType(WorldContextObject); }
@@ -41,6 +42,7 @@ struct FDevAction
 	DEVACTIONS_API void ExecuteAction(const UObject* WorldContextObject) const;
 
 protected:
+	DEVACTIONS_API virtual TAttribute<FText> OnGetActionLabel(const UObject* WorldContextObject) const { return TAttribute<FText>(); }
 	DEVACTIONS_API virtual ECheckBoxState OnGetActionCheckState(const UObject* WorldContextObject) const;
 	DEVACTIONS_API virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const;
 	DEVACTIONS_API virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const;
@@ -48,6 +50,34 @@ protected:
 	/** Method for implementing an action execution. */
 	DEVACTIONS_API virtual void OnExecuteAction(const UObject* WorldContextObject) const {};
 };
+
+USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Action")
+struct FDevActionNone : public FDevAction
+{
+	GENERATED_BODY()
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const override { return EUserInterfaceActionType::None; }
+	DEVACTIONS_API virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return false; }
+	//~ End FDevAction interface.
+};
+
+USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Action", Meta = (Hidden))
+struct FDevActionBase : public FDevAction
+{
+	GENERATED_BODY()
+
+	/** Action label. */
+	UPROPERTY(EditAnywhere, Category = "Dev Action")
+	FText Label;
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual TAttribute<FText> OnGetActionLabel(const UObject* WorldContextObject) const override { return Label; }
+	//~ End FDevAction interface.
+};
+
 
 /**
  * Executes the specified Blueprint-implemented action.
@@ -83,7 +113,7 @@ private:
  * Executes a set of actions, typically used when multiple actions need to be assigned to a single command.
  */
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Dev Actions Set")
-struct FDevActionsSet : public FDevAction
+struct FDevActionsSet : public FDevActionBase
 {
 	GENERATED_BODY()
 

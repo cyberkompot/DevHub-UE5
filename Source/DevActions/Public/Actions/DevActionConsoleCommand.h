@@ -26,7 +26,7 @@ struct DEVACTIONS_API FDevActionConsoleCommandView
  * Executes the specified Console Command.
  */
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Console Command")
-struct DEVACTIONS_API FDevActionConsoleCommand : public FDevAction
+struct DEVACTIONS_API FDevActionConsoleCommand : public FDevActionBase
 {
 	GENERATED_BODY()
 

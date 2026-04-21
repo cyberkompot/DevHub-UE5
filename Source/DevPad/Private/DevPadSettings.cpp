@@ -12,7 +12,7 @@ UDevPadSettings::UDevPadSettings()
 		TSoftObjectPtr<UDevPadPage>(FSoftObjectPath(TEXT("/DevHub/Data/Pad/DP_Main.DP_Main"))),
 	};
 
-	PadWidgetClass = FSoftObjectPath(TEXT("/DevHub/UI/Widgets/WBP_DebPad.WBP_DebPad_C"));
+	PadWidgetClass = FSoftObjectPath(TEXT("/DevHub/UI/Widgets/WBP_DevPad.WBP_DevPad_C"));
 	PageWidgetClasses =
 	{
 		{ TSoftClassPtr<UDevPadPage>(FSoftObjectPath(TEXT("/Script/DevPad.DevPadControllerPage"))), TSoftClassPtr<UDevPadPageWidget>(FSoftObjectPath(TEXT("/DevHub/UI/Pages/WBP_DevPad_ControllerPage.WBP_DevPad_ControllerPage_C"))) },

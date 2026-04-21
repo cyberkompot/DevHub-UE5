@@ -44,9 +44,8 @@ void FDevInputShortcutReader::operator ++()
 	if (Len == 0) { return; }
 
 	int32 Index = 0;
-	if (TokesCount % 2)
+	if (TokesCount % 2) // The special token can only appear at even positions in the expression.
 	{
-		// ----Input shortcut cannot begin with a special token.
 		switch (StringView[Index])
 		{
 			case '+': Token = EDevInputTokens::Special::Plus; break;
@@ -61,7 +60,14 @@ void FDevInputShortcutReader::operator ++()
 	{
 		while (Index < Len)
 		{
-			if (const FStringView::ElementType Char = StringView[Index]; Char == '+' || Char == ',' || Char == '|') { break; }
+			if (const FStringView::ElementType Char = StringView[Index]; Char == ',' || Char == '|')
+			{
+				break;
+			}
+			else if (Char == '+' && !StringView.Left(Index + 1).TrimStart().Equals(TEXT("Num +"), ESearchCase::IgnoreCase)) // Special case: 'Num +' token.
+			{
+				break;
+			}
 			++Index;
 		}
 		if (const FStringView Value = StringView.Left(Index).TrimStartAndEnd(); Value.Len())

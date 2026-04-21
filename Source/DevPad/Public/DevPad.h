@@ -49,4 +49,9 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadRegistry> PadRegistry = nullptr;
+
+	void BindShortcut();
+	void UnbindShortcut() const;
+
+	void OnShortcutTriggered();
 };

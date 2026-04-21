@@ -126,6 +126,15 @@ private:
 };
 
 UENUM(BlueprintType, Category = "DevHub|Pad")
+enum struct EDevPadAlignment : uint8
+{
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight,
+};
+
+UENUM(BlueprintType, Category = "DevHub|Pad")
 enum struct EDevPadInput : uint8
 {
 	Invalid = 0 UMETA(Hidden),

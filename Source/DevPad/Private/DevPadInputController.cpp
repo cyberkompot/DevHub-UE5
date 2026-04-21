@@ -8,28 +8,28 @@
 
 const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputController::PadInputShortcuts
 {
-	{ EDevPadInput::DPadUp, "D-pad Up" },
-	{ EDevPadInput::DPadLeft, "D-pad Left" },
-	{ EDevPadInput::DPadRight, "D-pad Right" },
-	{ EDevPadInput::DPadDown, "D-pad Down" },
+	{ EDevPadInput::DPadUp, "D-pad Up | Num 8" },
+	{ EDevPadInput::DPadLeft, "D-pad Left | Num 7" },
+	{ EDevPadInput::DPadRight, "D-pad Right | Num 4" },
+	{ EDevPadInput::DPadDown, "D-pad Down | Num 1" },
 
-	{ EDevPadInput::FaceUp, "Face Up" },
-	{ EDevPadInput::FaceLeft, "Face Left" },
-	{ EDevPadInput::FaceRight, "Face Right" },
-	{ EDevPadInput::FaceDown, "Face Down" },
+	{ EDevPadInput::FaceUp, "Face Up | Num 9" },
+	{ EDevPadInput::FaceLeft, "Face Left | Num 6" },
+	{ EDevPadInput::FaceRight, "Face Right | Num 3" },
+	{ EDevPadInput::FaceDown, "Face Down | Num 2" },
 
-	{ EDevPadInput::LeftShoulder, "Left Shoulder" },
-	{ EDevPadInput::RightShoulder, "Right Shoulder" },
+	{ EDevPadInput::LeftShoulder, "Left Shoulder | Num /" },
+	{ EDevPadInput::RightShoulder, "Right Shoulder | Num *" },
 
-	{ EDevPadInput::LeftTrigger, "Left Trigger" },
-	{ EDevPadInput::RightTrigger, "Right Trigger" },
+	{ EDevPadInput::LeftTrigger, "Left Trigger | Num +" },
+	{ EDevPadInput::RightTrigger, "Right Trigger | Enter" },
 
-	{ EDevPadInput::LeftThumbstick, "Left Thumbstick" },
-	{ EDevPadInput::RightThumbstick, "Right Thumbstick" },
+	{ EDevPadInput::LeftThumbstick, "Left Thumbstick | Num 0" },
+	{ EDevPadInput::RightThumbstick, "Right Thumbstick | Num ." },
 
-	{ EDevPadInput::LeftPlusRightShoulders, "Left Shoulder + Right Shoulder" },
-	{ EDevPadInput::LeftPlusRightTriggers, "Left Trigger + Right Trigger" },
-	{ EDevPadInput::LeftPlusRightThumbsticks, "Left Thumbstick + Right Thumbstick" },
+	{ EDevPadInput::LeftPlusRightShoulders, "Left Shoulder + Right Shoulder | Num / + Num *" },
+	{ EDevPadInput::LeftPlusRightTriggers, "Left Trigger + Right Trigger | Num + + Enter" },
+	{ EDevPadInput::LeftPlusRightThumbsticks, "Left Thumbstick + Right Thumbstick | Num 0 + Num ." },
 };
 
 void UDevPadInputController::Reset()

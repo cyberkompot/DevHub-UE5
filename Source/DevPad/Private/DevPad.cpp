@@ -3,9 +3,11 @@
 #include "DevPad.h"
 
 #include "DevCore.h"
+#include "DevInputs.h"
 #include "DevPadLogging.h"
 #include "DevPadManager.h"
 #include "DevPadRegistry.h"
+#include "DevPadSettings.h"
 
 UDevPad::UDevPad()
 {
@@ -50,14 +52,57 @@ void UDevPad::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	PadRegistry->Initialize();
+
+	BindShortcut();
 }
 
 void UDevPad::Deinitialize()
 {
+	UnbindShortcut();
+
 	PadManager->Reset();
 	PadRegistry->Reset();
 
 	Super::Deinitialize();
+}
+
+void UDevPad::BindShortcut()
+{
+	const UDevInputs* DevInputs = UDevInputs::Get(this);
+	if (!DevInputs)
+	{
+		UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevInputs is missing. DevPad shortcuts could not be bound"));
+		return;
+	}
+
+	const UDevPadSettings* Settings = GetDefault<UDevPadSettings>();
+	if (!Settings)
+	{
+		UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad settings are missing. DevPad shortcuts could not be bound"));
+		return;
+	}
+
+	if (Settings->PadShortcut.IsNone())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Log, TEXT("DevPad shortcut is undefined"));
+		return;
+	}
+
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad bound to input shortcut: %s"), *Settings->PadShortcut.ToString());
+	DevInputs->BindShortcut(Settings->PadShortcut).Delegate.BindDelegate(this, &ThisClass::OnShortcutTriggered);
+}
+
+void UDevPad::UnbindShortcut() const
+{
+	if (const UDevInputs* DevInputs = UDevInputs::Get(this))
+	{
+		DevInputs->ClearBindingsForObject(this);
+	}
+}
+
+void UDevPad::OnShortcutTriggered()
+{
+	TogglePad();
 }
 
 namespace DevPad::Console

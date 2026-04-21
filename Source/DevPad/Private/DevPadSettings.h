@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "DevInputTypes.h"
+#include "DevPadTypes.h"
 #include "DevPadSettings.generated.h"
 
 class UDevPadPage;
@@ -16,14 +18,23 @@ class UDevPadSettings final : public UDeveloperSettings
 public:
 	UDevPadSettings();
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages")
-	TSoftObjectPtr<UDevPadPage> CommonPage;
+	UPROPERTY(Config, EditAnywhere, Category = "DevPad", DisplayName = "Shortcut")
+	FDevInputShortcut PadShortcut = "Num 5 | L3 + R3";
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages")
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages", meta = (DisplayThumbnail = false))
+	TSoftObjectPtr<UDevPadPage> CommonPage = nullptr;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages", meta = (DisplayThumbnail = false))
 	TArray<TSoftObjectPtr<UDevPadPage>> MainPages;
 
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display")
+	EDevPadAlignment PadWidgetAlignment = EDevPadAlignment::BottomRight;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", meta = (ClampMin = 0.5f, ClampMax = 1.0f, Units = "Percent"))
+	float PadWidgetScale = 1.f;
+
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
-	TSoftClassPtr<UDevPadPanelWidget> PadWidgetClass;
+	TSoftClassPtr<UDevPadPanelWidget> PadWidgetClass = nullptr;
 
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
 	TMap<TSoftClassPtr<UDevPadPage>, TSoftClassPtr<UDevPadPageWidget>> PageWidgetClasses;

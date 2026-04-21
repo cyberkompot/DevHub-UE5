@@ -10,6 +10,7 @@
 #include "DevPadSettings.h"
 #include "DevPadStackController.h"
 #include "DevPadTypes.h"
+#include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
 
 UDevPadManager::UDevPadManager()
@@ -215,6 +216,18 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
+	if (!PadLayoutWidget)
+	{
+		PadLayoutWidget = Cast<UDevPadLayoutWidget>(UUserWidget::CreateWidgetInstance(*GetWorld(), UDevPadLayoutWidget::StaticClass(), "DevPadLayout"));
+		PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
+		PadLayoutWidget->SetScale(Settings->PadWidgetScale);
+		if (!PadLayoutWidget)
+		{
+			UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad layout widget creation failed. DevPad could not be shown"));
+			return false;
+		}
+	}
+
 	PadWidget = Cast<UDevPadPanelWidget>(UUserWidget::CreateWidgetInstance(*GetWorld(), PadWidgetClass, "DevPad"));
 	if (!PadWidget)
 	{
@@ -222,8 +235,24 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
-	PadWidget->AddToViewport();
+	PadLayoutWidget->SetContent(PadWidget);
+	PadLayoutWidget->AddToViewport();
 	return true;
+}
+
+void UDevPadManager::DestroyWidget()
+{
+	if (PadLayoutWidget)
+	{
+		PadLayoutWidget->RemoveFromParent();
+	}
+
+	if (PadWidget)
+	{
+		PadWidget->RemoveFromParent();
+		PadWidget->MarkAsGarbage();
+		PadWidget = nullptr;
+	}
 }
 
 void UDevPadManager::PopulateWidget() const
@@ -330,15 +359,5 @@ void UDevPadManager::PopulateWidgetContent(const UObject* WorldContextObject, co
 		PageWidgetContext.PageData = Data->PageWidget->GetDataOrCreate<UDevPadPageData>();
 		PageWidgetContext.PageWidget = Data->PageWidget;
 		TopPage->PopulatePageWidget(WorldContextObject, PageWidgetContext);
-	}
-}
-
-void UDevPadManager::DestroyWidget()
-{
-	if (PadWidget)
-	{
-		PadWidget->RemoveFromParent();
-		PadWidget->MarkAsGarbage();
-		PadWidget = nullptr;
 	}
 }

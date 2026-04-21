@@ -8,6 +8,7 @@
 #include "DevPadManager.generated.h"
 
 class UDevPadInputController;
+class UDevPadLayoutWidget;
 class UDevPadPanelWidget;
 class UDevPadRegistry;
 class UDevPadStackController;
@@ -50,13 +51,17 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadPanelWidget> PadWidget = nullptr;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UDevPadLayoutWidget> PadLayoutWidget = nullptr;
+
 	void ExecutePadInput(const EDevPadInput InPadInput);
 	EDevPadInputExecution ExecutePageInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
 	EDevPadInputExecution ExecuteDefaultInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
 
 	bool CreateWidget();
+	void DestroyWidget();
+
 	void PopulateWidget() const;
 	void PopulateWidgetHeader(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 	void PopulateWidgetContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
-	void DestroyWidget();
 };

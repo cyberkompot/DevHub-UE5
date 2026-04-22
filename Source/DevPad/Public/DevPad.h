@@ -5,6 +5,7 @@
 #include "DevCoreGameInstanceSubsystem.h"
 #include "DevPad.generated.h"
 
+class UDevPadPage;
 class UDevPadManager;
 class UDevPadRegistry;
 
@@ -29,11 +30,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void HidePad() const;
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void NavigateToPreviousPage() const;
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void NavigateToNextPage() const;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
+	void OpenSubPage(UDevPadPage* InPage) const;
+
+	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
+	void CloseSubPage(UDevPadPage* InPage) const;
+
+	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
+	void CloseCurrentSubPage() const;
+
+	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
+	void CloseAllSubPages() const;
 
 public:
 	//~ Begin USubsystem Interface

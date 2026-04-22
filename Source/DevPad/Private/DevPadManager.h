@@ -33,6 +33,11 @@ public:
 	void NavigateToNextPage() const;
 	void NavigateToPreviousPage() const;
 
+	void OpenSubPage(UDevPadPage* InPage) const;
+	void CloseSubPage(UDevPadPage* InPage) const;
+	void CloseCurrentSubPage() const;
+	void CloseAllSubPages() const;
+
 public:
 	//~ Begin UObject interface.
 	virtual void BeginDestroy() override;

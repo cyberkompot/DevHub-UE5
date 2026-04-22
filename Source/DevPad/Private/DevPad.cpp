@@ -47,6 +47,26 @@ void UDevPad::NavigateToNextPage() const
 	PadManager->NavigateToNextPage();
 }
 
+void UDevPad::OpenSubPage(UDevPadPage* InPage) const
+{
+	PadManager->OpenSubPage(InPage);
+}
+
+void UDevPad::CloseSubPage(UDevPadPage* InPage) const
+{
+	PadManager->CloseSubPage(InPage);
+}
+
+void UDevPad::CloseCurrentSubPage() const
+{
+	PadManager->CloseCurrentSubPage();
+}
+
+void UDevPad::CloseAllSubPages() const
+{
+	PadManager->CloseAllSubPages();
+}
+
 void UDevPad::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -107,40 +127,75 @@ void UDevPad::OnShortcutTriggered()
 
 namespace DevPad::Console
 {
-	static FAutoConsoleCommandWithWorldAndArgs ShowPadCommand(
-		TEXT("DevHub.Pad.ShowPad"),
-		TEXT("Shows the DevPad, optionally opening a specified page if provided."),
-		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World)
+	template <class TSubsystemClass = UDevCoreGameInstanceSubsystem>
+	struct TAutoConsoleCommandWithGameInstanceSubsystemAndArgs : private FAutoConsoleCommandWithWorldAndArgs
+	{
+		DECLARE_DELEGATE_ThreeParams(FDelegate, const TArray<FString>&, UWorld*, TSubsystemClass*);
+
+		TAutoConsoleCommandWithGameInstanceSubsystemAndArgs(const TCHAR* Name, const TCHAR* Help, const FDelegate& Command, uint32 Flags = ECVF_Default)
+			: FAutoConsoleCommandWithWorldAndArgs(Name, Help,
+				FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([Delegate = Command](const TArray<FString>& Args, UWorld* World)
+				{
+					if (const UGameInstance* GameInstance = World->GetGameInstance())
+					{
+						if (TSubsystemClass* Subsystem = GameInstance->GetSubsystem<TSubsystemClass>())
+						{
+							Delegate.ExecuteIfBound(Args, World, Subsystem);
+						}
+						else
+						{
+							UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("Required game instance subsystem is missing. Command could not be executed: Subsystem = %s"), *GetNameSafe(TSubsystemClass::StaticClass()));
+						}
+					}
+				}), Flags) {}
+	};
+
+	struct FAutoConsoleCommandWithWorldDevPadAndArgs : TAutoConsoleCommandWithGameInstanceSubsystemAndArgs<UDevPad>
+	{
+		FAutoConsoleCommandWithWorldDevPadAndArgs(const TCHAR* Name, const TCHAR* Help, const FDelegate& Command, uint32 Flags = ECVF_Default)
+			: TAutoConsoleCommandWithGameInstanceSubsystemAndArgs(Name, Help, Command, Flags) {}
+	};
+
+	FAutoConsoleCommandWithWorldDevPadAndArgs ShowPadCommand(TEXT("DevHub.Pad.ShowPad"), TEXT("Shows the DevPad, optionally opening a specified page if provided."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
 		{
-			if (const UDevPad* DevPad = UDevPad::Get(World))
+			if (Args.IsEmpty())
 			{
-				if (Args.IsEmpty())
-				{
-					DevPad->ShowPad();
-				}
-				else
-				{
-					DevPad->ShowPad(FName(*Args[0]));
-				}
+				DevPad->ShowPad();
 			}
 			else
 			{
-				UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad subsystem is missing. DevPad could not be shown"));
+				DevPad->ShowPad(FName(*Args[0]));
 			}
 		}));
 
-	static FAutoConsoleCommandWithWorldAndArgs HideMenuCommand(
-		TEXT("DevHub.Pad.HidePad"),
-		TEXT("Hides the DevPad."),
-		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World)
+	FAutoConsoleCommandWithWorldDevPadAndArgs HideMenuCommand(TEXT("DevHub.Pad.HidePad"), TEXT("Hides the DevPad."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
 		{
-			if (const UDevPad* DevPad = UDevPad::Get(World))
-			{
-				DevPad->HidePad();
-			}
-			else
-			{
-				UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad subsystem is missing. DevPad could not be hidden"));
-			}
+			DevPad->HidePad();
+		}));
+
+	FAutoConsoleCommandWithWorldDevPadAndArgs NavigateToPreviousPage(TEXT("DevHub.Pad.PreviousPage"), TEXT("Navigate to previous DevPad page."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
+		{
+			DevPad->NavigateToPreviousPage();
+		}));
+
+	FAutoConsoleCommandWithWorldDevPadAndArgs NavigateToNextPage(TEXT("DevHub.Pad.NextPage"), TEXT("Navigate to previous DevPad page."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
+		{
+			DevPad->NavigateToPreviousPage();
+		}));
+
+	FAutoConsoleCommandWithWorldDevPadAndArgs CloseTopSubPage(TEXT("DevHub.Pad.CloseCurrenSubPage"), TEXT("Close current DevPad sub-page."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
+		{
+			DevPad->CloseCurrentSubPage();
+		}));
+
+	FAutoConsoleCommandWithWorldDevPadAndArgs CloseAllSubPages(TEXT("DevHub.Pad.CloseAllSubPages"), TEXT("Close all DevPad sub-pages."),
+		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
+		{
+			DevPad->CloseAllSubPages();
 		}));
 } // DevPad::Console

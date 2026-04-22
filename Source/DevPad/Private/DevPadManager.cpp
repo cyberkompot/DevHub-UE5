@@ -77,17 +77,17 @@ void UDevPadManager::NavigateToPreviousPage() const
 		{
 			if (UDevPadPage* NavigationPage = PadRegistry->GetPreviousPage(TopPage, true); NavigationPage && NavigationPage != TopPage)
 			{
+				UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to previous page: Page = %s"), *PageToLog(NavigationPage));
 				StackController->PopFromStack();
 				StackController->PushToStack(NavigationPage);
-				UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to previous page: Page = %s"), *PageToLog(NavigationPage));
 				PopulateWidget();
 				return;
 			}
 		}
 		else
 		{
-			StackController->PopFromStack();
 			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to parent page: Page = %s"), *PageToLog(StackController->GetTopPage()));
+			StackController->PopFromStack();
 			PopulateWidget();
 			return;
 		}
@@ -108,15 +108,115 @@ void UDevPadManager::NavigateToNextPage() const
 	{
 		if (UDevPadPage* NavigationPage = PadRegistry->GetNextPage(TopPage, true); NavigationPage && NavigationPage != TopPage)
 		{
+			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to next page: Page = %s"), *PageToLog(NavigationPage));
 			StackController->PopFromStack();
 			StackController->PushToStack(NavigationPage);
-			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to next page: Page = %s"), *PageToLog(NavigationPage));
 			PopulateWidget();
 			return;
 		}
 	}
 
 	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no next page available"));
+}
+
+void UDevPadManager::OpenSubPage(UDevPadPage* InPage) const
+{
+	if (!InPage)
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad sub-page is undefined"));
+		return;
+	}
+
+	if (!IsPadVisible())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad is not visible"));
+		return;
+	}
+
+	if (StackController->GetAllPages().Find(InPage))
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad page is already open: Page = %s"), *PageToLog(InPage));
+		return;
+	}
+
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad opening sub-page: Page = %s"), *PageToLog(InPage));
+	StackController->PushToStack(InPage);
+	PopulateWidget();
+}
+
+void UDevPadManager::CloseSubPage(UDevPadPage* InPage) const
+{
+	if (!InPage)
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad sub-page is undefined"));
+		return;
+	}
+
+	if (!IsPadVisible())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad is not visible"));
+		return;
+	}
+
+	if (!StackController->IsSubPage(InPage))
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad sub-page is not open: Page = %s"), *PageToLog(InPage));
+		return;
+	}
+
+	for (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage; TopPage = StackController->GetTopPage())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+		StackController->PopFromStack();
+		if (TopPage == InPage)
+		{
+			break;
+		}
+	}
+	PopulateWidget();
+}
+
+void UDevPadManager::CloseCurrentSubPage() const
+{
+	if (!IsPadVisible())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad is not visible"));
+		return;
+	}
+
+	if (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage && StackController->IsSubPage(TopPage))
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+		StackController->PopFromStack();
+		PopulateWidget();
+		return;
+	}
+
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
+}
+
+void UDevPadManager::CloseAllSubPages() const
+{
+	if (!IsPadVisible())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad is not visible"));
+		return;
+	}
+
+	bool bPageWasClosed = false;
+	for (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage && StackController->IsSubPage(TopPage); TopPage = StackController->GetTopPage())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+		StackController->PopFromStack();
+		bPageWasClosed = true;
+	}
+	if (bPageWasClosed)
+	{
+		PopulateWidget();
+		return;
+	}
+
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
 }
 
 void UDevPadManager::BeginDestroy()

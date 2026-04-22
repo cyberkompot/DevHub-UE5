@@ -27,11 +27,11 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages", meta = (DisplayThumbnail = false))
 	TArray<TSoftObjectPtr<UDevPadPage>> MainPages;
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display")
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Alignment")
 	EDevPadAlignment PadWidgetAlignment = EDevPadAlignment::BottomRight;
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", meta = (ClampMin = 0.5f, ClampMax = 1.0f, Units = "Percent"))
-	float PadWidgetScale = 1.f;
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Scale", meta = (ClampMin = 0.5f, ClampMax = 1.0f, Units = "Percent"))
+	float PAdPadWidgetScale = 1.f;
 
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
 	TSoftClassPtr<UDevPadPanelWidget> PadWidgetClass = nullptr;

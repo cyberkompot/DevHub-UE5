@@ -16,7 +16,7 @@ public:
 	//~ End USubsystem Interface
 
 protected:
-	template <typename TSubsystemClass>
+	template <class TSubsystemClass = UDevCoreGameInstanceSubsystem>
 	static TSubsystemClass* Get(const UObject* WorldContextObject)
 	{
 		if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))

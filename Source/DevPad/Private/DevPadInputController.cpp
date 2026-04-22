@@ -21,8 +21,8 @@ const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputControl
 	{ EDevPadInput::LeftShoulder, "Left Shoulder | Num /" },
 	{ EDevPadInput::RightShoulder, "Right Shoulder | Num *" },
 
-	{ EDevPadInput::LeftTrigger, "Left Trigger | Num +" },
-	{ EDevPadInput::RightTrigger, "Right Trigger | Enter" },
+	{ EDevPadInput::LeftTrigger, "Left Trigger | Num -" },
+	{ EDevPadInput::RightTrigger, "Right Trigger | Num +" },
 
 	{ EDevPadInput::LeftThumbstick, "Left Thumbstick | Num 0" },
 	{ EDevPadInput::RightThumbstick, "Right Thumbstick | Num ." },

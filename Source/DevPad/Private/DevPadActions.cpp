@@ -4,12 +4,13 @@
 
 #include "DevPad.h"
 #include "DevPadLogging.h"
+#include "DevPadTypes.h"
 
 void FDevPadActionBase::OnExecuteAction(const UObject* WorldContextObject) const
 {
 	if (UDevPad* DevPad = UDevPad::Get(WorldContextObject))
 	{
-		OnExecuteAction(WorldContextObject, DevPad);
+		OnExecuteActionWithSubsystem(WorldContextObject, DevPad);
 	}
 	else
 	{
@@ -17,17 +18,17 @@ void FDevPadActionBase::OnExecuteAction(const UObject* WorldContextObject) const
 	}
 }
 
-void FDevPadActionOpenSubPage::OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionOpenSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
 {
 	DevPad->OpenSubPage(Page.LoadSynchronous());
 }
 
-void FDevPadActionToggleSubPage::OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionToggleSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
 {
 	DevPad->ToggleSubPage(Page.LoadSynchronous());
 }
 
-void FDevPadActionCloseSubPage::OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionCloseSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
 {
 	DevPad->CloseSubPage(Page.LoadSynchronous());
 }

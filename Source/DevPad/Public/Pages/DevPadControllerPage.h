@@ -4,9 +4,9 @@
 
 #include "DevCoreCompatibility.h"
 #include UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
+#include UE_COMPATIBILITY_INCLUDE_STRUCT_VIEW_PATH
 
 #include "DevPadTypes.h"
-#include "StructView.h"
 #include "Widgets/DevPadControllerPageWidget.h"
 #include "DevPadControllerPage.generated.h"
 
@@ -20,8 +20,8 @@ struct FDevPadControllerPageConstActionView
 
 	FORCEINLINE const UDevPadControllerPage* GetPagePtr() const { return Page; }
 	FORCEINLINE const UScriptStruct* GetScriptStruct() const { 	return StructView.GetScriptStruct(); }
-	FORCEINLINE const FDevAction* GetActionPtr() const { return StructView.GetPtr<FDevAction>(); }
-	FORCEINLINE bool IsValid() const { return (Page && StructView.GetPtr<FDevAction>()); }
+	FORCEINLINE const FDevAction* GetActionPtr() const { return StructView.GetPtr<const FDevAction>(); }
+	FORCEINLINE bool IsValid() const { return (Page && StructView.GetPtr<const FDevAction>()); }
 
 private:
 	const UDevPadControllerPage* Page = nullptr;

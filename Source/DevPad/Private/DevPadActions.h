@@ -16,8 +16,9 @@ struct FDevPadActionBase : public FDevActionBase
 protected:
 	//~ Begin FDevAction interface.
 	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
-	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const {};
 	//~ End FDevAction interface.
+
+	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const {};
 };
 
 USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", meta = (Hidden))
@@ -40,9 +41,9 @@ struct FDevPadActionOpenSubPage : public FDevPadActionSubPageBase
 	GENERATED_BODY()
 
 protected:
-	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
-	//~ End FDevAction interface.
+	//~ Begin FDevPadActionBase interface.
+	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	//~ End FDevPadActionBase interface.
 };
 
 USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Toggle sub-page")
@@ -51,9 +52,9 @@ struct FDevPadActionToggleSubPage : public FDevPadActionSubPageBase
 	GENERATED_BODY()
 
 protected:
-	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
-	//~ End FDevAction interface.
+	//~ Begin FDevPadActionBase interface.
+	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	//~ End FDevPadActionBase interface.
 };
 
 USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Close sub-page")
@@ -62,7 +63,7 @@ struct FDevPadActionCloseSubPage : public FDevPadActionSubPageBase
 	GENERATED_BODY()
 
 protected:
-	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
-	//~ End FDevAction interface.
+	//~ Begin FDevPadActionBase interface.
+	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	//~ End FDevPadActionBase interface.
 };

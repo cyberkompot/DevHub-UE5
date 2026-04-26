@@ -79,6 +79,18 @@ private:
 };
 
 UCLASS(Abstract, Category = "DevHub|Pad")
+class DEVPAD_API UDevPadInfoData : public UDevPadContentData
+{
+	GENERATED_BODY()
+};
+
+UCLASS(Abstract, Category = "DevHub|Pad")
+class DEVPAD_API UDevPadInfoWidget : public UDevPadContentWidget
+{
+	GENERATED_BODY()
+};
+
+UCLASS(Abstract, Category = "DevHub|Pad")
 class DEVPAD_API UDevPadPageData : public UDevPadContentData
 {
 	GENERATED_BODY()
@@ -233,6 +245,7 @@ class DEVPAD_API UDevPadPage : public UObject
 
 public:
 	virtual FName GetPageName() const { return GetFName(); }
+	virtual TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const UObject* WorldContextObject) const;
 	virtual TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const UObject* WorldContextObject) const;
 
 	virtual TAttribute<FText> GetPageTitle() const;

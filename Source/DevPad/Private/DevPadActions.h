@@ -20,32 +20,49 @@ protected:
 	//~ End FDevAction interface.
 };
 
-USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Open sub-page")
-struct FDevPadActionOpenSubPage : public FDevPadActionBase
+USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", meta = (Hidden))
+struct FDevPadActionSubPageBase : public FDevPadActionBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevAction", meta = (DisplayAfter = "Label"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevAction", meta = (DisplayAfter = "Label", DisplayThumbnail = false))
 	TSoftObjectPtr<UDevPadPage> Page;
 
 protected:
 	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
 	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return !Page.IsNull();  }
 	//~ End FDevAction interface.
 };
 
 USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Open sub-page")
-struct FDevPadActionCloseSubPage : public FDevPadActionBase
+struct FDevPadActionOpenSubPage : public FDevPadActionSubPageBase
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevAction", meta = (DisplayAfter = "Label"))
-	TSoftObjectPtr<UDevPadPage> Page;
 
 protected:
 	//~ Begin FDevAction interface.
 	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
-	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return !Page.IsNull();  }
+	//~ End FDevAction interface.
+};
+
+USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Toggle sub-page")
+struct FDevPadActionToggleSubPage : public FDevPadActionSubPageBase
+{
+	GENERATED_BODY()
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	//~ End FDevAction interface.
+};
+
+USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "[DevPad] Close sub-page")
+struct FDevPadActionCloseSubPage : public FDevPadActionSubPageBase
+{
+	GENERATED_BODY()
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual void OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const override;
 	//~ End FDevAction interface.
 };

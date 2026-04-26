@@ -6,6 +6,11 @@
 
 const TArray<UDevPadPage*> UDevPadStack::Empty {};
 
+TSoftClassPtr<UDevPadInfoWidget> UDevPadPage::GetInfoWidgetClass(const UObject* WorldContextObject) const
+{
+	return GetDefault<UDevPadSettings>()->GetInfoWidgetClass(GetClass());
+}
+
 TSoftClassPtr<UDevPadPageWidget> UDevPadPage::GetPageWidgetClass(const UObject* WorldContextObject) const
 {
 	return GetDefault<UDevPadSettings>()->GetPageWidgetClass(GetClass());

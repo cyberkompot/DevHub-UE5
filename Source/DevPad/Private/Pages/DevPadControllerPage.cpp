@@ -5,6 +5,13 @@
 #include "DevActionTypes.h"
 #include "DevPadLogging.h"
 
+TSoftClassPtr<UDevPadInfoWidget> UDevPadControllerPage::GetInfoWidgetClass(const UObject* WorldContextObject) const
+{
+	return (!InfoWidgetClass.IsNull())
+		? TSoftClassPtr<UDevPadInfoWidget>(InfoWidgetClass.ToSoftObjectPath())
+		: Super::GetInfoWidgetClass(WorldContextObject);
+}
+
 TSoftClassPtr<UDevPadPageWidget> UDevPadControllerPage::GetPageWidgetClass(const UObject* WorldContextObject) const
 {
 	return (!PageWidgetClass.IsNull())

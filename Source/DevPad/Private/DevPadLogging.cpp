@@ -11,9 +11,11 @@ DEFINE_LOG_CATEGORY(LogDevPad)
 FString DevPad::Logging::ControllerPageActionViewToLog(const UObject* WorldContextObject, const FDevPadControllerPageConstActionView& InActionView)
 {
 	if (!InActionView.IsValid()) { return TEXT("<null>"); }
+	FString ActionLabel = InActionView.GetActionPtr()->GetActionLabel(WorldContextObject).Get().ToString();
+	if (ActionLabel.IsEmpty()) { ActionLabel = TEXT("None"); }
 	return FString::Printf(TEXT("%s.%s (%s)"),
 		*PageToLog(InActionView.GetPagePtr()),
-		*InActionView.GetActionPtr()->GetActionLabel(WorldContextObject).Get().ToString(),
+		*ActionLabel,
 		*GetNameSafe(InActionView.GetScriptStruct()));
 };
 

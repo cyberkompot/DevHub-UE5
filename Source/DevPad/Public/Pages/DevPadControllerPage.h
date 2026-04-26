@@ -39,6 +39,9 @@ class DEVPAD_API UDevPadControllerPage : public UDevPadPageBase
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "DevPad")
+	TSoftClassPtr<UDevPadInfoWidget> InfoWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "DevPad")
 	TSoftClassPtr<UDevPadControllerPageWidget> PageWidgetClass;
 
 
@@ -90,6 +93,7 @@ public:
 
 
 	//~ Begin IDevPadPage interface.
+	virtual TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const UObject* WorldContextObject) const override;
 	virtual TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const UObject* WorldContextObject) const override;
 	virtual EDevPadInputExecution ExecutePageInput(const UObject* WorldContextObject, const FDevPadExecutionContext& PageExecutionContext) const override;
 	virtual void PopulatePageWidget(const UObject* WorldContextObject, const FDevPadWidgetContext& PageWidgetContext) const override;

@@ -27,13 +27,14 @@ public:
 	FORCEINLINE bool IsPadVisible() const { return (!!PadWidget); }
 
 	void ShowPad(const FName InPageName);
-	void HidePad();
 	void TogglePad();
+	void HidePad();
 
 	void NavigateToNextPage() const;
 	void NavigateToPreviousPage() const;
 
 	void OpenSubPage(UDevPadPage* InPage) const;
+	void ToggleSubPage(UDevPadPage* InPage) const;
 	void CloseSubPage(UDevPadPage* InPage) const;
 	void CloseCurrentSubPage() const;
 	void CloseAllSubPages() const;
@@ -65,8 +66,10 @@ private:
 
 	bool CreateWidget();
 	void DestroyWidget();
+	void RefreshWidget() const;
 
 	void PopulateWidget() const;
 	void PopulateWidgetHeader(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
-	void PopulateWidgetContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
+	void PopulateWidgetInfoContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
+	void PopulateWidgetPageContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 };

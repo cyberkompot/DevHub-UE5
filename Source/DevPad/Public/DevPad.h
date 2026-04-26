@@ -42,6 +42,9 @@ public:
 	void OpenSubPage(UDevPadPage* InPage) const;
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
+	void ToggleSubPage(UDevPadPage* InPage) const;
+
+	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void CloseSubPage(UDevPadPage* InPage) const;
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")

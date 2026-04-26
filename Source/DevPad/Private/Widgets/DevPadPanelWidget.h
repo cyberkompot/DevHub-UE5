@@ -17,6 +17,9 @@ public:
 	FDevPadHeaderData HeaderData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
+	TObjectPtr<UDevPadInfoWidget> InfoWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
 	TObjectPtr<UDevPadPageWidget> PageWidget;
 };
 
@@ -36,5 +39,8 @@ protected:
 	TObjectPtr<UDevPadHeaderWidget> PanelHeader;
 
 	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
-	TObjectPtr<UContentWidget> PanelContent;
+	TObjectPtr<UContentWidget> PanelInfoContent;
+
+	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
+	TObjectPtr<UContentWidget> PanelPageContent;
 };

@@ -3,20 +3,9 @@
 #pragma once
 
 #include "DevPadTypes.h"
+#include "DevPadHeaderButtonWidget.h"
 #include "Components/TextBlock.h"
 #include "DevPadHeaderWidget.generated.h"
-
-USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Pad")
-struct FDevPadHeaderNavigationData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
-	FText Title;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
-	bool IsVisible = true;
-};
 
 USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Pad")
 struct FDevPadHeaderData
@@ -30,10 +19,10 @@ struct FDevPadHeaderData
 	bool IsVisible = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
-	FDevPadHeaderNavigationData PreviousPageNavigation;
+	FDevPadHeaderButtonData PreviousPage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
-	FDevPadHeaderNavigationData NextPageNavigation;
+	FDevPadHeaderButtonData NextPage;
 };
 
 UCLASS(Abstract, Category = "DevHub|Pad")
@@ -61,4 +50,10 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
 	TObjectPtr<UTextBlock> TitleText;
+
+	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
+	TObjectPtr<UDevPadHeaderButtonWidget> PreviousPageButton;
+
+	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
+	TObjectPtr<UDevPadHeaderButtonWidget> NextPageButton;
 };

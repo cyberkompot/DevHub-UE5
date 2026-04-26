@@ -52,6 +52,11 @@ void UDevPad::OpenSubPage(UDevPadPage* InPage) const
 	PadManager->OpenSubPage(InPage);
 }
 
+void UDevPad::ToggleSubPage(UDevPadPage* InPage) const
+{
+	PadManager->ToggleSubPage(InPage);
+}
+
 void UDevPad::CloseSubPage(UDevPadPage* InPage) const
 {
 	PadManager->CloseSubPage(InPage);

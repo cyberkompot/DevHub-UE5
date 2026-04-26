@@ -22,6 +22,11 @@ void FDevPadActionOpenSubPage::OnExecuteAction(const UObject* WorldContextObject
 	DevPad->OpenSubPage(Page.LoadSynchronous());
 }
 
+void FDevPadActionToggleSubPage::OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const
+{
+	DevPad->ToggleSubPage(Page.LoadSynchronous());
+}
+
 void FDevPadActionCloseSubPage::OnExecuteAction(const UObject* WorldContextObject, UDevPad* DevPad) const
 {
 	DevPad->CloseSubPage(Page.LoadSynchronous());

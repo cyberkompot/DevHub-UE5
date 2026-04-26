@@ -9,11 +9,22 @@ void UDevPadPanelWidget::UpdateWidget()
 	{
 		PanelHeader->SetData(Data.HeaderData);
 	}
-	if (PanelContent)
+	if (PanelInfoContent)
 	{
-		if (PanelContent->GetContent() != Data.PageWidget)
+		if (PanelInfoContent->GetContent() != Data.InfoWidget)
 		{
-			PanelContent->SetContent(Data.PageWidget);
+			PanelInfoContent->SetContent(Data.InfoWidget);
+		}
+		if (Data.InfoWidget)
+		{
+			Data.InfoWidget->UpdateWidget();
+		}
+	}
+	if (PanelPageContent)
+	{
+		if (PanelPageContent->GetContent() != Data.PageWidget)
+		{
+			PanelPageContent->SetContent(Data.PageWidget);
 		}
 		if (Data.PageWidget)
 		{

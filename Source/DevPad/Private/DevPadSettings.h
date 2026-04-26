@@ -27,17 +27,21 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages", meta = (DisplayThumbnail = false))
 	TArray<TSoftObjectPtr<UDevPadPage>> MainPages;
 
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Alignment")
-	EDevPadAlignment PadWidgetAlignment = EDevPadAlignment::BottomRight;
-
-	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Scale", meta = (ClampMin = 0.5f, ClampMax = 1.0f, Units = "Percent"))
-	float PAdPadWidgetScale = 1.f;
-
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
 	TSoftClassPtr<UDevPadPanelWidget> PadWidgetClass = nullptr;
 
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
+	TMap<TSoftClassPtr<UDevPadPage>, TSoftClassPtr<UDevPadInfoWidget>> InfoWidgetClasses;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
 	TMap<TSoftClassPtr<UDevPadPage>, TSoftClassPtr<UDevPadPageWidget>> PageWidgetClasses;
 
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Alignment")
+	EDevPadAlignment PadWidgetAlignment = EDevPadAlignment::BottomRight;
+
+	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Scale", meta = (ClampMin = 0.5f, ClampMax = 1.0f, Units = "Percent"))
+	float PadWidgetScale = 1.f;
+
+	TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 	TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 };

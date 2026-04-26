@@ -1,5 +1,6 @@
 // Copyright (c) Alexandr Pereverzev.
 
+using System.Linq;
 using UnrealBuildTool;
 
 public class DevInputs : ModuleRules
@@ -7,6 +8,10 @@ public class DevInputs : ModuleRules
 	public DevInputs(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		if (Target.GlobalDefinitions.Contains("DEVHUB_NO_PCH"))
+		{
+			PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
+		}
 
 		bEnableExceptions = true;
 

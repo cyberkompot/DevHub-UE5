@@ -51,7 +51,7 @@ protected:
 	DEVACTIONS_API virtual void OnExecuteAction(const UObject* WorldContextObject) const {};
 };
 
-USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Action")
+USTRUCT(BlueprintType, Blueprintable, Category = "DevHub|Action", DisplayName = "No Action")
 struct FDevActionNone : public FDevAction
 {
 	GENERATED_BODY()
@@ -59,7 +59,6 @@ struct FDevActionNone : public FDevAction
 protected:
 	//~ Begin FDevAction interface.
 	virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const override { return EUserInterfaceActionType::None; }
-	DEVACTIONS_API virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return false; }
 	//~ End FDevAction interface.
 };
 
@@ -78,16 +77,15 @@ protected:
 	//~ End FDevAction interface.
 };
 
-
 /**
  * Executes the specified Blueprint-implemented action.
  */
-USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Dev Action Script")
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Action Script")
 struct FDevActionObject : public FDevAction
 {
 	GENERATED_BODY()
 
-	/** The Blueprint in which the function with the specified name is to be executed. */
+	/** Blueprint in which the function with the specified name is to be executed. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Action")
 	TSoftClassPtr<UDevActionScript> ActionScript;
 
@@ -108,28 +106,6 @@ private:
 
 	UDevActionScript* GetActionScriptDefaultObject(const EGetDefaultObjectErrorMode InErrorMode) const;
 };
-
-/**
- * Executes a set of actions, typically used when multiple actions need to be assigned to a single command.
- */
-USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Dev Actions Set")
-struct FDevActionsSet : public FDevActionBase
-{
-	GENERATED_BODY()
-
-	/** Set of actions that need to be executed. */
-	UPROPERTY(EditAnywhere, Category = "Dev Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	TArray<FInstancedStruct> Actions;
-
-protected:
-	//~ Begin FDevAction interface.
-	DEVACTIONS_API virtual ECheckBoxState OnGetActionCheckState(const UObject* WorldContextObject) const override;
-	DEVACTIONS_API virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override;
-	DEVACTIONS_API virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const override;
-	DEVACTIONS_API virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
-	//~ Begin FDevAction interface.
-};
-
 
 /**
  * Base class for Blueprint-implemented actions.
@@ -176,4 +152,50 @@ protected:
 private:
 	UPROPERTY(Transient, SkipSerialization)
 	mutable UWorld* World;
+};
+
+/**
+ * Executes a set of actions, typically used when multiple actions need to be assigned to a single command.
+ */
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Actions Set")
+struct FDevActionsSet : public FDevActionBase
+{
+	GENERATED_BODY()
+
+	/** Set of actions that need to be executed. */
+	UPROPERTY(EditAnywhere, Category = "Dev Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
+	TArray<FInstancedStruct> Actions;
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual ECheckBoxState OnGetActionCheckState(const UObject* WorldContextObject) const override;
+	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override;
+	virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
+	//~ Begin FDevAction interface.
+};
+
+/**
+ * Executes the first visible action from a set, typically used in enable-disable (pause-resume) scenarios.
+ */
+USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Actions Stack")
+struct FDevActionsStack : public FDevActionBase
+{
+	GENERATED_BODY()
+
+	/** Set of actions that need to be executed. */
+	UPROPERTY(EditAnywhere, Category = "Dev Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
+	TArray<FInstancedStruct> Actions;
+
+protected:
+	//~ Begin FDevAction interface.
+	virtual TAttribute<FText> OnGetActionLabel(const UObject* WorldContextObject) const override;
+	virtual ECheckBoxState OnGetActionCheckState(const UObject* WorldContextObject) const override;
+	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override;
+	virtual EUserInterfaceActionType OnGetActionUserInterfaceType(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
+	//~ Begin FDevAction interface.
+
+private:
+	const FDevAction* GetFirstVisibleAction(const UObject* WorldContextObject) const;
 };

@@ -112,6 +112,101 @@ UDevActionScript* FDevActionObject::GetActionScriptDefaultObject(const EGetDefau
 }
 
 
+ECheckBoxState UDevActionScript::GetActionCheckState(const UObject* WorldContextObject) const
+{
+#ifdef DEV_HUB_AVAILABLE
+
+	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
+	try
+	{
+		return OnGetActionCheckState(WorldContextObject);
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state: %hs"), e.what());
+	}
+	catch (...)
+	{
+		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state"));
+	}
+
+#endif // DEV_HUB_AVAILABLE
+
+	return ECheckBoxState::Unchecked;
+}
+
+bool UDevActionScript::GetActionVisibility(const UObject* WorldContextObject) const
+{
+#ifdef DEV_HUB_AVAILABLE
+
+	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionVisibility))) { return true; }
+
+	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
+	try
+	{
+		return OnGetActionVisibility(WorldContextObject);
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state: %hs"), e.what());
+	}
+	catch (...)
+	{
+		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state"));
+	}
+
+#endif // DEV_HUB_AVAILABLE
+
+	return false;
+}
+
+EUserInterfaceActionType UDevActionScript::GetActionUserInterfaceType(const UObject* WorldContextObject) const
+{
+#ifdef DEV_HUB_AVAILABLE
+
+	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionUserInterfaceType))) { return EUserInterfaceActionType::Button; }
+
+	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
+	try
+	{
+		return OnGetActionUserInterfaceType(WorldContextObject);
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action user interface type: %hs"), e.what());
+	}
+	catch (...)
+	{
+		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action user interface type"));
+	}
+
+#endif // DEV_HUB_AVAILABLE
+
+	return EUserInterfaceActionType::Button;
+}
+
+void UDevActionScript::ExecuteAction(const UObject* WorldContextObject) const
+{
+#ifdef DEV_HUB_AVAILABLE
+
+	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
+	try
+	{
+		OnExecuteAction(WorldContextObject);
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during action execution: %hs"), e.what());
+	}
+	catch (...)
+	{
+		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during action execution"));
+	}
+
+#endif // DEV_HUB_AVAILABLE
+}
+
+
 ECheckBoxState FDevActionsSet::OnGetActionCheckState(const UObject* WorldContextObject) const
 {
 	if (Actions.IsEmpty()) { return ECheckBoxState::Unchecked; }
@@ -215,96 +310,42 @@ void FDevActionsSet::OnExecuteAction(const UObject* WorldContextObject) const
 }
 
 
-ECheckBoxState UDevActionScript::GetActionCheckState(const UObject* WorldContextObject) const
+TAttribute<FText> FDevActionsStack::OnGetActionLabel(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
-
-	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
-	try
+	if (const FDevAction* Action = GetFirstVisibleAction(WorldContextObject))
 	{
-		return OnGetActionCheckState(WorldContextObject);
+		if (TAttribute<FText> LabelAttribute = Action->GetActionLabel(WorldContextObject); LabelAttribute.IsSet()) { return MoveTemp(LabelAttribute); }
 	}
-	catch (const std::exception& e)
-	{
-		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state: %hs"), e.what());
-	}
-	catch (...)
-	{
-		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state"));
-	}
-
-#endif // DEV_HUB_AVAILABLE
-
-	return ECheckBoxState::Unchecked;
+	return FDevActionBase::OnGetActionLabel(WorldContextObject);
 }
 
-bool UDevActionScript::GetActionVisibility(const UObject* WorldContextObject) const
+ECheckBoxState FDevActionsStack::OnGetActionCheckState(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
-
-	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionVisibility))) { return true; }
-
-	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
-	try
-	{
-		return OnGetActionVisibility(WorldContextObject);
-	}
-	catch (const std::exception& e)
-	{
-		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state: %hs"), e.what());
-	}
-	catch (...)
-	{
-		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action check state"));
-	}
-
-#endif // DEV_HUB_AVAILABLE
-
-	return false;
+	if (const FDevAction* Action = GetFirstVisibleAction(WorldContextObject)) { return Action->GetActionCheckState(WorldContextObject); }
+	return ECheckBoxState::Undetermined;
 }
 
-EUserInterfaceActionType UDevActionScript::GetActionUserInterfaceType(const UObject* WorldContextObject) const
+bool FDevActionsStack::OnGetActionVisibility(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
-
-	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionUserInterfaceType))) { return EUserInterfaceActionType::Button; }
-
-	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
-	try
-	{
-		return OnGetActionUserInterfaceType(WorldContextObject);
-	}
-	catch (const std::exception& e)
-	{
-		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action user interface type: %hs"), e.what());
-	}
-	catch (...)
-	{
-		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during getting action user interface type"));
-	}
-
-#endif // DEV_HUB_AVAILABLE
-
-	return EUserInterfaceActionType::Button;
+	return !!GetFirstVisibleAction(WorldContextObject);
 }
 
-void UDevActionScript::ExecuteAction(const UObject* WorldContextObject) const
+EUserInterfaceActionType FDevActionsStack::OnGetActionUserInterfaceType(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+	if (const FDevAction* Action = GetFirstVisibleAction(WorldContextObject)) { return Action->GetActionUserInterfaceType(WorldContextObject); }
+	return EUserInterfaceActionType::None;
+}
 
-	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
-	try
-	{
-		OnExecuteAction(WorldContextObject);
-	}
-	catch (const std::exception& e)
-	{
-		UE_LOG_FUNCTION(LogDevActions, Error, TEXT("Unhandled exception encountered during action execution: %hs"), e.what());
-	}
-	catch (...)
-	{
-		UE_LOG(LogDevActions, Error, TEXT("Unhandled exception encountered during action execution"));
-	}
+void FDevActionsStack::OnExecuteAction(const UObject* WorldContextObject) const
+{
+	if (const FDevAction* Action = GetFirstVisibleAction(WorldContextObject)) { Action->ExecuteAction(WorldContextObject); }
+}
 
-#endif // DEV_HUB_AVAILABLE
+const FDevAction* FDevActionsStack::GetFirstVisibleAction(const UObject* WorldContextObject) const
+{
+	for (const FInstancedStruct& InstancedAction : Actions)
+	{
+		if (const FDevAction* Action = InstancedAction.GetPtr<FDevAction>(); Action && Action->GetActionVisibility(WorldContextObject)) { return Action; }
+	}
+	return nullptr;
 }

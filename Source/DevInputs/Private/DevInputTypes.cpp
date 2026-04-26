@@ -65,8 +65,8 @@ static TMap<FString, FDevInputToken> InputAliases
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::RightControl, TEXT("Right Control"), TEXT("Right Ctrl")),
 
 	// Controller.
-	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Up, TEXT("Gamepad D-pad Up"), TEXT("D-pad Up")),
-	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Down, TEXT("Gamepad D-pad Down"), TEXT("D-pad Down")),
+	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_DPad_Up, TEXT("Gamepad D-pad Top"), TEXT("D-pad Up"), TEXT("D-pad Top")),
+	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_DPad_Down, TEXT("Gamepad D-pad Bottom"), TEXT("D-pad Down"), TEXT("D-pad Bottom")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Right, TEXT("Gamepad D-pad Right"), TEXT("D-pad Right")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_DPad_Left, TEXT("Gamepad D-pad Left"), TEXT("D-pad Left")),
 
@@ -83,10 +83,10 @@ static TMap<FString, FDevInputToken> InputAliases
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_Special_Left, TEXT("Gamepad Special Left"), TEXT("Special Left")),
 	DEBUG_INPUTS_ADD_TWO_ALIASES(EKeys::Gamepad_Special_Right, TEXT("Gamepad Special Right"), TEXT("Special Right")),
 
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Bottom, TEXT("Gamepad Face Button Bottom"), TEXT("Face Bottom"), TEXT("Cross")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_FaceButton_Top, TEXT("Gamepad Face Button Top"), TEXT("Face Up"), TEXT("Face Top"), TEXT("Triangle")),
+	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_FaceButton_Bottom, TEXT("Gamepad Face Button Bottom"), TEXT("Face Down"), TEXT("Face Bottom"), TEXT("Cross")),
 	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Right, TEXT("Gamepad Face Button Right"), TEXT("Face Right"), TEXT("Circle")),
 	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Left, TEXT("Gamepad Face Button Left"), TEXT("Face Left"), TEXT("Square")),
-	DEBUG_INPUTS_ADD_THREE_ALIASES(EKeys::Gamepad_FaceButton_Top, TEXT("Gamepad Face Button Top"), TEXT("Face Top"), TEXT("Triangle")),
 
 	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_LeftShoulder, TEXT("Gamepad Left Shoulder"), TEXT("Left Shoulder"), TEXT("L1"), TEXT("LB")),
 	DEBUG_INPUTS_ADD_FOUR_ALIASES(EKeys::Gamepad_RightShoulder, TEXT("Gamepad Right Shoulder"), TEXT("Right Shoulder"), TEXT("R1"), TEXT("RB")),

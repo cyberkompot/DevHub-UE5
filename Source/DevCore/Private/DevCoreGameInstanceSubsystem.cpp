@@ -3,6 +3,9 @@
 #include "DevCoreGameInstanceSubsystem.h"
 
 #include "DevCore.h"
+#include "Engine/EngineTypes.h"
+#include "Engine/World.h"
+#include "Framework/Application/SlateApplication.h"
 
 bool UDevCoreGameInstanceSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {

@@ -5,6 +5,8 @@
 #include "DevActionConsoleLibrary.h"
 #include "DevActionLogging.h"
 #include "Engine/Console.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "GameFramework/PlayerController.h"
 
 IConsoleCommand* FDevActionConsoleCommandView::GetCCommand() const

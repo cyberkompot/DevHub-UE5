@@ -10,6 +10,7 @@
 #include "DevPadSettings.h"
 #include "DevPadStackController.h"
 #include "DevPadTypes.h"
+#include "Engine/Engine.h"
 #include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
 

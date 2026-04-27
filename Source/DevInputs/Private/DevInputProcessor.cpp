@@ -10,39 +10,62 @@
 
 using namespace DevInput::Logging;
 
-void FDevInputProcessor::Dispose()
+void FDevInputProcessor::Reset()
 {
 	OnInputTypeChanged.Clear();
 	OnInputEvent.Clear();
+	ConsumedDownKeys.Reset();
 }
 
-void FDevInputProcessor::EmulateKeyPress(const FKey& InKey) const
+void FDevInputProcessor::ConsumeInputEvent()
+{
+	if (CurrentInputEvent)
+	{
+		bConsumeInputEvent = true;
+
+		const FInputKeyManager& InputKeyManager = FInputKeyManager::Get();
+		const FKey& Key = CurrentInputEvent->Key;
+		const uint32* KeyCodePtr;
+		const uint32* CharacterPtr;
+		InputKeyManager.GetCodesFromKey(Key, KeyCodePtr, CharacterPtr);
+		const uint32 KeyCode = (KeyCodePtr) ? *KeyCodePtr : 0;
+		const uint32 Character = (CharacterPtr) ? *CharacterPtr : 0;
+
+		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Input event consumed: Key = %s, KeyCode = %u, Character = %u, Event = %s"), *Key.ToString(), KeyCode, Character, *EnumToString(CurrentInputEvent->Event));
+	}
+	else
+	{
+		UE_LOG_FUNCTION(LogDevInputs, Warning, TEXT("Attempt to consume an input event outside of its handler has no effect"));
+	}
+}
+
+void FDevInputProcessor::EmulateKeyPress(const FKey& Key) const
 {
 	const FInputKeyManager& InputKeyManager = FInputKeyManager::Get();
 	const uint32* KeyCodePtr;
 	const uint32* CharacterPtr;
-	InputKeyManager.GetCodesFromKey(InKey, KeyCodePtr, CharacterPtr);
+	InputKeyManager.GetCodesFromKey(Key, KeyCodePtr, CharacterPtr);
 	const uint32 KeyCode = (KeyCodePtr) ? *KeyCodePtr : 0;
 	const uint32 Character = (CharacterPtr) ? *CharacterPtr : 0;
 
-	UE_LOG_FUNCTION(LogDevInputs, Log, TEXT("Key press emulated: Key = %s, KeyCode = %u, Character = %u"), *InKey.ToString(), KeyCode, Character);
+	UE_LOG_FUNCTION(LogDevInputs, Log, TEXT("Key press emulated: Key = %s, KeyCode = %u, Character = %u"), *Key.ToString(), KeyCode, Character);
 
 	FSlateApplication& SlateApp = FSlateApplication::Get();
 	SlateApp.OnKeyDown(KeyCode, Character, false);
 	SlateApp.OnKeyUp(KeyCode, Character, false);
 }
 
-EDevInputType FDevInputProcessor::GetInputType(const FKey& InKey) const
+EDevInputType FDevInputProcessor::GetInputType(const FKey& Key) const
 {
-	if (InKey.IsTouch() || InKey.IsGesture())
+	if (Key.IsTouch() || Key.IsGesture())
 	{
 		return EDevInputType::Touch;
 	}
-	if (InKey.IsGamepadKey() || InKey.IsAnalog())
+	if (Key.IsGamepadKey() || Key.IsAnalog())
 	{
 		return EDevInputType::Gamepad;
 	}
-	if (InKey.IsMouseButton())
+	if (Key.IsMouseButton())
 	{
 		return EDevInputType::Mouse;
 	}
@@ -61,6 +84,60 @@ void FDevInputProcessor::SetCurrentInputType(const EDevInputType InInputType)
 		CurrentInputType = InInputType;
 		OnInputTypeChanged.Broadcast(InInputType);
 	}
+}
+
+bool FDevInputProcessor::ProcessDownEvent(const FInputKeyParams& Params)
+{
+	CurrentInputEvent = &Params;
+	bConsumeInputEvent = false;
+	ON_SCOPE_EXIT
+	{
+		CurrentInputEvent = nullptr;
+		bConsumeInputEvent = false;
+	};
+
+	OnInputEvent.Broadcast(Params);
+
+	if (bConsumeInputEvent)
+	{
+		ConsumedDownKeys.Add(Params.Key);
+	}
+	else
+	{
+		ConsumedDownKeys.Remove(Params.Key);
+	}
+	return bConsumeInputEvent;
+}
+
+bool FDevInputProcessor::ProcessUpEvent(const FInputKeyParams& Params)
+{
+	CurrentInputEvent = &Params;
+	bConsumeInputEvent = ConsumedDownKeys.Contains(Params.Key);;
+	ON_SCOPE_EXIT
+	{
+		CurrentInputEvent = nullptr;
+		bConsumeInputEvent = false;
+	};
+
+	OnInputEvent.Broadcast(Params);
+
+	ConsumedDownKeys.Remove(Params.Key);
+	return bConsumeInputEvent;
+}
+
+bool FDevInputProcessor::ProcessUnpairedEvent(const FInputKeyParams& Params)
+{
+	CurrentInputEvent = &Params;
+	bConsumeInputEvent = false;
+	ON_SCOPE_EXIT
+	{
+		CurrentInputEvent = nullptr;
+		bConsumeInputEvent = false;
+	};
+
+	OnInputEvent.Broadcast(Params);
+
+	return bConsumeInputEvent;
 }
 
 bool FDevInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
@@ -83,9 +160,7 @@ bool FDevInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const F
 	Params.InputDevice = InKeyEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
 
-	OnInputEvent.Broadcast(Params);
-
-	return false;
+	return ProcessDownEvent(Params);
 }
 
 bool FDevInputProcessor::HandleKeyUpEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
@@ -106,9 +181,7 @@ bool FDevInputProcessor::HandleKeyUpEvent(FSlateApplication& SlateApp, const FKe
 	Params.InputDevice = InKeyEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
 
-	OnInputEvent.Broadcast(Params);
-	
-	return false;
+	return ProcessUpEvent(Params);
 }
 
 bool FDevInputProcessor::HandleAnalogInputEvent(FSlateApplication& SlateApp, const FAnalogInputEvent& InAnalogInputEvent)
@@ -154,9 +227,7 @@ bool FDevInputProcessor::HandleMouseButtonDownEvent(FSlateApplication& SlateApp,
 	Params.InputDevice = MouseEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
 
-	OnInputEvent.Broadcast(Params);
-
-	return false;
+	return ProcessDownEvent(Params);
 }
 
 bool FDevInputProcessor::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
@@ -177,9 +248,7 @@ bool FDevInputProcessor::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, c
 	Params.InputDevice = MouseEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
 
-	OnInputEvent.Broadcast(Params);
-
-	return false;
+	return ProcessUpEvent(Params);
 }
 
 bool FDevInputProcessor::HandleMouseButtonDoubleClickEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)

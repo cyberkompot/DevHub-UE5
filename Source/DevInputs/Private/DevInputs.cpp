@@ -59,7 +59,7 @@ void UDevInputs::Deinitialize()
 
 	InputManager->Dispose();
 	InputMode->Dispose();
-	InputProcessor->Dispose();
+	InputProcessor->Reset();
 
 	if (FSlateApplication::IsInitialized())
 	{
@@ -147,7 +147,7 @@ EDevInputType UDevInputs::GetCurrentInputType() const
 
 void UDevInputs::ConsumeCurrentInputEvent() const
 {
-	// TODO: Implement event consumption.
+	InputProcessor->ConsumeInputEvent();
 }
 
 void UDevInputs::EmulateKeyPress(const FKey& InKey) const

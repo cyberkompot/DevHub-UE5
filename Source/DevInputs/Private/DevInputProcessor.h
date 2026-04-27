@@ -22,13 +22,22 @@ public:
 	FDevInputTypeChanged OnInputTypeChanged;
 	FDevInputEvent OnInputEvent;
 
-	void EmulateKeyPress(const FKey& InKey) const;
+	void Reset();
 
-	void Dispose();
+	void ConsumeInputEvent();
+	void EmulateKeyPress(const FKey& Key) const;
 
 private:
-	EDevInputType GetInputType(const FKey& InKey) const;
+	const FInputKeyParams* CurrentInputEvent = nullptr;
+	bool bConsumeInputEvent = false;
+	TSet<FKey> ConsumedDownKeys;
+
+	EDevInputType GetInputType(const FKey& Key) const;
 	void SetCurrentInputType(const EDevInputType InInputType);
+
+	bool ProcessDownEvent(const FInputKeyParams& Params);
+	bool ProcessUpEvent(const FInputKeyParams& Params);
+	bool ProcessUnpairedEvent(const FInputKeyParams& Params);
 
 	//~ Begin IInputProcessor interface.
 	virtual const TCHAR* GetDebugName() const override { return TEXT("DevInput Processor"); }

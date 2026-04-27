@@ -23,8 +23,6 @@ public:
 	void SetContent(UWidget* InWidget);
 	void SetScale(const float InScale);
 
-	void Configure(EDevPadAlignment InCorner, float InWidthPercent, float InPadding, UDevPadPanelWidget* InPanelWidget);
-
 protected:
 	//~ Begin UUserWidget interface.
 	virtual void NativeOnInitialized() override;
@@ -52,7 +50,7 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UCanvasPanelSlot> VBoxSlot;
 
-	float GetSize() const { return FMath::Lerp(0.f, 0.5f, Scale); }
+	float GetContentWidthFraction() const { return FMath::Lerp(0.f, 0.5f, Scale); }
 
 	void ApplyAlignment() const;
 	void ApplyScale() const;

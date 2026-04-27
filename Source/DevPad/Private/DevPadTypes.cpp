@@ -19,7 +19,7 @@ TSoftClassPtr<UDevPadPageWidget> UDevPadPage::GetPageWidgetClass(const UObject* 
 TAttribute<FText> UDevPadPage::GetPageTitle() const
 {
 	const FName PageName = GetPageName();
-	return (!GetPageName().IsNone())
+	return (!PageName.IsNone())
 		? FText::FromString(FName::NameToDisplayString(PageName.ToString(), false))
 		: TAttribute<FText>();
 }

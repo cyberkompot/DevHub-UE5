@@ -12,10 +12,10 @@
 
 class UDevPadControllerPage;
 
-struct FDevPadControllerPageConstActionView
+struct FDevPadControllerPageActionView
 {
-	FDevPadControllerPageConstActionView() = default;
-	FDevPadControllerPageConstActionView(const UDevPadControllerPage& InPage, const FInstancedStruct& InInstancedStruct)
+	FDevPadControllerPageActionView() = default;
+	FDevPadControllerPageActionView(const UDevPadControllerPage& InPage, const FInstancedStruct& InInstancedStruct)
 		: Page(&InPage), StructView(InInstancedStruct) {}
 
 	FORCEINLINE const UDevPadControllerPage* GetPagePtr() const { return Page; }
@@ -100,5 +100,5 @@ public:
 	//~ End IDevPadPage interface.
 
 protected:
-	FDevPadControllerPageConstActionView GetPageAction(const UObject* WorldContextObject, const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const;
+	FDevPadControllerPageActionView GetPageAction(const UObject* WorldContextObject, const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const;
 };

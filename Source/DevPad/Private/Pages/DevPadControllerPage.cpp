@@ -28,7 +28,7 @@ EDevPadInputExecution UDevPadControllerPage::ExecutePageInput(const UObject* Wor
 		return EDevPadInputExecution::Continue;
 	}
 
-	const FDevPadControllerPageConstActionView ActionView = GetPageAction(WorldContextObject, PadStack, PageExecutionContext.PadInput);
+	const FDevPadControllerPageActionView ActionView = GetPageAction(WorldContextObject, PadStack, PageExecutionContext.PadInput);
 	const FDevAction* Action = ActionView.GetActionPtr();
 	if (!Action)
 	{
@@ -58,7 +58,7 @@ void UDevPadControllerPage::PopulatePageWidget(const UObject* WorldContextObject
 		return;
 	}
 
-	auto PopulatePageActionData = [WorldContextObject](const FDevPadControllerPageConstActionView& InActionView, FDevPadActionData& OutActionData)
+	auto PopulatePageActionData = [WorldContextObject](const FDevPadControllerPageActionView& InActionView, FDevPadActionData& OutActionData)
 	{
 		if (const FDevAction* Action = InActionView.GetActionPtr(); Action && Action->GetActionVisibility(WorldContextObject))
 		{
@@ -91,49 +91,49 @@ void UDevPadControllerPage::PopulatePageWidget(const UObject* WorldContextObject
 	PopulatePageActionData(GetPageAction(WorldContextObject, PadStack, EDevPadInput::LeftPlusRightThumbsticks), Data->LeftPlusRightThumbsticksAction);
 }
 
-FDevPadControllerPageConstActionView UDevPadControllerPage::GetPageAction(const UObject* WorldContextObject, const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const
+FDevPadControllerPageActionView UDevPadControllerPage::GetPageAction(const UObject* WorldContextObject, const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const
 {
-	if (!InPadStack) { return FDevPadControllerPageConstActionView(); }
+	if (!InPadStack) { return FDevPadControllerPageActionView(); }
 
-	auto GetActionByPadInput = [InPadInput](const UDevPadControllerPage& InControllerPage) -> FDevPadControllerPageConstActionView
+	auto GetActionByPadInput = [InPadInput](const UDevPadControllerPage& InControllerPage) -> FDevPadControllerPageActionView
 	{
 		switch (InPadInput)
 		{
-			case EDevPadInput::DPadUp: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.DPadUpAction);
-			case EDevPadInput::DPadLeft: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.DPadLeftAction);
-			case EDevPadInput::DPadRight: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.DPadRightAction);
-			case EDevPadInput::DPadDown: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.DPadDownAction);
+			case EDevPadInput::DPadUp: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadUpAction);
+			case EDevPadInput::DPadLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadLeftAction);
+			case EDevPadInput::DPadRight: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadRightAction);
+			case EDevPadInput::DPadDown: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadDownAction);
 
-			case EDevPadInput::FaceUp: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.FaceUpAction);
-			case EDevPadInput::FaceLeft: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.FaceLeftAction);
-			case EDevPadInput::FaceRight: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.FaceRightAction);
-			case EDevPadInput::FaceDown: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.FaceDownAction);
+			case EDevPadInput::FaceUp: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceUpAction);
+			case EDevPadInput::FaceLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceLeftAction);
+			case EDevPadInput::FaceRight: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceRightAction);
+			case EDevPadInput::FaceDown: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceDownAction);
 
-			case EDevPadInput::LeftTrigger: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.LeftTriggerAction);
-			case EDevPadInput::RightTrigger: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.RightTriggerAction);
+			case EDevPadInput::LeftTrigger: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftTriggerAction);
+			case EDevPadInput::RightTrigger: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.RightTriggerAction);
 
-			case EDevPadInput::LeftThumbstick: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.LeftThumbstickAction);
-			case EDevPadInput::RightThumbstick: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.RightThumbstickAction);
+			case EDevPadInput::LeftThumbstick: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftThumbstickAction);
+			case EDevPadInput::RightThumbstick: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.RightThumbstickAction);
 
-			case EDevPadInput::LeftPlusRightTriggers: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.LeftPlusRightTriggersAction);
-			case EDevPadInput::LeftPlusRightThumbsticks: return FDevPadControllerPageConstActionView(InControllerPage, InControllerPage.LeftPlusRightThumbsticksAction);
+			case EDevPadInput::LeftPlusRightTriggers: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftPlusRightTriggersAction);
+			case EDevPadInput::LeftPlusRightThumbsticks: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftPlusRightThumbsticksAction);
 
-			default: return FDevPadControllerPageConstActionView();
+			default: return FDevPadControllerPageActionView();
 		}
 	};
 
-	// Common and Stack pages.
+	// Iterate through Stack and Common pages until reaching the first page of a different type.
 	const TArray<UDevPadPage*>& StackPages = InPadStack->GetAllPages();
 	for (int32 i = StackPages.Num() - 1; i >= 0; --i)
 	{
 		const UDevPadControllerPage* ControllerPage = Cast<UDevPadControllerPage>(StackPages[i]);
-		if (!ControllerPage) { return FDevPadControllerPageConstActionView(); }
+		if (!ControllerPage) { return FDevPadControllerPageActionView(); }
 
-		if (const FDevPadControllerPageConstActionView ActionView = GetActionByPadInput(*ControllerPage); ActionView.IsValid())
+		if (const FDevPadControllerPageActionView ActionView = GetActionByPadInput(*ControllerPage); ActionView.IsValid())
 		{
 			return ActionView;
 		}
 	}
 
-	return FDevPadControllerPageConstActionView();
+	return FDevPadControllerPageActionView();
 }

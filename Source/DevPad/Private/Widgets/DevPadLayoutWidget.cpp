@@ -3,7 +3,6 @@
 #include "Widgets/DevPadLayoutWidget.h"
 
 #include "DevPadTypes.h"
-#include "Widgets/DevPadPanelWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
@@ -45,34 +44,6 @@ void UDevPadLayoutWidget::NativeOnInitialized()
 	VBoxSlot->SetOffsets(FMargin(10.f));
 
 	ApplyAlignment();
-	ApplyScale();
-}
-
-void UDevPadLayoutWidget::Configure(EDevPadAlignment InCorner, float InWidthPercent, float InPadding, UDevPadPanelWidget* InPanelWidget)
-{
-	Alignment       = InCorner;
-	Scale = InWidthPercent;
-	Padding      = InPadding;
-
-	UCanvasPanel* Canvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("Canvas"));
-	WidgetTree->RootWidget = Canvas;
-
-	VBox     = WidgetTree->ConstructWidget<UVerticalBox>  (UVerticalBox::StaticClass(),   TEXT("VBox"));
-	HBox     = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("HBox"));
-	ScaleBox = WidgetTree->ConstructWidget<UScaleBox>     (UScaleBox::StaticClass(),      TEXT("ScaleBox"));
-	HSpacer  = WidgetTree->ConstructWidget<USpacer>       (USpacer::StaticClass(),        TEXT("HSpacer"));
-	VSpacer  = WidgetTree->ConstructWidget<USpacer>       (USpacer::StaticClass(),        TEXT("VSpacer"));
-
-	ScaleBox->SetStretch(EStretch::ScaleToFitX);
-	ScaleBox->SetContent(InPanelWidget);
-
-	VBoxSlot = Canvas->AddChildToCanvas(VBox);
-	VBoxSlot->SetAutoSize(false);
-	VBoxSlot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
-	VBoxSlot->SetOffsets(FMargin(10.f));
-
-	ApplyAlignment();
-	ApplyScale();
 }
 
 void UDevPadLayoutWidget::SetAlignment(const EDevPadAlignment InAlignment)
@@ -97,7 +68,7 @@ void UDevPadLayoutWidget::SetScale(const float InScale)
 
 void UDevPadLayoutWidget::ApplyAlignment() const
 {
-	const float Size = GetSize();
+	const float Size = GetContentWidthFraction();
 
 	const bool bIsRight = (Alignment == EDevPadAlignment::TopRight || Alignment == EDevPadAlignment::BottomRight);
 	const bool bIsBottom = (Alignment == EDevPadAlignment::BottomLeft || Alignment == EDevPadAlignment::BottomRight);
@@ -129,7 +100,7 @@ void UDevPadLayoutWidget::ApplyAlignment() const
 
 void UDevPadLayoutWidget::ApplyScale() const
 {
-	const float Size = GetSize();
+	const float Size = GetContentWidthFraction();
 
 	if (UHorizontalBoxSlot* ScaleBoxSlot = Cast<UHorizontalBoxSlot>(ScaleBox->Slot))
 	{

@@ -8,7 +8,7 @@
 
 DEFINE_LOG_CATEGORY(LogDevPad)
 
-FString DevPad::Logging::ControllerPageActionViewToLog(const UObject* WorldContextObject, const FDevPadControllerPageConstActionView& InActionView)
+FString DevPad::Logging::ControllerPageActionViewToLog(const UObject* WorldContextObject, const FDevPadControllerPageActionView& InActionView)
 {
 	if (!InActionView.IsValid()) { return TEXT("<null>"); }
 	FString ActionLabel = InActionView.GetActionPtr()->GetActionLabel(WorldContextObject).Get().ToString();

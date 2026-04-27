@@ -14,7 +14,7 @@ void FDevPadActionBase::OnExecuteAction(const UObject* WorldContextObject) const
 	}
 	else
 	{
-		UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DedPad subsystem is missing. Action could not be executed"));
+		UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad subsystem is missing. Action could not be executed"));
 	}
 }
 

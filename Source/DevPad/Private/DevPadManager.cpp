@@ -87,14 +87,14 @@ void UDevPadManager::NavigateToPreviousPage() const
 		}
 		else
 		{
-			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to parent page: Page = %s"), *PageToLog(StackController->GetTopPage()));
+			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad navigating to parent page: Page = %s"), *PageToLog(TopPage));
 			StackController->PopFromStack();
 			RefreshWidget();
 			return;
 		}
 	}
 
-	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no next previous available"));
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no previous page available"));
 }
 
 void UDevPadManager::NavigateToNextPage() const
@@ -105,6 +105,8 @@ void UDevPadManager::NavigateToNextPage() const
 		return;
 	}
 
+	// Sub-pages are not in the registry, so GetNextPage() returns null when on a sub-page.
+	// NavigateToPreviousPage() handles sub-pages by popping them; next has no equivalent behaviour.
 	if (const UDevPadPage* TopPage = StackController->GetTopPage())
 	{
 		if (UDevPadPage* NavigationPage = PadRegistry->GetNextPage(TopPage, true); NavigationPage && NavigationPage != TopPage)
@@ -209,15 +211,16 @@ void UDevPadManager::CloseCurrentSubPage() const
 		return;
 	}
 
-	if (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage && StackController->IsSubPage(TopPage))
+	const UDevPadPage* TopPage = StackController->GetTopPage();
+	if (!TopPage || !StackController->IsSubPage(TopPage))
 	{
-		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
-		StackController->PopFromStack();
-		RefreshWidget();
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
 		return;
 	}
 
-	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
+	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+	StackController->PopFromStack();
+	RefreshWidget();
 }
 
 void UDevPadManager::CloseAllSubPages() const
@@ -228,20 +231,19 @@ void UDevPadManager::CloseAllSubPages() const
 		return;
 	}
 
-	bool bPageWasClosed = false;
-	for (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage && StackController->IsSubPage(TopPage); TopPage = StackController->GetTopPage())
+	const UDevPadPage* TopPage = StackController->GetTopPage();
+	if (!TopPage || !StackController->IsSubPage(TopPage))
 	{
-		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
-		StackController->PopFromStack();
-		bPageWasClosed = true;
-	}
-	if (bPageWasClosed)
-	{
-		RefreshWidget();
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
 		return;
 	}
 
-	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad no opened sub-pages"));
+	for (; TopPage && StackController->IsSubPage(TopPage); TopPage = StackController->GetTopPage())
+	{
+		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+		StackController->PopFromStack();
+	}
+	RefreshWidget();
 }
 
 void UDevPadManager::BeginDestroy()
@@ -318,6 +320,7 @@ EDevPadInputExecution UDevPadManager::ExecuteDefaultInput(const UObject* WorldCo
 			return EDevPadInputExecution::Break;
 
 		default:
+			// Default input execute always ends with the break to suppress further input handling.
 			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("No DevPad action associated with input: PadInput = %s"), *EnumToLog(ExecutionContext.PadInput));
 			return EDevPadInputExecution::Break;
 	}
@@ -342,8 +345,6 @@ bool UDevPadManager::CreateWidget()
 	if (!PadLayoutWidget)
 	{
 		PadLayoutWidget = Cast<UDevPadLayoutWidget>(UUserWidget::CreateWidgetInstance(*GetWorld(), UDevPadLayoutWidget::StaticClass(), "DevPadLayout"));
-		PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
-		PadLayoutWidget->SetScale(Settings->PadWidgetScale);
 		if (!PadLayoutWidget)
 		{
 			UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad layout widget creation failed. DevPad could not be shown"));
@@ -358,6 +359,8 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
+	PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
+	PadLayoutWidget->SetScale(Settings->PadWidgetScale);
 	PadLayoutWidget->SetContent(PadWidget);
 	PadLayoutWidget->AddToViewport();
 	return true;

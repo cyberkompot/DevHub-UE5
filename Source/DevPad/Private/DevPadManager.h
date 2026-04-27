@@ -20,7 +20,7 @@ class UDevPadManager final : public UDevCoreResettable
 
 public:
 	UDevPadManager();
-	FORCEINLINE void SetMenuRegistry(UDevPadRegistry& InPadRegistry) { PadRegistry = &InPadRegistry; }
+	FORCEINLINE void SetPadRegistry(UDevPadRegistry& InPadRegistry) { PadRegistry = &InPadRegistry; }
 	virtual void Reset() override;
 
 public:

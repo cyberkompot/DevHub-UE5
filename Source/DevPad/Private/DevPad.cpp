@@ -14,7 +14,7 @@ UDevPad::UDevPad()
 	PadRegistry = CreateDefaultSubobject<UDevPadRegistry>("PadRegistry", true);
 	PadManager = CreateDefaultSubobject<UDevPadManager>("PadManager", true);
 
-	PadManager->SetMenuRegistry(*PadRegistry);
+	PadManager->SetPadRegistry(*PadRegistry);
 }
 
 bool UDevPad::IsPadVisible() const
@@ -186,13 +186,13 @@ namespace DevPad::Console
 			DevPad->NavigateToPreviousPage();
 		}));
 
-	FAutoConsoleCommandWithWorldDevPadAndArgs NavigateToNextPage(TEXT("DevHub.Pad.NextPage"), TEXT("Navigate to previous DevPad page."),
+	FAutoConsoleCommandWithWorldDevPadAndArgs NavigateToNextPage(TEXT("DevHub.Pad.NextPage"), TEXT("Navigate to next DevPad page."),
 		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
 		{
-			DevPad->NavigateToPreviousPage();
+			DevPad->NavigateToNextPage();
 		}));
 
-	FAutoConsoleCommandWithWorldDevPadAndArgs CloseTopSubPage(TEXT("DevHub.Pad.CloseCurrenSubPage"), TEXT("Close current DevPad sub-page."),
+	FAutoConsoleCommandWithWorldDevPadAndArgs CloseTopSubPage(TEXT("DevHub.Pad.CloseCurrentSubPage"), TEXT("Close current DevPad sub-page."),
 		FAutoConsoleCommandWithWorldDevPadAndArgs::FDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World, const UDevPad* DevPad)
 		{
 			DevPad->CloseCurrentSubPage();

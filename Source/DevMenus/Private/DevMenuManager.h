@@ -23,6 +23,9 @@ class UDevMenuManager final : public UObject
 	GENERATED_BODY()
 
 public:
+	FDevMenuEvent OnMenuShow;
+	FDevMenuEvent OnMenuHide;
+
 	void Initialize();
 	void Dispose();
 

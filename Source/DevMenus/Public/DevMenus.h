@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DevCoreGameInstanceSubsystem.h"
+#include "DevMenuTypes.h"
 #include "DevMenus.generated.h"
 
 class UDevInputs;
@@ -50,6 +51,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Menu")
 	void HideAllMenus();
+
+	FDevMenuEvent& OnMenuShow();
+	FDevMenuEvent& OnMenuHide();
 
 public:
 	//~ Begin USubsystem Interface

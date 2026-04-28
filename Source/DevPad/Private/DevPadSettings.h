@@ -10,7 +10,7 @@ class UDevPadPage;
 class UDevPadPageWidget;
 class UDevPadPanelWidget;
 
-UCLASS(Config = Game, DefaultConfig, Category = "DevHub|Pad", DisplayName = "DevPad")
+UCLASS(Config = Game, DefaultConfig, Category = "DevHub|Pad", DisplayName = "Dev Pad")
 class UDevPadSettings final : public UDeveloperSettings
 {
 	GENERATED_BODY()
@@ -19,7 +19,7 @@ public:
 	UDevPadSettings();
 
 	UPROPERTY(Config, EditAnywhere, Category = "DevPad", DisplayName = "Shortcut")
-	FDevInputShortcut PadShortcut = "Num 5 | L3 + R3";
+	FDevInputShortcut PadShortcut = "Num 5 | Special Right + D-pad Down";
 
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Pages", meta = (DisplayThumbnail = false))
 	TSoftObjectPtr<UDevPadPage> CommonPage = nullptr;

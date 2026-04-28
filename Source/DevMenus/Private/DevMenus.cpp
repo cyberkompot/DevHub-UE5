@@ -185,6 +185,16 @@ void UDevMenus::HideAllMenus()
 	MenuManager->HideAllMenus();
 }
 
+FDevMenuEvent& UDevMenus::OnMenuShow()
+{
+	return MenuManager->OnMenuShow;
+}
+
+FDevMenuEvent& UDevMenus::OnMenuHide()
+{
+	return MenuManager->OnMenuHide;
+}
+
 void UDevMenus::BindShortcuts(const UDevMenuSettings& InSettings)
 {
 	if (UDevInputs* DevInputs = UDevInputs::Get(this))

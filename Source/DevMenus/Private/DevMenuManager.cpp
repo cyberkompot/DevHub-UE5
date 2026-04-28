@@ -152,6 +152,7 @@ void UDevMenuManager::AddMenu(const FDisplayedMenuDetails&& InMenuDetails)
 {
 	if (DisplayedMenus.IsEmpty())
 	{
+		OnMenuShow.Broadcast();
 		CloseConsole();
 		CreateWidgets();
 		GLog->AddOutputDevice(this);
@@ -183,6 +184,7 @@ void UDevMenuManager::RemoveMenu(const FDisplayedMenuDetails& InMenuDetails)
 		GLog->RemoveOutputDevice(this);
 		DestroyWidgets();
 		RestoreInputMode();
+		OnMenuHide.Broadcast();
 	}
 }
 

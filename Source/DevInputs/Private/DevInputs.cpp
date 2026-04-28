@@ -145,7 +145,7 @@ EDevInputType UDevInputs::GetCurrentInputType() const
 	return InputProcessor->CurrentInputType;
 }
 
-void UDevInputs::ConsumeCurrentInputEvent() const
+void UDevInputs::ConsumeInputEvent() const
 {
 	InputProcessor->ConsumeInputEvent();
 }

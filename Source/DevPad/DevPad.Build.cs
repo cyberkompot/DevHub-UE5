@@ -24,9 +24,11 @@ public class DevPad : ModuleRules
                 "DevCore",
                 "DevActions",
                 "DevInputs",
+                "DevMenus",
                 "CoreUObject",
                 "DeveloperSettings",
                 "Engine",
+                "InputCore",
                 "StructUtils",
                 "UMG",
             }

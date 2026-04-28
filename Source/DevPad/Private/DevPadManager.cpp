@@ -3,6 +3,7 @@
 #include "DevPadManager.h"
 
 #include "DevCore.h"
+#include "DevMenus.h"
 #include "DevPad.h"
 #include "DevPadInputController.h"
 #include "DevPadLogging.h"
@@ -10,6 +11,7 @@
 #include "DevPadSettings.h"
 #include "DevPadStackController.h"
 #include "DevPadTypes.h"
+#include "Engine/Console.h"
 #include "Engine/Engine.h"
 #include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
@@ -20,9 +22,26 @@ UDevPadManager::UDevPadManager()
 	StackController = CreateDefaultSubobject<UDevPadStackController>("StackController", true);
 }
 
+void UDevPadManager::Initialize()
+{
+	UConsole::OnConsoleActivationStateChanged.AddUObject(this, &ThisClass::OnConsoleActivationStateChanged);
+	if (UDevMenus* DevMenus = UDevMenus::Get(this))
+	{
+		DevMenus->OnMenuShow().AddUObject(this, &ThisClass::PausePad);
+		DevMenus->OnMenuHide().AddUObject(this, &ThisClass::ResumePad);
+	}
+}
+
 void UDevPadManager::Reset()
 {
 	HidePad();
+
+	UConsole::OnConsoleActivationStateChanged.RemoveAll(this);
+	if (UDevMenus* DevMenus = UDevMenus::Get(this))
+	{
+		DevMenus->OnMenuShow().RemoveAll(this);
+		DevMenus->OnMenuHide().RemoveAll(this);
+	}
 }
 
 void UDevPadManager::ShowPad(const FName InPageName)
@@ -246,10 +265,20 @@ void UDevPadManager::CloseAllSubPages() const
 	RefreshWidget();
 }
 
-void UDevPadManager::BeginDestroy()
+void UDevPadManager::ResumePad() const
 {
-	Reset();
-	Super::BeginDestroy();
+	if (!IsPadPaused()) { return; }
+
+	UE_CLOG_FUNCTION(IsPadVisible(), LogDevPad, Verbose, TEXT("DevPad resumed"));
+	InputController->ResumeInput();
+}
+
+void UDevPadManager::PausePad() const
+{
+	if (IsPadPaused()) { return; }
+
+	UE_CLOG_FUNCTION(IsPadVisible(), LogDevPad, Verbose, TEXT("DevPad paused"));
+	InputController->PauseInput();
 }
 
 void UDevPadManager::ExecutePadInput(const EDevPadInput InPadInput)
@@ -280,7 +309,7 @@ void UDevPadManager::ExecutePadInput(const EDevPadInput InPadInput)
 
 	if (Execution == EDevPadInputExecution::Break)
 	{
-		InputController->ConsumeCurrentInputEvent();
+		InputController->ConsumeInputEvent();
 	}
 }
 
@@ -523,5 +552,17 @@ void UDevPadManager::PopulateWidgetPageContent(const UObject* WorldContextObject
 		PageWidgetContext.PageData = Data->PageWidget->GetDataOrCreate<UDevPadPageData>();
 		PageWidgetContext.PageWidget = Data->PageWidget;
 		TopPage->PopulatePageWidget(WorldContextObject, PageWidgetContext);
+	}
+}
+
+void UDevPadManager::OnConsoleActivationStateChanged(const bool bActive)
+{
+	if (bActive)
+	{
+		PausePad();
+	}
+	else
+	{
+		ResumePad();
 	}
 }

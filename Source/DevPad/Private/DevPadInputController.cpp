@@ -3,6 +3,7 @@
 #include "DevPadInputController.h"
 
 #include "DevInputs.h"
+#include "DevInputShortcutBuilder.h"
 #include "DevInputTypes.h"
 #include "DevPadLogging.h"
 
@@ -32,6 +33,24 @@ const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputControl
 	{ EDevPadInput::LeftPlusRightThumbsticks, "Left Thumbstick + Right Thumbstick | Num 0 + Num ." },
 };
 
+UDevPadInputController::UDevPadInputController()
+{
+	FDevInputSequence InputSequence;
+	InputEventKeysToAutoConsume.Reserve(PadInputShortcuts.Num() * 2);
+	for (const TKeyValuePair<EDevPadInput, FDevInputShortcut>& KV : PadInputShortcuts)
+	{
+		const FDevInputShortcut& PadInputShortcut = KV.Value;
+		FDevInputShortcutBuilder::FromName(PadInputShortcut.GetName(), InputSequence);
+		for (const FDevInputToken& Token : InputSequence)
+		{
+			if (!EDevInputTokens::IsSpecialToken(Token))
+			{
+				InputEventKeysToAutoConsume.Add(Token.GetName());
+			}
+		}
+	}
+}
+
 void UDevPadInputController::Reset()
 {
 	UnbindInput();
@@ -50,21 +69,22 @@ void UDevPadInputController::BindInput(FDevPadInputEvent&& InDelegate)
 				const FDevInputShortcut& PadInputShortcut = KV.Value;
 
 				FDevInputShortcutDelegateBinding& Binding = DevInputs->BindShortcut(PadInputShortcut);
-				Binding.Delegate.BindDelegate(this, &ThisClass::ExecutePadInput, PadInput);
+				Binding.Delegate.BindDelegate(this, &ThisClass::OnInputShortcutEvent, PadInput);
 
 				Bindings.Emplace(&Binding);
 			}
+			DevInputs->OnInputEvent().AddUObject(this, &ThisClass::OnInputEvent);
 		}
 
 		UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad input bound"));
 	}
 
-	OnInputEvent = MoveTempIfPossible(InDelegate);
+	OnPadInputEvent = MoveTempIfPossible(InDelegate);
 }
 
 void UDevPadInputController::UnbindInput()
 {
-	OnInputEvent.Unbind();
+	OnPadInputEvent.Unbind();
 
 	if (!Bindings.IsEmpty())
 	{
@@ -74,6 +94,8 @@ void UDevPadInputController::UnbindInput()
 			{
 				(void)DevInputs->RemoveBinding(*Binding);
 			}
+
+			DevInputs->OnInputEvent().RemoveAll(this);
 		}
 		Bindings.Reset();
 
@@ -81,16 +103,32 @@ void UDevPadInputController::UnbindInput()
 	}
 }
 
-void UDevPadInputController::ConsumeCurrentInputEvent() const
+void UDevPadInputController::ConsumeInputEvent() const
 {
 	if (const UDevInputs* DevInputs = UDevInputs::Get(this))
 	{
-		DevInputs->ConsumeCurrentInputEvent();
+		DevInputs->ConsumeInputEvent();
 	}
 }
 
-void UDevPadInputController::ExecutePadInput(const EDevPadInput InPadInput)
+void UDevPadInputController::OnInputEvent(const FInputKeyParams& InKeyParams)
 {
-	UE_LOG_FUNCTION(LogDevPad, VeryVerbose, TEXT("DevPad input triggered: PadInput = %s"), *EnumToLog(InPadInput));
-	OnInputEvent.ExecuteIfBound(InPadInput);
+	if (IsInputPaused()) { return; }
+
+	if (InputEventKeysToAutoConsume.Contains(InKeyParams.Key))
+	{
+		UE_LOG_FUNCTION(LogDevPad, VeryVerbose, TEXT("DevPad input key triggered. Consuming event: Key = %s, Event = %s"), *InKeyParams.Key.ToString(), *EnumToLog(InKeyParams.Event));
+		if (const UDevInputs* DevInputs = UDevInputs::Get(this))
+		{
+			DevInputs->ConsumeInputEvent();
+		}
+	}
+}
+
+void UDevPadInputController::OnInputShortcutEvent(const EDevPadInput InPadInput)
+{
+	if (IsInputPaused()) { return; }
+
+	UE_LOG_FUNCTION(LogDevPad, VeryVerbose, TEXT("DevPad input shortcut triggered: PadInput = %s"), *EnumToLog(InPadInput));
+	OnPadInputEvent.ExecuteIfBound(InPadInput);
 }

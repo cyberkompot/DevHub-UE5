@@ -4,20 +4,20 @@
 
 #include "DevInputTypes.h"
 
-using FDevInputShortcutStringBuilder = TStringBuilder<128>;
+using FDevInputShortcutStringBuilder = TStringBuilder<NAME_SIZE>;
 
 struct FDevInputShortcutBuilder final
 {
 	/** Parses a name representation of input shortcuts into the input tokens sequence, for example: Ctrl+Shift+Z,R | L1+R1. */
-	static void FromName(const FName InShortcutName, FDevInputSequence &OutInputTokens);
+	static DEVINPUTS_API void FromName(const FName InShortcutName, FDevInputSequence &OutInputTokens);
 
 	/** Generates a string name of shortcuts base on the input tokens sequence, for example: Ctrl+Shift+Z,R | L1+R1. */
-	static FName ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
+	static DEVINPUTS_API FName ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
 
-	static FName Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
+	static DEVINPUTS_API FName Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
 };
 
-struct FDevInputShortcutReader final
+struct DEVINPUTS_API FDevInputShortcutReader final
 {
 	explicit FDevInputShortcutReader(const FName InShortcutName);
 
@@ -33,7 +33,7 @@ private:
 	int32 TokesCount = 0;
 };
 
-struct FDevInputShortcutWriter final
+struct DEVINPUTS_API FDevInputShortcutWriter final
 {
 	explicit FDevInputShortcutWriter() = default;
 	explicit FDevInputShortcutWriter(const EDevInputDisplayNameLength InNameLenght)

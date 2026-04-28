@@ -44,12 +44,14 @@ using FDevInputContextTokensSet = TArray<FDevInputContextToken, TNonRelocatableI
 
 struct FDevInputContextFragment final
 {
-	FORCEINLINE FDevInputContextFragment(FDevInputBinding& InBinding)
+	FDevInputContextFragment(FDevInputBinding& InBinding)
 		: Binding(&InBinding), NextFragment(nullptr) {}
 
 	FDevInputBinding* Binding;
 	FDevInputContextFragment* NextFragment;
 	FDevInputContextTokensSet FragmentTokens;
+
+	FORCEINLINE bool IsSingleTokenFragment() const { return (FragmentTokens.Num() == 1); }
 };
 
 
@@ -67,7 +69,7 @@ struct FDevInputBindingContext final
 template <typename InElementType>
 struct TDevInputContextDeque final
 {
-	FORCEINLINE void Empty() { Container.Empty(); }
+	FORCEINLINE void Reset() { Container.Empty(); }
 	FORCEINLINE void PushLast(const InElementType& Element) { Container.Add(Element); }
 	FORCEINLINE void RemoveSingle(const InElementType& Element) { Container.RemoveSingle(Element); }
 
@@ -127,6 +129,7 @@ private:
 
 	TArray<FDevInputBinding*> PressedBindings;
 	TArray<FDevInputContextToken> PressedTokens;
+	TArray<FDevInputContextToken> PressedModifiers;
 
 	void RegisterBinding(FDevInputBinding& InBinding);
 	void UnregisterBinding(FDevInputBinding& InBinding);
@@ -136,7 +139,7 @@ private:
 
 	void ExecuteBinding(const FDevInputBinding* InBinding) const;
 
-	EPressCheckResult IsFragmentPressed(const FDevInputContextFragment* InFragment, const EPressCheckStrategy InStrategy) const;
+	EPressCheckResult IsFragmentPressed(const FDevInputContextFragment* InFragment, const FDevInputContextToken& InToken, const EPressCheckStrategy InStrategy) const;
 
 	void OnTokenDown(const FDevInputContextToken& InToken);
 	void OnTokenUp(const FDevInputContextToken& InToken);

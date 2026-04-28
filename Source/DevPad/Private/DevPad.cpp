@@ -77,6 +77,7 @@ void UDevPad::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	PadRegistry->Initialize();
+	PadManager->Initialize();
 
 	BindShortcut();
 }

@@ -5,10 +5,10 @@
 #include "DevCoreDisposable.h"
 #include "DevInputTypes.h"
 #include "DevPadTypes.h"
+#include "InputCoreTypes.h"
 #include "DevPadInputController.generated.h"
 
 struct FDevInputShortcut;
-struct FStreamableHandle;
 class UDevPadPanelWidget;
 
 DECLARE_DELEGATE_OneParam(FDevPadInputEvent, const EDevPadInput);
@@ -19,19 +19,28 @@ class UDevPadInputController final : public UDevCoreResettable
 	GENERATED_BODY()
 
 public:
+	UDevPadInputController();
+
 	virtual void Reset() override;
 
 public:
 	void BindInput(FDevPadInputEvent&& InDelegate);
 	void UnbindInput();
 
-	void ConsumeCurrentInputEvent() const;
+	FORCEINLINE bool IsInputPaused() const { return bInputPaused; }
+	FORCEINLINE void ResumeInput() { bInputPaused = false; }
+	FORCEINLINE void PauseInput() { bInputPaused = true; }
+
+	void ConsumeInputEvent() const;
 
 private:
 	static const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> PadInputShortcuts;
 
 	TArray<FDevInputShortcutDelegateBinding*> Bindings;
-	FDevPadInputEvent OnInputEvent;
+	TSet<FKey> InputEventKeysToAutoConsume;
+	bool bInputPaused = false;
+	FDevPadInputEvent OnPadInputEvent;
 
-	void ExecutePadInput(const EDevPadInput InPadInput);
+	void OnInputEvent(const FInputKeyParams& InKeyParams);
+	void OnInputShortcutEvent(const EDevPadInput InPadInput);
 };

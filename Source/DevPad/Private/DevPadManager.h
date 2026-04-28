@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DevCoreDisposable.h"
+#include "DevPadInputController.h"
 #include "DevPadTypes.h"
 #include "Widgets/DevPadPanelWidget.h"
 #include "DevPadManager.generated.h"
@@ -20,8 +21,11 @@ class UDevPadManager final : public UDevCoreResettable
 
 public:
 	UDevPadManager();
-	FORCEINLINE void SetPadRegistry(UDevPadRegistry& InPadRegistry) { PadRegistry = &InPadRegistry; }
+
+	void Initialize();
 	virtual void Reset() override;
+
+	FORCEINLINE void SetPadRegistry(UDevPadRegistry& InPadRegistry) { PadRegistry = &InPadRegistry; }
 
 public:
 	FORCEINLINE bool IsPadVisible() const { return (!!PadWidget); }
@@ -39,11 +43,6 @@ public:
 	void CloseCurrentSubPage() const;
 	void CloseAllSubPages() const;
 
-public:
-	//~ Begin UObject interface.
-	virtual void BeginDestroy() override;
-	//~ End UObject interface.
-
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadInputController> InputController = nullptr;
@@ -60,6 +59,10 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadLayoutWidget> PadLayoutWidget = nullptr;
 
+	FORCEINLINE bool IsPadPaused() const { return InputController->IsInputPaused(); }
+	void ResumePad() const;
+	void PausePad() const;
+
 	void ExecutePadInput(const EDevPadInput InPadInput);
 	EDevPadInputExecution ExecutePageInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
 	EDevPadInputExecution ExecuteDefaultInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
@@ -72,4 +75,6 @@ private:
 	void PopulateWidgetHeader(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 	void PopulateWidgetInfoContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 	void PopulateWidgetPageContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
+
+	void OnConsoleActivationStateChanged(bool bActive);
 };

@@ -125,13 +125,13 @@ void FDevInputManager::ClearBindingsForOwner(const FDevInputOwner& InOwner)
 
 void FDevInputManager::ClearBindings()
 {
-	InitialFragmentsLookup.Empty();
-	ChainedFragmentsLookup.Empty();
+	InitialFragmentsLookup.Reset();
+	ChainedFragmentsLookup.Reset();
 
-	TriggeredFragmentsOnDown.Empty();
-	TriggeredFragmentsOnUp.Empty();
+	TriggeredFragmentsOnDown.Reset();
+	TriggeredFragmentsOnUp.Reset();
 
-	PressedBindings.Empty();
+	PressedBindings.Reset();
 
 	Bindings.Empty();
 }
@@ -139,7 +139,8 @@ void FDevInputManager::ClearBindings()
 void FDevInputManager::Dispose()
 {
 	ClearBindings();
-	PressedTokens.Empty();
+	PressedTokens.Reset();
+	PressedModifiers.Reset();
 }
 
 void FDevInputManager::RegisterBinding(FDevInputBinding& InBinding)
@@ -164,15 +165,18 @@ void FDevInputManager::UnregisterBinding(FDevInputBinding& InBinding)
 void FDevInputManager::OnInputEvent(const FInputKeyParams& InKeyParams)
 {
 	const FDevInputContextToken Token = FDevInputContextTokenFactory::CreateToken(InKeyParams.Key);
+	const bool bIsModifierToken = EDevInputTokens::IsModifierToken(Token);
 	if (InKeyParams.Event == IE_Pressed)
 	{
 		PressedTokens.AddUnique(Token);
+		if (bIsModifierToken) { PressedModifiers.AddUnique(Token); }
 		UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Token down: Token = %s, Pressed Tokens = [%s]"), *Token.ToString(), *TokensToString(PressedTokens));
 		OnTokenDown(Token);
 	}
 	else
 	{
 		PressedTokens.RemoveSingle(Token);
+		if (bIsModifierToken) { PressedModifiers.RemoveSingle(Token); }
 		UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Token up: Token = %s, Pressed Tokens = [%s]"), *Token.ToString(), *TokensToString(PressedTokens));
 		OnTokenUp(Token);
 	}
@@ -210,18 +214,25 @@ void FDevInputManager::ExecuteBinding(const FDevInputBinding* InBinding) const
 	InBinding->Execute();
 }
 
-FDevInputManager::EPressCheckResult FDevInputManager::IsFragmentPressed(const FDevInputContextFragment* InFragment, const EPressCheckStrategy InStrategy) const
+FDevInputManager::EPressCheckResult FDevInputManager::IsFragmentPressed(const FDevInputContextFragment* InFragment, const FDevInputContextToken& InToken, const EPressCheckStrategy InStrategy) const
 {
 	const FDevInputContextTokensSet& FragmentTokens = InFragment->FragmentTokens;
-	const int32 FragmentTokensNum = FragmentTokens.Num();
-	const int32 PressedTokensNum = PressedTokens.Num();
-	if (FragmentTokensNum < PressedTokensNum && InStrategy != EPressCheckStrategy::PartialMatch) { return EPressCheckResult::NotPressed; }
-	for (int32 i = 0; i < PressedTokensNum && i < FragmentTokensNum; ++i)
+	if (InFragment->IsSingleTokenFragment())
 	{
-		if (!FragmentTokens.Contains(PressedTokens[PressedTokensNum - 1 - i])) { return EPressCheckResult::NotPressed; }
+		return (InToken == FragmentTokens.Last() && (PressedModifiers.Num() == 0 || PressedTokens.Num() == 1)) ? EPressCheckResult::Pressed : EPressCheckResult::NotPressed;
 	}
-	if (FragmentTokensNum > PressedTokensNum) { return EPressCheckResult::InProgress; }
-	return EPressCheckResult::Pressed;
+	else
+	{
+		const int32 FragmentTokensNum = FragmentTokens.Num();
+		const int32 PressedTokensNum = PressedTokens.Num();
+		if (FragmentTokensNum < PressedTokensNum && InStrategy != EPressCheckStrategy::PartialMatch) { return EPressCheckResult::NotPressed; }
+
+		for (int32 i = 0; i < PressedTokensNum && i < FragmentTokensNum; ++i)
+		{
+			if (!FragmentTokens.Contains(PressedTokens[PressedTokensNum - 1 - i])) { return EPressCheckResult::NotPressed; }
+		}
+		return (FragmentTokensNum > PressedTokensNum) ? EPressCheckResult::InProgress : EPressCheckResult::Pressed;
+	}
 }
 
 void FDevInputManager::OnTokenDown(const FDevInputContextToken& InToken)
@@ -230,7 +241,7 @@ void FDevInputManager::OnTokenDown(const FDevInputContextToken& InToken)
 	{
 		if (FDevInputContextFragment* ChainedFragment = ChainedFragmentsLookup[i]; ChainedFragment->FragmentTokens.Contains(InToken))
 		{
-			if (IsFragmentPressed(ChainedFragment, EPressCheckStrategy::PartialMatch) == EPressCheckResult::Pressed)
+			if (IsFragmentPressed(ChainedFragment, InToken, EPressCheckStrategy::PartialMatch) == EPressCheckResult::Pressed)
 			{
 				TriggeredFragmentsOnDown.PushLast(ChainedFragment);
 				ChainedFragmentsLookup.RemoveAt(i);
@@ -246,11 +257,13 @@ void FDevInputManager::OnTokenDown(const FDevInputContextToken& InToken)
 		}
 	}
 
-	TArray<FDevInputContextFragment*> InitialFragments;
+	thread_local TArray<FDevInputContextFragment*> InitialFragments;
+	ON_SCOPE_EXIT { InitialFragments.Reset(); };
+
 	InitialFragmentsLookup.MultiFind(InToken, InitialFragments);
 	for (FDevInputContextFragment* InitialFragment : InitialFragments)
 	{
-		if (IsFragmentPressed(InitialFragment, EPressCheckStrategy::ExactMatch) == EPressCheckResult::Pressed)
+		if (IsFragmentPressed(InitialFragment, InToken, EPressCheckStrategy::ExactMatch) == EPressCheckResult::Pressed)
 		{
 			TriggeredFragmentsOnDown.PushLast(InitialFragment);
 		}

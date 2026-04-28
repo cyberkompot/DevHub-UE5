@@ -715,3 +715,5 @@ private:
 	bool OnGetEntryVisibility(const TWeakObjectPtr<const UObject> WorldContextObjectPtr, const IDevMenuEntry* InEntry) const { return InEntry->IsVisible(WorldContextObjectPtr.Get()); }
 	void OnExecuteEntry(const TWeakObjectPtr<const UObject> WorldContextObjectPtr, IDevMenuEntry* InEntry) const { InEntry->ExecuteEntry(WorldContextObjectPtr.Get()); }
 };
+
+DECLARE_MULTICAST_DELEGATE(FDevMenuEvent);

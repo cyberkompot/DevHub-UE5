@@ -21,8 +21,6 @@ void FDevInputProcessor::ConsumeInputEvent()
 {
 	if (CurrentInputEvent)
 	{
-		bConsumeInputEvent = true;
-
 		const FInputKeyManager& InputKeyManager = FInputKeyManager::Get();
 		const FKey& Key = CurrentInputEvent->Key;
 		const uint32* KeyCodePtr;
@@ -30,12 +28,13 @@ void FDevInputProcessor::ConsumeInputEvent()
 		InputKeyManager.GetCodesFromKey(Key, KeyCodePtr, CharacterPtr);
 		const uint32 KeyCode = (KeyCodePtr) ? *KeyCodePtr : 0;
 		const uint32 Character = (CharacterPtr) ? *CharacterPtr : 0;
+		UE_CLOG_FUNCTION(!bConsumeInputEvent, LogDevInputs, Verbose, TEXT("Input event consumed: Key = %s, KeyCode = %u, Character = %u, Event = %s"), *Key.ToString(), KeyCode, Character, *EnumToString(CurrentInputEvent->Event));
 
-		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Input event consumed: Key = %s, KeyCode = %u, Character = %u, Event = %s"), *Key.ToString(), KeyCode, Character, *EnumToString(CurrentInputEvent->Event));
+		bConsumeInputEvent = true;
 	}
 	else
 	{
-		UE_LOG_FUNCTION(LogDevInputs, Warning, TEXT("Attempt to consume an input event outside of its handler has no effect"));
+		UE_LOG_FUNCTION(LogDevInputs, Warning, TEXT("Attempt to consume an input event outside of its execution has no effect"));
 	}
 }
 

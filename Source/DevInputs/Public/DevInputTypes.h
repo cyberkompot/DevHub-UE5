@@ -73,8 +73,9 @@ struct EDevInputTokens final
 
 	static DEVINPUTS_API FDevInputToken FindToken(const FStringView& InAnyTokenName);
 
-	static DEVINPUTS_API FORCEINLINE bool IsValidToken(const FDevInputToken& InToken);
-	static DEVINPUTS_API FORCEINLINE bool IsSpecialToken(const FDevInputToken& InToken);
+	static DEVINPUTS_API bool IsValidToken(const FDevInputToken& InToken);
+	static DEVINPUTS_API bool IsSpecialToken(const FDevInputToken& InToken);
+	static DEVINPUTS_API bool IsModifierToken(const FDevInputToken& InToken);
 
 	static DEVINPUTS_API FText GetTokenDisplayName(const FDevInputToken& InToken, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
 
@@ -331,7 +332,7 @@ struct FDevInputBinding : FDevInputBindingHandle
 	FDevInputBinding(const EInputEvent InKeyEvent, bool bInExecuteWhenPaused)
 		: KeyEvent(InKeyEvent), bExecuteWhenPaused(bInExecuteWhenPaused) {}
 
-	/** Key event to bind it to (e.g. pressed, released, double click) */
+	/** Key event to bind it to (e.g. pressed, released, double-click) */
 	TEnumAsByte<EInputEvent> KeyEvent = IE_Pressed;
 
 	bool bExecuteWhenPaused = false;

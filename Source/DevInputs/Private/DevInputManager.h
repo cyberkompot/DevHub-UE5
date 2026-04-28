@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "DevInputs.h"
 #include "DevInputTypes.h"
 
 struct FDevInputBindingContext;
@@ -89,9 +90,12 @@ private:
 class FDevInputManager final
 {
 public:
-	void AddBinding(TUniquePtr<FDevInputBinding>&& InBindingPtr);
+	void SetWorldContextObject(const UObject* WorldContextObject) { WorldContextObjectPtr = WorldContextObject; }
 
+public:
 	const TArray<TUniquePtr<FDevInputBinding>>& GetBindings() const { return Bindings; }
+
+	void AddBinding(TUniquePtr<FDevInputBinding>&& InBindingPtr);
 
 	bool RemoveBinding(const FDevInputBinding& InBinding);
 	bool RemoveBindingByHandle(const uint32 InHandle);
@@ -130,6 +134,8 @@ private:
 	TArray<FDevInputBinding*> PressedBindings;
 	TArray<FDevInputContextToken> PressedTokens;
 	TArray<FDevInputContextToken> PressedModifiers;
+
+	TWeakObjectPtr<const UObject> WorldContextObjectPtr = nullptr;
 
 	void RegisterBinding(FDevInputBinding& InBinding);
 	void UnregisterBinding(FDevInputBinding& InBinding);

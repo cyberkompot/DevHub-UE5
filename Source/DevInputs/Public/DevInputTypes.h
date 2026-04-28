@@ -37,7 +37,7 @@ struct FDevInputToken
 	DEVINPUTS_API FORCEINLINE bool IsNone() const { return TokenName.IsNone(); }
 	DEVINPUTS_API FORCEINLINE bool IsValid() const;
 	DEVINPUTS_API FORCEINLINE FString ToString() const { return ToString(EDevInputDisplayNameLength::Short); }
-	DEVINPUTS_API FString ToString(const EDevInputDisplayNameLength InDisplayNameLenght) const;
+	DEVINPUTS_API FString ToString(const EDevInputDisplayNameLength InDisplayNameLength) const;
 
 	FORCEINLINE bool operator ==(const FDevInputToken& Rhs) const { return (TokenName == Rhs.TokenName); }
 	FORCEINLINE bool operator !=(const FDevInputToken& Rhs) const { return (TokenName != Rhs.TokenName); }
@@ -77,7 +77,7 @@ struct EDevInputTokens final
 	static DEVINPUTS_API bool IsSpecialToken(const FDevInputToken& InToken);
 	static DEVINPUTS_API bool IsModifierToken(const FDevInputToken& InToken);
 
-	static DEVINPUTS_API FText GetTokenDisplayName(const FDevInputToken& InToken, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
+	static DEVINPUTS_API FText GetTokenDisplayName(const FDevInputToken& InToken, const EDevInputDisplayNameLength InDisplayNameLength = EDevInputDisplayNameLength::Short);
 
 private:
 	friend class FDevInputsModule;
@@ -335,7 +335,7 @@ struct FDevInputBinding : FDevInputBindingHandle
 	/** Key event to bind it to (e.g. pressed, released, double-click) */
 	TEnumAsByte<EInputEvent> KeyEvent = IE_Pressed;
 
-	bool bExecuteWhenPaused = false;
+	bool bExecuteWhenPaused = true;
 
 	FDevInputOwner Owner;
 

@@ -2,6 +2,7 @@
 
 #include "DevInputManager.h"
 
+#include "DevCorePlaySession.h"
 #include "DevInputLogging.h"
 #include "GameFramework/PlayerInput.h"
 
@@ -211,6 +212,14 @@ void FDevInputManager::UnregisterFragment(FDevInputContextFragment* InFragment)
 
 void FDevInputManager::ExecuteBinding(const FDevInputBinding* InBinding) const
 {
+	if (!InBinding->bExecuteWhenPaused)
+	{
+		if (const UObject* WorldContextObject = WorldContextObjectPtr.Get(); WorldContextObject && FDevCorePlaySession::IsGamePaused(WorldContextObject))
+		{
+			return;
+		}
+	}
+
 	InBinding->Execute();
 }
 

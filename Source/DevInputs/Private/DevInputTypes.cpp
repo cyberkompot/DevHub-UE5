@@ -14,9 +14,9 @@ bool FDevInputToken::IsValid() const
 	return EDevInputTokens::IsValidToken(*this);
 }
 
-FString FDevInputToken::ToString(const EDevInputDisplayNameLength InDisplayNameLenght) const
+FString FDevInputToken::ToString(const EDevInputDisplayNameLength InDisplayNameLength) const
 {
-	return EDevInputTokens::GetTokenDisplayName(*this, InDisplayNameLenght).ToString();
+	return EDevInputTokens::GetTokenDisplayName(*this, InDisplayNameLength).ToString();
 }
 
 
@@ -190,7 +190,7 @@ bool EDevInputTokens::IsModifierToken(const FDevInputToken& InToken)
 	return ModifierTokens.Contains(InToken);
 }
 
-FText EDevInputTokens::GetTokenDisplayName(const FDevInputToken& InToken, const EDevInputDisplayNameLength InDisplayNameLenght)
+FText EDevInputTokens::GetTokenDisplayName(const FDevInputToken& InToken, const EDevInputDisplayNameLength InDisplayNameLength)
 {
 	if (InToken.IsNone()) { return FText::GetEmpty(); }
 
@@ -200,7 +200,7 @@ FText EDevInputTokens::GetTokenDisplayName(const FDevInputToken& InToken, const 
 		: EKeys::GetKeyDetails(InToken);
 
 	return (KeyDetails)
-		? KeyDetails->GetDisplayName(InDisplayNameLenght == EDevInputDisplayNameLength::Long)
+		? KeyDetails->GetDisplayName(InDisplayNameLength == EDevInputDisplayNameLength::Long)
 		: FText::FromName(InToken.GetName());
 }
 

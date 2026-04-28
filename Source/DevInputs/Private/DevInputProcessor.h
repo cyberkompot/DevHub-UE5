@@ -17,7 +17,7 @@ struct FKey;
 class FDevInputProcessor final : public TSharedFromThis<FDevInputProcessor>, public IInputProcessor
 {
 public:
-	EDevInputType CurrentInputType;
+	EDevInputType CurrentInputType = EDevInputType::Undefined;
 
 	FDevInputTypeChanged OnInputTypeChanged;
 	FDevInputEvent OnInputEvent;

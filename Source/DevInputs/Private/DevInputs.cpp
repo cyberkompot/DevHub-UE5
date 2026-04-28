@@ -9,6 +9,7 @@
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Framework/Application/SlateApplication.h"
+#include "Kismet/GameplayStatics.h"
 #include "Modules/ModuleManager.h"
 #include "UObject/Package.h"
 
@@ -21,6 +22,8 @@ UDevInputs::UDevInputs()
 	InputManager = MakePimpl<FDevInputManager>();
 	InputMode = MakePimpl<FDevInputMode>();
 	InputProcessor = MakeShared<FDevInputProcessor>();
+
+	InputManager->SetWorldContextObject(this);
 }
 
 UDevInputs* UDevInputs::Get(const UObject* WorldContextObject)

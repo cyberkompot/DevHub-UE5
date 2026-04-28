@@ -12,9 +12,9 @@ struct FDevInputShortcutBuilder final
 	static DEVINPUTS_API void FromName(const FName InShortcutName, FDevInputSequence &OutInputTokens);
 
 	/** Generates a string name of shortcuts base on the input tokens sequence, for example: Ctrl+Shift+Z,R | L1+R1. */
-	static DEVINPUTS_API FName ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
+	static DEVINPUTS_API FName ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLength = EDevInputDisplayNameLength::Short);
 
-	static DEVINPUTS_API FName Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLenght = EDevInputDisplayNameLength::Short);
+	static DEVINPUTS_API FName Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLength = EDevInputDisplayNameLength::Short);
 };
 
 struct DEVINPUTS_API FDevInputShortcutReader final
@@ -30,16 +30,16 @@ private:
 	FString Container;
 	FStringView StringView;
 	FDevInputToken Token = EDevInputTokens::None;
-	int32 TokesCount = 0;
+	int32 TokensCount = 0;
 };
 
 struct DEVINPUTS_API FDevInputShortcutWriter final
 {
 	explicit FDevInputShortcutWriter() = default;
-	explicit FDevInputShortcutWriter(const EDevInputDisplayNameLength InNameLenght)
-		: DisplayNameLenght(InNameLenght) {};
+	explicit FDevInputShortcutWriter(const EDevInputDisplayNameLength InNameLength)
+		: DisplayNameLength(InNameLength) {};
 
-	EDevInputDisplayNameLength DisplayNameLenght = EDevInputDisplayNameLength::Short;
+	EDevInputDisplayNameLength DisplayNameLength = EDevInputDisplayNameLength::Short;
 
 	FORCEINLINE FName ToName() const { return FName(StringBuilder); }
 

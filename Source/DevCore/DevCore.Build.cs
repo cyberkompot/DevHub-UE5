@@ -28,5 +28,10 @@ public class DevCore : ModuleRules
                 "Slate",
             }
         );
+
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.Add("UnrealEd");
+        }
     }
 }

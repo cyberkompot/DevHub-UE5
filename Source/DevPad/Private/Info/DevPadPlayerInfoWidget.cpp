@@ -2,7 +2,7 @@
 
 #include "Info/DevPadPlayerInfoWidget.h"
 
-#include "Actions/DevActionPlaySession.h"
+#include "DevCorePlaySession.h"
 #include "GameFramework/WorldSettings.h"
 
 FText UDevPadPlayerInfoWidget::GetInfoText(const FString& Format) const
@@ -20,7 +20,7 @@ void UDevPadPlayerInfoWidget::NativeTick(const FGeometry& MyGeometry, float InDe
 	const FVector Location = (Pawn) ? Pawn->GetActorLocation() : (CameraManager) ? CameraManager->GetCameraLocation() : FVector::ZeroVector;
 	const FRotator Rotation = (CameraManager) ? CameraManager->GetCameraRotation() : FRotator::ZeroRotator;
 	const float EffectiveTimeDilation = (WorldSettings) ? WorldSettings->GetEffectiveTimeDilation() : 1.f;
-	const bool bIsPaused = FDevActionResumePlaySession().GetActionVisibility(World);
+	const bool bIsPaused = FDevCorePlaySession::IsGamePaused(World);
 
 	FString ModeArg = (Pawn) ? TEXT("Pawn") : (CameraManager) ? TEXT("Camera") : TEXT("No Pawn/Camera");
 	FString NameArg = (Pawn) ? Pawn->GetName() : (CameraManager) ? CameraManager->GetName() : TEXT("None");

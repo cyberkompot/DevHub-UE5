@@ -2,8 +2,6 @@
 
 #include "DevInputShortcutBuilder.h"
 
-#include "Shader/ShaderTypes.h"
-
 void FDevInputShortcutBuilder::FromName(const FName InShortcutName, FDevInputSequence& OutInputTokens)
 {
 	for (FDevInputShortcutReader Reader(InShortcutName); Reader; ++Reader)
@@ -12,17 +10,17 @@ void FDevInputShortcutBuilder::FromName(const FName InShortcutName, FDevInputSeq
 	}
 }
 
-FName FDevInputShortcutBuilder::ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLenght)
+FName FDevInputShortcutBuilder::ToName(const FDevInputSequence& InInputTokens, const EDevInputDisplayNameLength InDisplayNameLength)
 {
 	FDevInputShortcutWriter Writer;
-	Writer.DisplayNameLenght = InDisplayNameLenght;
+	Writer.DisplayNameLength = InDisplayNameLength;
 	Writer << InInputTokens;
 	return Writer.ToName();
 }
 
-FName FDevInputShortcutBuilder::Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLenght)
+FName FDevInputShortcutBuilder::Roundtrip(const FName& InShortcutName, const EDevInputDisplayNameLength InDisplayNameLength)
 {
-	FDevInputShortcutWriter Writer(InDisplayNameLenght);
+	FDevInputShortcutWriter Writer(InDisplayNameLength);
 	for (FDevInputShortcutReader Reader(InShortcutName); Reader; ++Reader)
 	{
 		Writer << *Reader;
@@ -44,7 +42,7 @@ void FDevInputShortcutReader::operator ++()
 	if (Len == 0) { return; }
 
 	int32 Index = 0;
-	if (TokesCount % 2) // The special token can only appear at even positions in the expression.
+	if (TokensCount % 2) // The special token can only appear at even positions in the expression.
 	{
 		switch (StringView[Index])
 		{
@@ -81,7 +79,7 @@ void FDevInputShortcutReader::operator ++()
 	}
 
 	StringView = StringView.RightChop(Index);
-	++TokesCount;
+	++TokensCount;
 }
 
 FDevInputShortcutWriter& FDevInputShortcutWriter::operator <<(const FDevInputToken& InToken)
@@ -100,7 +98,7 @@ FDevInputShortcutWriter& FDevInputShortcutWriter::operator <<(const FDevInputTok
 	}
 	else
 	{
-		StringBuilder.Append(InToken.ToString(DisplayNameLenght));
+		StringBuilder.Append(InToken.ToString(DisplayNameLength));
 	}
 	return *this;
 }

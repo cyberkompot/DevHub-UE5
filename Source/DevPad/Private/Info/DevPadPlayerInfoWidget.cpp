@@ -2,7 +2,7 @@
 
 #include "Info/DevPadPlayerInfoWidget.h"
 
-#include "DevCorePlaySession.h"
+#include "Framework/DevCorePlaySession.h"
 #include "GameFramework/WorldSettings.h"
 
 FText UDevPadPlayerInfoWidget::GetInfoText(const FString& Format) const

@@ -11,9 +11,9 @@ class DEVCORE_API UDevCoreGameInstanceSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
-	//~ Begin USubsystem Interface
+	//~ Begin USubsystem Interface.
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-	//~ End USubsystem Interface
+	//~ End USubsystem Interface.
 
 protected:
 	template <class TSubsystemClass = UDevCoreGameInstanceSubsystem>

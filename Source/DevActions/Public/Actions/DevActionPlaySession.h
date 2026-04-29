@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DevActionTypes.h"
+#include "Framework/DevCorePlaySession.h"
 #include "DevActionPlaySession.generated.h"
 
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Pause Game")
@@ -17,8 +18,8 @@ struct DEVACTIONS_API FDevActionPausePlaySession : public FDevActionBase
 
 protected:
 	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
-	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override { FDevCorePlaySession::PausedGame(WorldContextObject); }
+	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return !FDevCorePlaySession::IsGamePaused(WorldContextObject); }
 	//~ End FDevAction interface.
 };
 
@@ -34,8 +35,8 @@ struct DEVACTIONS_API FDevActionResumePlaySession : public FDevActionBase
 
 protected:
 	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
-	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override { FDevCorePlaySession::ResumeGame(WorldContextObject); }
+	virtual bool OnGetActionVisibility(const UObject* WorldContextObject) const override { return FDevCorePlaySession::IsGamePaused(WorldContextObject); }
 	//~ End FDevAction interface.
 };
 
@@ -51,6 +52,6 @@ struct DEVACTIONS_API FDevActionStopPlaySession : public FDevActionBase
 
 protected:
 	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override { FDevCorePlaySession::StopGame(WorldContextObject); }
 	//~ End FDevAction interface.
 };

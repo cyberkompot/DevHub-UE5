@@ -5,7 +5,7 @@
 #include "DevInputTypes.h"
 #include "Framework/Application/IInputProcessor.h"
 
-struct FInputKeyParams;
+struct FInputDeviceId;
 struct FKey;
 
 /**
@@ -18,8 +18,10 @@ class FDevInputProcessor final : public TSharedFromThis<FDevInputProcessor>, pub
 {
 public:
 	EDevInputType CurrentInputType = EDevInputType::Undefined;
+	EDevInputControllerPlatform CurrentInputControllerPlatform = EDevInputControllerPlatform::Invalid;
 
 	FDevInputTypeChanged OnInputTypeChanged;
+	FDevInputControllerPlatformChanged OnInputControllerPlatformChanged;
 	FDevInputEvent OnInputEvent;
 
 	void Reset();
@@ -28,16 +30,17 @@ public:
 	void EmulateKeyPress(const FKey& Key) const;
 
 private:
-	const FInputKeyParams* CurrentInputEvent = nullptr;
+	const FDevInputKeyEventArgs* CurrentInputEvent = nullptr;
 	bool bConsumeInputEvent = false;
 	TSet<FKey> ConsumedDownKeys;
 
 	EDevInputType GetInputType(const FKey& Key) const;
 	void SetCurrentInputType(const EDevInputType InInputType);
+	void SetCurrentControllerPlatform(const EDevInputControllerPlatform InInputControllerPlatform);
 
-	bool ProcessDownEvent(const FInputKeyParams& Params);
-	bool ProcessUpEvent(const FInputKeyParams& Params);
-	bool ProcessUnpairedEvent(const FInputKeyParams& Params);
+	bool ProcessDownEvent(const FDevInputKeyEventArgs& Params);
+	bool ProcessUpEvent(const FDevInputKeyEventArgs& Params);
+	bool ProcessUnpairedEvent(const FDevInputKeyEventArgs& Params);
 
 	//~ Begin IInputProcessor interface.
 	virtual const TCHAR* GetDebugName() const override { return TEXT("DevInput Processor"); }

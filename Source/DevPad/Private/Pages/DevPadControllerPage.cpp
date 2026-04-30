@@ -87,7 +87,6 @@ void UDevPadControllerPage::PopulatePageWidget(const UObject* WorldContextObject
 	PopulatePageActionData(GetPageAction(WorldContextObject, PadStack, EDevPadInput::LeftThumbstick), Data->LeftThumbstickAction);
 	PopulatePageActionData(GetPageAction(WorldContextObject, PadStack, EDevPadInput::RightThumbstick), Data->RightThumbstickAction);
 
-	PopulatePageActionData(GetPageAction(WorldContextObject, PadStack, EDevPadInput::LeftPlusRightTriggers), Data->LeftPlusRightTriggersAction);
 	PopulatePageActionData(GetPageAction(WorldContextObject, PadStack, EDevPadInput::LeftPlusRightThumbsticks), Data->LeftPlusRightThumbsticksAction);
 }
 
@@ -115,7 +114,6 @@ FDevPadControllerPageActionView UDevPadControllerPage::GetPageAction(const UObje
 			case EDevPadInput::LeftThumbstick: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftThumbstickAction);
 			case EDevPadInput::RightThumbstick: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.RightThumbstickAction);
 
-			case EDevPadInput::LeftPlusRightTriggers: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftPlusRightTriggersAction);
 			case EDevPadInput::LeftPlusRightThumbsticks: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftPlusRightThumbsticksAction);
 
 			default: return FDevPadControllerPageActionView();

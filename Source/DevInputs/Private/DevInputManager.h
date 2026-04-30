@@ -105,7 +105,7 @@ public:
 	void ClearBindingsForOwner(const FDevInputOwner& InOwner);
 	void ClearBindings();
 
-	void OnInputEvent(const FInputKeyParams& InKeyParams);
+	void OnInputEvent(const FDevInputKeyEventArgs& InKeyParams);
 
 	void Dispose();
 

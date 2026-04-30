@@ -53,9 +53,6 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
-	FDevPadActionData LeftPlusRightTriggersAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevHub")
 	FDevPadActionData LeftPlusRightThumbsticksAction;
 };
 
@@ -110,9 +107,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
 	TObjectPtr<UDevPadActionWidget> RightThumbstickAction;
 
-
-	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
-	TObjectPtr<UDevPadActionWidget> LeftPlusRightTriggersAction;
 
 	UPROPERTY(BlueprintReadOnly, Category = "DevHub", meta = (BindWidget))
 	TObjectPtr<UDevPadActionWidget> LeftPlusRightThumbsticksAction;

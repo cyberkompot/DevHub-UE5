@@ -83,11 +83,13 @@ public:
 
 public:
 	EDevInputType GetCurrentInputType() const;
+	EDevInputControllerPlatform GetInputCurrentControllerPlatform() const;
 
 	void ConsumeInputEvent() const;
 	void EmulateKeyPress(const FKey& InKey) const;
 
 	FDevInputTypeChanged& OnInputTypeChanged() const;
+	FDevInputControllerPlatformChanged& OnInputControllerPlatformChanged() const;
 	FDevInputEvent& OnInputEvent() const;
 
 public:

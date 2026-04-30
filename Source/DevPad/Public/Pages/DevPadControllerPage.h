@@ -85,9 +85,6 @@ public:
 	FInstancedStruct RightThumbstickAction;
 
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Left + Right Triggers Action", Category = "Button Shortcuts", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	FInstancedStruct LeftPlusRightTriggersAction;
-
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Left + Right Thumbsticks Action", Category = "Button Shortcuts", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct LeftPlusRightThumbsticksAction;
 

@@ -27,6 +27,17 @@
 	#endif
 #endif
 
+/** ViewportClient.h */
+#ifndef UE_COMPATIBILITY_ALLOWSHRINKING_BOOL_DEPRECATED
+	#if UE_VERSION_AT_LEAST(5, 6, 0)
+		#define ALLOW_SHRINKING EAllowShrinking::Yes
+		#define DONT_ALLOW_SHRINKING EAllowShrinking::No
+	#else
+		#define ALLOW_SHRINKING true
+		#define DONT_ALLOW_SHRINKING false
+	#endif
+#endif
+
 /** StructUtils/InstancedStruct.h, StructUtils/StructView.h */
 #ifndef UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
 	#if UE_VERSION_AT_LEAST(5, 5, 0) && !(defined(UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5) && UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5)
@@ -46,6 +57,9 @@
 		#define UE_COMPATIBILITY_INCLUDE_VIEWPORT_CLIENT_PATH "UnrealClient.h"
 	#endif
 #endif
+
+/** FInputKeyEventArgs */
+#define UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS UE_VERSION_AT_LEAST(5, 6, 0)
 
 /** FInstancedStruct */
 #define UE_COMPATIBILITY_INSTANCED_STRUCT_BLUEPRINT_READ_WRITE UE_VERSION_AT_LEAST(5, 1, 0)
@@ -67,6 +81,9 @@
 
 /** FKeyEvent::GetInputDeviceId() */
 #define UE_COMPATIBILITY_SUPPORTED_KEY_EVENT_GET_INPUT_DEVICE_ID UE_VERSION_AT_LEAST(5, 1, 0)
+
+/** FHardwareDeviceIdentifier, EHardwareDevicePrimaryType, IPlatformInputDeviceMapper::GetHardwareDeviceDetails() - removed in 5.7 */
+#define UE_COMPATIBILITY_SUPPORTED_HARDWARE_DEVICE_DETAILS (UE_VERSION_AT_LEAST(5, 2, 0) && !UE_VERSION_AT_LEAST(5, 7, 0))
 
 /** UGameViewportClient::AddGameLayerWidget() */
 #define UE_COMPATIBILITY_GAME_VIEWPORT_CLIENT_ADD_GAME_LAYER_WIDGET UE_VERSION_AT_LEAST(5, 3, 0)

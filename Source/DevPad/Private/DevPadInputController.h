@@ -41,6 +41,6 @@ private:
 	bool bInputPaused = false;
 	FDevPadInputEvent OnPadInputEvent;
 
-	void OnInputEvent(const FInputKeyParams& InKeyParams);
+	void OnInputEvent(const FDevInputKeyEventArgs& InKeyParams);
 	void OnInputShortcutEvent(const EDevPadInput InPadInput);
 };

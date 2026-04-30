@@ -2,7 +2,7 @@
 
 #include "DevPadStackController.h"
 
-#include "DevCore.h"
+#include "DevCoreCompatibility.h"
 #include "DevPadLogging.h"
 
 void UDevPadStackController::Reset()
@@ -23,7 +23,7 @@ void UDevPadStackController::PopFromStack()
 {
 	if (!IsStackEmpty())
 	{
-		Pages.Pop(false);
+		Pages.Pop(DONT_ALLOW_SHRINKING);
 	}
 	else
 	{

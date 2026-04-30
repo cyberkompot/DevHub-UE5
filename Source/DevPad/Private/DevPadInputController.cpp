@@ -111,7 +111,7 @@ void UDevPadInputController::ConsumeInputEvent() const
 	}
 }
 
-void UDevPadInputController::OnInputEvent(const FInputKeyParams& InKeyParams)
+void UDevPadInputController::OnInputEvent(const FDevInputKeyEventArgs& InKeyParams)
 {
 	if (IsInputPaused()) { return; }
 

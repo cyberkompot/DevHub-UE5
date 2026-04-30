@@ -7,9 +7,16 @@
 #include "Framework/Commands/InputChord.h"
 #include "DevInputTypes.generated.h"
 
-struct FInputKeyParams;
 struct FDevInputBindingContext;
 class FDevInputManager;
+
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+struct FInputKeyEventArgs;
+using FDevInputKeyEventArgs = FInputKeyEventArgs;
+#else
+struct FInputKeyParams;
+using FDevInputKeyEventArgs = FInputKeyParams;
+#endif
 
 UENUM(BlueprintType)
 enum struct EDevInputDisplayNameLength : uint8
@@ -435,5 +442,15 @@ enum class EDevInputType : uint8
 	Touch = 4,
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputEvent, const FInputKeyParams&);
+UENUM(BlueprintType)
+enum class EDevInputControllerPlatform : uint8
+{
+	Invalid = 0,
+	Unknown  = 1,
+	PlayStation = 2,
+	Xbox = 3,
+};
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputEvent, const FDevInputKeyEventArgs&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputTypeChanged, const EDevInputType);
+DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputControllerPlatformChanged, const EDevInputControllerPlatform);

@@ -32,6 +32,5 @@ void UDevPadControllerPageWidget::UpdateWidget()
 	UpdateActionWidget(LeftThumbstickAction, Data.LeftThumbstickAction);
 	UpdateActionWidget(RightThumbstickAction, Data.RightThumbstickAction);
 
-	UpdateActionWidget(LeftPlusRightTriggersAction, Data.LeftPlusRightTriggersAction);
 	UpdateActionWidget(LeftPlusRightThumbsticksAction, Data.LeftPlusRightThumbsticksAction);
 }

@@ -6,6 +6,10 @@
 #include "DevInputLogging.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerInput.h"
+#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+#include "InputKeyEventArgs.h"
+#endif
 #include "Input/Events.h"
 
 using namespace DevInput::Logging;
@@ -13,8 +17,10 @@ using namespace DevInput::Logging;
 void FDevInputProcessor::Reset()
 {
 	OnInputTypeChanged.Clear();
+	OnInputControllerPlatformChanged.Clear();
 	OnInputEvent.Clear();
 	ConsumedDownKeys.Reset();
+	CurrentInputControllerPlatform = EDevInputControllerPlatform::Invalid;
 }
 
 void FDevInputProcessor::ConsumeInputEvent()
@@ -79,13 +85,24 @@ void FDevInputProcessor::SetCurrentInputType(const EDevInputType InInputType)
 	if (CurrentInputType != InInputType)
 	{
 		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Input type changed: Type = %s"), *EnumToString(InInputType));
-		
+
 		CurrentInputType = InInputType;
 		OnInputTypeChanged.Broadcast(InInputType);
 	}
 }
 
-bool FDevInputProcessor::ProcessDownEvent(const FInputKeyParams& Params)
+void FDevInputProcessor::SetCurrentControllerPlatform(const EDevInputControllerPlatform InInputControllerPlatform)
+{
+	if (CurrentInputControllerPlatform != InInputControllerPlatform)
+	{
+		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Input controller platform changed: Platform = %s"), *EnumToString(InInputControllerPlatform));
+
+		CurrentInputControllerPlatform = InInputControllerPlatform;
+		OnInputControllerPlatformChanged.Broadcast(InInputControllerPlatform);
+	}
+}
+
+bool FDevInputProcessor::ProcessDownEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
 	bConsumeInputEvent = false;
@@ -108,7 +125,7 @@ bool FDevInputProcessor::ProcessDownEvent(const FInputKeyParams& Params)
 	return bConsumeInputEvent;
 }
 
-bool FDevInputProcessor::ProcessUpEvent(const FInputKeyParams& Params)
+bool FDevInputProcessor::ProcessUpEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
 	bConsumeInputEvent = ConsumedDownKeys.Contains(Params.Key);;
@@ -124,7 +141,7 @@ bool FDevInputProcessor::ProcessUpEvent(const FInputKeyParams& Params)
 	return bConsumeInputEvent;
 }
 
-bool FDevInputProcessor::ProcessUnpairedEvent(const FInputKeyParams& Params)
+bool FDevInputProcessor::ProcessUnpairedEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
 	bConsumeInputEvent = false;
@@ -149,12 +166,16 @@ bool FDevInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const F
 
 	SetCurrentInputType(GetInputType(InKeyEvent.GetKey()));
 
-	FInputKeyParams Params = {};
+	FDevInputKeyEventArgs Params = {};
 	Params.Key = InKeyEvent.GetKey();
 	Params.Event = IE_Pressed;
-	Params.Delta.X = 1.0;
 	Params.DeltaTime = SlateApp.GetDeltaTime();
 	Params.NumSamples = Params.Key.IsAnalog() ? 1 : 0;
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+	Params.AmountDepressed = 1.0f;
+#else
+	Params.Delta.X = 1.0;
+#endif // UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
 #if UE_COMPATIBILITY_SUPPORTED_KEY_EVENT_GET_INPUT_DEVICE_ID
 	Params.InputDevice = InKeyEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
@@ -170,12 +191,16 @@ bool FDevInputProcessor::HandleKeyUpEvent(FSlateApplication& SlateApp, const FKe
 
 	UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Key up: Key = %s, KeyCode = %u, Character = %u"), *InKeyEvent.GetKey().ToString(), InKeyEvent.GetKeyCode(), InKeyEvent.GetCharacter());
 
-	FInputKeyParams Params = {};
+	FDevInputKeyEventArgs Params = {};
 	Params.Key = InKeyEvent.GetKey();
 	Params.Event = IE_Released;
-	Params.Delta.X = 0.0;
 	Params.DeltaTime = SlateApp.GetDeltaTime();
 	Params.NumSamples = Params.Key.IsAnalog() ? 1 : 0;
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+	Params.AmountDepressed = 0.0f;
+#else
+	Params.Delta.X = 0.0;
+#endif // UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
 #if UE_COMPATIBILITY_SUPPORTED_KEY_EVENT_GET_INPUT_DEVICE_ID
 	Params.InputDevice = InKeyEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
@@ -202,6 +227,7 @@ bool FDevInputProcessor::HandleMouseMoveEvent(FSlateApplication& SlateApp, const
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
+	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }
@@ -215,13 +241,18 @@ bool FDevInputProcessor::HandleMouseButtonDownEvent(FSlateApplication& SlateApp,
 	UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Mouse button down: Button = %s"), *MouseEvent.GetEffectingButton().ToString());
 
 	SetCurrentInputType(EDevInputType::Mouse);
+	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
-	FInputKeyParams Params = {};
+	FDevInputKeyEventArgs Params = {};
 	Params.Key = MouseEvent.GetEffectingButton();
 	Params.Event = IE_Pressed;
-	Params.Delta.X = 1.0;
 	Params.DeltaTime = SlateApp.GetDeltaTime();
 	Params.NumSamples = 0;
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+	Params.AmountDepressed = 1.0f;
+#else
+	Params.Delta.X = 1.0;
+#endif // UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
 #if UE_COMPATIBILITY_SUPPORTED_KEY_EVENT_GET_INPUT_DEVICE_ID
 	Params.InputDevice = MouseEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
@@ -237,12 +268,16 @@ bool FDevInputProcessor::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, c
 
 	UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Mouse button up: Button = %s"), *MouseEvent.GetEffectingButton().ToString());
 
-	FInputKeyParams Params = {};
+	FDevInputKeyEventArgs Params = {};
 	Params.Key = MouseEvent.GetEffectingButton();
 	Params.Event = IE_Released;
-	Params.Delta.X = 0.0;
 	Params.DeltaTime = SlateApp.GetDeltaTime();
 	Params.NumSamples = 0;
+#if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
+	Params.AmountDepressed = 0.0f;
+#else
+	Params.Delta.X = 0.0;
+#endif // UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
 #if UE_COMPATIBILITY_SUPPORTED_KEY_EVENT_GET_INPUT_DEVICE_ID
 	Params.InputDevice = MouseEvent.GetInputDeviceId();
 #endif // UE_COMPATIBILITY_KEY_EVENT_GET_INPUT_DEVICE_ID
@@ -257,6 +292,7 @@ bool FDevInputProcessor::HandleMouseButtonDoubleClickEvent(FSlateApplication& Sl
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
+	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }
@@ -268,6 +304,7 @@ bool FDevInputProcessor::HandleMouseWheelOrGestureEvent(FSlateApplication& Slate
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
+	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }

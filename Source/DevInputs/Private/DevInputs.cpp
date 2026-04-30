@@ -16,7 +16,6 @@
 class FDevInputsModule;
 using namespace DevInput::Logging;
 
-
 UDevInputs::UDevInputs()
 {
 	InputManager = MakePimpl<FDevInputManager>();
@@ -148,6 +147,11 @@ EDevInputType UDevInputs::GetCurrentInputType() const
 	return InputProcessor->CurrentInputType;
 }
 
+EDevInputControllerPlatform UDevInputs::GetInputCurrentControllerPlatform() const
+{
+	return InputProcessor->CurrentInputControllerPlatform;
+}
+
 void UDevInputs::ConsumeInputEvent() const
 {
 	InputProcessor->ConsumeInputEvent();
@@ -156,6 +160,16 @@ void UDevInputs::ConsumeInputEvent() const
 void UDevInputs::EmulateKeyPress(const FKey& InKey) const
 {
 	InputProcessor->EmulateKeyPress(InKey);
+}
+
+FDevInputTypeChanged& UDevInputs::OnInputTypeChanged() const
+{
+	return InputProcessor->OnInputTypeChanged;
+}
+
+FDevInputControllerPlatformChanged& UDevInputs::OnInputControllerPlatformChanged() const
+{
+	return InputProcessor->OnInputControllerPlatformChanged;
 }
 
 FDevInputEvent& UDevInputs::OnInputEvent() const
@@ -171,9 +185,4 @@ void UDevInputs::SetInputMode(const FInputModeDataBase& InData) const
 void UDevInputs::RestoreInputMode() const
 {
 	InputMode->RestoreInputMode();
-}
-
-FDevInputTypeChanged& UDevInputs::OnInputTypeChanged() const
-{
-	return InputProcessor->OnInputTypeChanged;
 }

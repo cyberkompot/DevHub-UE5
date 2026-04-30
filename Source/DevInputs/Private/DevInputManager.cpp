@@ -8,7 +8,6 @@
 
 using namespace DevInput::Logging;
 
-
 FDevInputContextToken FDevInputContextTokenFactory::CreateToken(const FKey& InKey)
 {
 	return CreateToken(FDevInputToken(InKey));
@@ -163,7 +162,7 @@ void FDevInputManager::UnregisterBinding(FDevInputBinding& InBinding)
 	InBinding.Context = nullptr;
 }
 
-void FDevInputManager::OnInputEvent(const FInputKeyParams& InKeyParams)
+void FDevInputManager::OnInputEvent(const FDevInputKeyEventArgs& InKeyParams)
 {
 	const FDevInputContextToken Token = FDevInputContextTokenFactory::CreateToken(InKeyParams.Key);
 	const bool bIsModifierToken = EDevInputTokens::IsModifierToken(Token);

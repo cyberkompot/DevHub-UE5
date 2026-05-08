@@ -4,6 +4,7 @@
 
 #include "DevCore.h"
 #include UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
+#include "StructUtils/PropertyBag.h"
 
 #include "Framework/Commands/UICommandInfo.h"
 #include "Styling/SlateTypes.h"
@@ -85,9 +86,11 @@ struct FDevActionObject : public FDevAction
 {
 	GENERATED_BODY()
 
-	/** Blueprint in which the function with the specified name is to be executed. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Action")
 	TSoftClassPtr<UDevActionScript> ActionScript;
+
+	UPROPERTY(EditAnywhere, Category = "Dev Action")
+	FInstancedPropertyBag ActionProperties;
 
 protected:
 	//~ Begin FDevAction interface.
@@ -117,6 +120,8 @@ class UDevActionScript : public UObject
 	GENERATED_BODY()
 
 public:
+	UDevActionScript();
+
 	UFUNCTION(BlueprintCallable)
 	DEVACTIONS_API ECheckBoxState GetActionCheckState(const UObject* WorldContextObject) const;
 
@@ -129,12 +134,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	DEVACTIONS_API void ExecuteAction(const UObject* WorldContextObject) const;
 
+	UFUNCTION(BlueprintPure)
+	DEVACTIONS_API FORCEINLINE bool IsGetActionCheckStateImplemented() const { return bIsGetActionCheckStateImplemented; }
+
+	UFUNCTION(BlueprintPure)
+	DEVACTIONS_API bool IsGetActionVisibilityImplemented() const { return bIsGetActionVisibilityImplemented; }
+
+	UFUNCTION(BlueprintPure)
+	DEVACTIONS_API bool IsGetActionUserInterfaceTypeImplemented() const { return bIsGetActionUserInterfaceTypeImplemented; }
+
+	UFUNCTION(BlueprintPure)
+	DEVACTIONS_API bool IsExecuteActionImplemented() const { return bIsExecuteActionImplemented; }
+
 	//~ Begin UObject interface.
 	virtual UWorld* GetWorld() const override { return World; }
 	//~ Begin UObject interface.
 
 protected:
 	friend struct FDevActionObject;
+
+	DEVACTIONS_API bool IsFunctionImplemented(const FName InName) const;
 
 	UFUNCTION(BlueprintImplementableEvent, Meta = (WorldContext = "WorldContextObject", DisplayName = "On Get Action Check State", ScriptName = "OnGetActionCheckState"))
 	DEVACTIONS_API ECheckBoxState OnGetActionCheckState(const UObject* WorldContextObject) const;
@@ -150,6 +169,11 @@ protected:
 	DEVACTIONS_API void OnExecuteAction(const UObject* WorldContextObject) const;
 
 private:
+	bool bIsGetActionCheckStateImplemented = false;
+	bool bIsGetActionVisibilityImplemented = false;
+	bool bIsGetActionUserInterfaceTypeImplemented = false;
+	bool bIsExecuteActionImplemented = false;
+
 	UPROPERTY(Transient, SkipSerialization)
 	mutable UWorld* World;
 };

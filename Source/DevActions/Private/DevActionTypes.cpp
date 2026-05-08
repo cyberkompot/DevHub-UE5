@@ -4,6 +4,7 @@
 
 #include "DevActionLogging.h"
 #include "Engine/Engine.h"
+#include "Framework/DevCorePropertyBag.h"
 
 namespace DevAction::Setting
 {
@@ -13,7 +14,7 @@ namespace DevAction::Setting
 
 void FDevAction::ExecuteAction(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
 
 	try
 	{
@@ -38,7 +39,7 @@ ECheckBoxState FDevAction::OnGetActionCheckState(const UObject* WorldContextObje
 
 bool FDevAction::OnGetActionVisibility(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
 	return true;
 #else
 	return false;
@@ -50,30 +51,91 @@ EUserInterfaceActionType FDevAction::OnGetActionUserInterfaceType(const UObject*
 	return EUserInterfaceActionType::Button;
 }
 
-
 ECheckBoxState FDevActionObject::OnGetActionCheckState(const UObject* WorldContextObject) const
 {
-	const UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
-	return (ActionScriptCDO) ? ActionScriptCDO->GetActionCheckState(WorldContextObject) : Super::OnGetActionCheckState(WorldContextObject);
+	if (UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
+		ActionScriptCDO && ActionScriptCDO->IsGetActionCheckStateImplemented())
+	{
+		if (ActionProperties.GetNumPropertiesInBag() != 0)
+		{
+			FInstancedPropertyBag OutOriginalValues;
+			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, ActionProperties, OutOriginalValues);
+			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, OutOriginalValues); };
+			return ActionScriptCDO->GetActionCheckState(WorldContextObject);
+		}
+		else
+		{
+			return ActionScriptCDO->GetActionCheckState(WorldContextObject);
+		}
+	}
+	else
+	{
+		return Super::OnGetActionCheckState(WorldContextObject);
+	}
 }
 
 bool FDevActionObject::OnGetActionVisibility(const UObject* WorldContextObject) const
 {
-	const UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::LogAndReturnNull);
-	return (ActionScriptCDO) ? ActionScriptCDO->GetActionVisibility(WorldContextObject) : Super::OnGetActionVisibility(WorldContextObject);
+	if (UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
+		ActionScriptCDO && ActionScriptCDO->IsGetActionVisibilityImplemented())
+	{
+		if (ActionProperties.GetNumPropertiesInBag() != 0)
+		{
+			FInstancedPropertyBag OutOriginalValues;
+			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, ActionProperties, OutOriginalValues);
+			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, OutOriginalValues); };
+			return ActionScriptCDO->GetActionVisibility(WorldContextObject);
+		}
+		else
+		{
+			return ActionScriptCDO->GetActionVisibility(WorldContextObject);
+		}
+	}
+	else
+	{
+		return Super::OnGetActionVisibility(WorldContextObject);
+	}
 }
 
 EUserInterfaceActionType FDevActionObject::OnGetActionUserInterfaceType(const UObject* WorldContextObject) const
 {
-	const UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
-	return (ActionScriptCDO) ? ActionScriptCDO->GetActionUserInterfaceType(WorldContextObject) : Super::OnGetActionUserInterfaceType(WorldContextObject);
+	if (UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
+		ActionScriptCDO && ActionScriptCDO->IsGetActionUserInterfaceTypeImplemented())
+	{
+		if (ActionProperties.GetNumPropertiesInBag() != 0)
+		{
+			FInstancedPropertyBag OutOriginalValues;
+			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, ActionProperties, OutOriginalValues);
+			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, OutOriginalValues); };
+			return ActionScriptCDO->GetActionUserInterfaceType(WorldContextObject);
+		}
+		else
+		{
+			return ActionScriptCDO->GetActionUserInterfaceType(WorldContextObject);
+		}
+	}
+	else
+	{
+		return Super::OnGetActionUserInterfaceType(WorldContextObject);
+	}
 }
 
 void FDevActionObject::OnExecuteAction(const UObject* WorldContextObject) const
 {
-	if (const UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::LogAndReturnNull))
+	if (UDevActionScript* ActionScriptCDO = GetActionScriptDefaultObject(EGetDefaultObjectErrorMode::ReturnNull);
+		ActionScriptCDO && ActionScriptCDO->IsExecuteActionImplemented())
 	{
-		ActionScriptCDO->ExecuteAction(WorldContextObject);
+		if (ActionProperties.GetNumPropertiesInBag() != 0)
+		{
+			FInstancedPropertyBag OutOriginalValues;
+			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, ActionProperties, OutOriginalValues);
+			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionScriptCDO, OutOriginalValues); };
+			ActionScriptCDO->ExecuteAction(WorldContextObject);
+		}
+		else
+		{
+			ActionScriptCDO->ExecuteAction(WorldContextObject);
+		}
 	}
 }
 
@@ -111,10 +173,19 @@ UDevActionScript* FDevActionObject::GetActionScriptDefaultObject(const EGetDefau
 	return ActionScriptCDO;
 }
 
+UDevActionScript::UDevActionScript()
+{
+	bIsGetActionCheckStateImplemented = IsFunctionImplemented(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionCheckState));
+	bIsGetActionVisibilityImplemented = IsFunctionImplemented(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionVisibility));
+	bIsGetActionUserInterfaceTypeImplemented = IsFunctionImplemented(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionUserInterfaceType));
+	bIsExecuteActionImplemented = IsFunctionImplemented(GET_FUNCTION_NAME_CHECKED(ThisClass, OnExecuteAction));
+}
 
 ECheckBoxState UDevActionScript::GetActionCheckState(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
+
+	if (!IsGetActionCheckStateImplemented()) { return ECheckBoxState::Unchecked; }
 
 	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
 	try
@@ -137,9 +208,9 @@ ECheckBoxState UDevActionScript::GetActionCheckState(const UObject* WorldContext
 
 bool UDevActionScript::GetActionVisibility(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
 
-	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionVisibility))) { return true; }
+	if (!IsGetActionVisibilityImplemented()) { return true; }
 
 	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
 	try
@@ -162,9 +233,9 @@ bool UDevActionScript::GetActionVisibility(const UObject* WorldContextObject) co
 
 EUserInterfaceActionType UDevActionScript::GetActionUserInterfaceType(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
 
-	if (!FindFunction(GET_FUNCTION_NAME_CHECKED(ThisClass, OnGetActionUserInterfaceType))) { return EUserInterfaceActionType::Button; }
+	if (!IsGetActionUserInterfaceTypeImplemented()) { return EUserInterfaceActionType::Button; }
 
 	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull));
 	try
@@ -187,7 +258,9 @@ EUserInterfaceActionType UDevActionScript::GetActionUserInterfaceType(const UObj
 
 void UDevActionScript::ExecuteAction(const UObject* WorldContextObject) const
 {
-#ifdef DEV_HUB_AVAILABLE
+#if DEV_HUB_AVAILABLE
+
+	if (!IsExecuteActionImplemented()) { return; }
 
 	TGuardValue WorldGuard(World, GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull));
 	try
@@ -204,6 +277,15 @@ void UDevActionScript::ExecuteAction(const UObject* WorldContextObject) const
 	}
 
 #endif // DEV_HUB_AVAILABLE
+}
+
+bool UDevActionScript::IsFunctionImplemented(const FName InName) const
+{
+	for (const UClass* Class = GetClass(); Class && Class != StaticClass(); Class = Class->GetSuperClass())
+	{
+		if (Class->FindFunctionByName(InName, EIncludeSuperFlag::ExcludeSuper)) { return true; }
+	}
+	return false;
 }
 
 

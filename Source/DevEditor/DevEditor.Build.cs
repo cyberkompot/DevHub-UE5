@@ -16,6 +16,8 @@ public class DevEditor : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
+                "DevActions",
+                "DevCore",
                 "DevInputs",
                 "DevMenus",
                 "DevPad",

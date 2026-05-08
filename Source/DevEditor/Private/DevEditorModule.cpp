@@ -24,6 +24,10 @@ void FDevEditorModule::StartupModule()
 		AssetTools.RegisterAdvancedAssetCategory(MenuCategoryName, INVTEXT("Debug"));
 	}
 
+	/** Dev Actions. */
+	PropertyModule.RegisterCustomPropertyTypeLayout(FDevActionObject::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevActionObjectCustomization::MakeInstance));
+	PropertyModule.NotifyCustomizationModuleChanged();
+
 	/** Dev Inputs. */
 	PropertyModule.RegisterCustomPropertyTypeLayout(FDevInputShortcut::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevInputShortcutCustomization::MakeInstance));
 	PropertyModule.NotifyCustomizationModuleChanged();

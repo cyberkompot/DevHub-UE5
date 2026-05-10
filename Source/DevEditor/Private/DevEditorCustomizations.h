@@ -21,14 +21,13 @@ struct FDevActionObjectCustomization final : IPropertyTypeCustomization, FGCObje
 	//~ Begin IPropertyTypeCustomization Interface
 	virtual void CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
 	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
-	UClass* GetActionClass() const;
-	FInstancedPropertyBag* GetActionProperties() const;
+	UClass* GetObjectClass() const;
+	FInstancedPropertyBag* GetObjectProperties() const;
 	//~ End IPropertyTypeCustomization Interface
 
 private:
-	TSharedPtr<IPropertyHandle> StructHandle;
-	TSharedPtr<IPropertyHandle> ActionClassHandle;
-	TSharedPtr<IPropertyHandle> ActionPropertiesHandle;
+	TSharedPtr<IPropertyHandle> ObjectClassHandle;
+	TSharedPtr<IPropertyHandle> ObjectPropertiesHandle;
 
 	FInstancedPropertyBag DisplayBag;
 	TSharedPtr<FStructOnScope> DisplayScope;
@@ -36,7 +35,7 @@ private:
 	void Initialize();
 	void Reset();
 
-	void OnActionClassChanged();
+	void OnObjectClassChanged();
 	void OnDisplayBagChanged();
 };
 

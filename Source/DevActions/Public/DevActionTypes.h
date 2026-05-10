@@ -138,13 +138,13 @@ public:
 	DEVACTIONS_API FORCEINLINE bool IsGetActionCheckStateImplemented() const { return bIsGetActionCheckStateImplemented; }
 
 	UFUNCTION(BlueprintPure)
-	DEVACTIONS_API bool IsGetActionVisibilityImplemented() const { return bIsGetActionVisibilityImplemented; }
+	DEVACTIONS_API FORCEINLINE bool IsGetActionVisibilityImplemented() const { return bIsGetActionVisibilityImplemented; }
 
 	UFUNCTION(BlueprintPure)
-	DEVACTIONS_API bool IsGetActionUserInterfaceTypeImplemented() const { return bIsGetActionUserInterfaceTypeImplemented; }
+	DEVACTIONS_API FORCEINLINE bool IsGetActionUserInterfaceTypeImplemented() const { return bIsGetActionUserInterfaceTypeImplemented; }
 
 	UFUNCTION(BlueprintPure)
-	DEVACTIONS_API bool IsExecuteActionImplemented() const { return bIsExecuteActionImplemented; }
+	DEVACTIONS_API FORCEINLINE bool IsExecuteActionImplemented() const { return bIsExecuteActionImplemented; }
 
 	//~ Begin UObject interface.
 	virtual UWorld* GetWorld() const override { return World; }

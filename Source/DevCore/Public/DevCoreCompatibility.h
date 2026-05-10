@@ -27,7 +27,7 @@
 	#endif
 #endif
 
-/** ViewportClient.h */
+/** Array.h */
 #ifndef UE_COMPATIBILITY_ALLOWSHRINKING_BOOL_DEPRECATED
 	#if UE_VERSION_AT_LEAST(5, 6, 0)
 		#define ALLOW_SHRINKING EAllowShrinking::Yes

@@ -25,6 +25,7 @@ public class DevCore : ModuleRules
                 "Core",
                 "CoreUObject",
                 "Engine",
+                "StructUtils",
                 "Slate",
             }
         );

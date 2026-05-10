@@ -113,7 +113,7 @@ void FDevActionObjectCustomization::Initialize()
 	}
 
 	DisplayBag.MigrateToNewBagInstance(ActionClassBag);
-	*DisplayScope = FStructOnScope(DisplayBag.GetPropertyBagStruct(), DisplayBag.GetMutableValue().GetMemory());
+	*DisplayScope = FStructOnScope(DisplayBag.GetPropertyBagStruct(), DisplayBag.GetMutableValue().GetMutableMemory());
 
 
 /*
@@ -267,7 +267,7 @@ void FDevActionObjectCustomization::OnDisplayBagChanged()
 	if (!ActionProperties) { return; }
 
 	FInstancedPropertyBag ChangedActionProperties = GetPropertyBagWithOnlyNonDefaultValues(DisplayBag, *ActionClass);
-	if (!ActionProperties->Identical(&ChangedActionProperties, PPF_None))
+	if (ActionProperties->GetValue() != ChangedActionProperties.GetValue())
 	{
 		// Only dirty the asset if the property bag actually changed.
 		ActionPropertiesHandle->NotifyPreChange();

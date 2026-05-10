@@ -24,6 +24,7 @@ public class DevEditor : ModuleRules
                 "AssetTools",
                 "Core",
                 "CoreUObject",
+                "StructUtils",
                 "UnrealEd",
             }
         );

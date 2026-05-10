@@ -4,7 +4,7 @@
 
 #include "DevCore.h"
 #include UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
-#include "StructUtils/PropertyBag.h"
+#include UE_COMPATIBILITY_INCLUDE_PROPERTY_BAG_PATH
 
 #include "Framework/Commands/UICommandInfo.h"
 #include "Styling/SlateTypes.h"

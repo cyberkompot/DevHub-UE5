@@ -1,7 +1,9 @@
 // Copyright (c) Alexandr Pereverzev.
 
 #pragma once
-#include "StructUtils/PropertyBag.h"
+
+#include "DevCore.h"
+#include UE_COMPATIBILITY_INCLUDE_PROPERTY_BAG_PATH
 
 struct FInstancedPropertyBag;
 

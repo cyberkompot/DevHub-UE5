@@ -2,8 +2,10 @@
 
 #pragma once
 
+#include "DevCore.h"
+#include UE_COMPATIBILITY_INCLUDE_PROPERTY_BAG_PATH
+
 #include "IPropertyTypeCustomization.h"
-#include "StructUtils/PropertyBag.h"
 
 class FStructOnScope;
 

@@ -2,8 +2,6 @@
 
 #include "Framework/DevCorePropertyBag.h"
 
-#include "StructUtils/PropertyBag.h"
-
 namespace DevCore::PropertyBag
 {
 	void ApplyPropertyBagToObject(UObject* InObject, const FInstancedPropertyBag& InBag, FInstancedPropertyBag* OutOriginalValues)

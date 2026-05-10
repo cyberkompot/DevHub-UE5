@@ -29,13 +29,14 @@ private:
 	TSharedPtr<IPropertyHandle> ObjectClassHandle;
 	TSharedPtr<IPropertyHandle> ObjectPropertiesHandle;
 
+	bool bInitialized = false;
 	FInstancedPropertyBag DisplayBag;
 	TSharedPtr<FStructOnScope> DisplayScope;
 
 	void Initialize();
 	void Reset();
 
-	void OnObjectClassChanged();
+	void OnObjectClassChanged(const TWeakPtr<IPropertyUtilities> PropertyUtilitiesPtr);
 	void OnDisplayBagChanged();
 };
 

@@ -82,14 +82,14 @@ protected:
  * Executes the specified Blueprint-implemented action.
  */
 USTRUCT(BlueprintType, NotBlueprintable, Category = "DevHub|Action", DisplayName = "Action Script")
-struct FDevActionObject : public FDevAction
+struct FDevActionObject : public FDevActionBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Action")
 	TSoftClassPtr<UDevActionScript> ActionScript;
 
-	UPROPERTY(EditAnywhere, Category = "Dev Action")
+	UPROPERTY(EditAnywhere, Category = "Dev Action", meta = (HideInDetailPanel))
 	FInstancedPropertyBag ActionProperties;
 
 protected:

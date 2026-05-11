@@ -130,6 +130,20 @@ void FDevCoreOverrideablePropertiesIterator::IterateToNext()
 	}
 }
 
+void FDevCorePropertyBagUtils::AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag)
+{
+	const UPropertyBag* BagStruct = InBag.GetPropertyBagStruct();
+	if (!BagStruct) { return; }
+
+	TObjectPtr<const UPropertyBag> BagStructPtr(BagStruct);
+	InCollector.AddReferencedObject(BagStructPtr);
+
+	if (uint8* BagMemory = InBag.GetMutableValue().GetMemory())
+	{
+		InCollector.AddPropertyReferencesWithStructARO(BagStruct, BagMemory);
+	}
+}
+
 void FDevCorePropertyBagUtils::ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag)
 {
 	DevCore::PropertyBag::ApplyObjectToPropertyBag(InObject, InBag, nullptr);

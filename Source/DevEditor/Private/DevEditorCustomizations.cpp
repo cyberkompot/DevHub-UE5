@@ -6,6 +6,7 @@
 #include "DevActionTypes.h"
 #include "DevMenuTypes.h"
 #include "IDetailChildrenBuilder.h"
+#include "IDetailPropertyRow.h"
 #include "IPropertyUtilities.h"
 #include "Framework/DevCorePropertyBag.h"
 
@@ -21,50 +22,87 @@ using namespace DevMenu::Editor;
 
 void FDevActionObjectCustomization::AddReferencedObjects(FReferenceCollector& Collector)
 {
-	if (UPropertyBag* DisplayBagStruct = const_cast<UPropertyBag*>(DisplayBag.GetPropertyBagStruct()))
+	Collector.AddReferencedObject(ObjectClass);
+	FDevCorePropertyBagUtils::AddPropertyBagToReferenceCollector(Collector, CDOBag);
+	FDevCorePropertyBagUtils::AddPropertyBagToReferenceCollector(Collector, DisplayBag);
+}
+
+FDevActionObjectCustomization::~FDevActionObjectCustomization()
+{
+	if (OnObjectsReinstancedHandle.IsValid())
 	{
-		Collector.AddReferencedObject(DisplayBagStruct);
+		FCoreUObjectDelegates::OnObjectsReinstanced.Remove(OnObjectsReinstancedHandle);
 	}
 }
 
 void FDevActionObjectCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
-	HeaderRow.NameContent()
-	[
-		PropertyHandle->CreatePropertyNameWidget()
-	];
+	ObjectClassHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDevActionObject, ActionScript));
+	ObjectPropertiesHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDevActionObject, ActionProperties));
+
+	ObjectClassHandle->SetOnPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnObjectClassChanged));
+
+	PropertyUtilities = CustomizationUtils.GetPropertyUtilities();
+	OnObjectsReinstancedHandle = FCoreUObjectDelegates::OnObjectsReinstanced.AddSP(this, &FDevActionObjectCustomization::OnObjectsReinstanced);
+
+	Initialize();
+
+	HeaderRow
+		//.CopyAction(FUIAction(FExecuteAction::CreateSP(this, &FDevActionObjectCustomization::OnCopyAction)))
+		//.PasteAction(FUIAction(FExecuteAction::CreateSP(this, &FDevActionObjectCustomization::OnPasteAction), FCanExecuteAction::CreateSP(this, &FDevActionObjectCustomization::OnCanExecutePasteAction)))
+		.NameContent()
+		[
+			PropertyHandle->CreatePropertyNameWidget()
+		]
+		.ValueContent()
+		.MinDesiredWidth(250.f)
+		.VAlign(VAlign_Center)
+		[
+			ObjectClassHandle->CreatePropertyValueWidget()
+		]
+		.IsEnabled(PropertyHandle->IsEditable() && ObjectPropertiesHandle->IsEditable() );
 }
 
 void FDevActionObjectCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
-	ObjectClassHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDevActionObject, ActionScript));
-	ObjectPropertiesHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FDevActionObject, ActionProperties));
-
-	Initialize();
-
-	ChildBuilder.AddProperty(ObjectClassHandle.ToSharedRef());
-	ObjectClassHandle->SetOnPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnObjectClassChanged, TWeakPtr<IPropertyUtilities>(CustomizationUtils.GetPropertyUtilities())));
-
+	ObjectClassHandle->MarkHiddenByCustomization();
 	ObjectPropertiesHandle->MarkHiddenByCustomization();
-	if (DisplayScope)
+
+	if (!ObjectClass) { return; }
+	if (!ObjectProperties) { return; }
+	if (DisplayBag.GetNumPropertiesInBag() == 0) { return; }
+
+	ObjectPropertiesHandle->RemoveChildren();
+
+	const TArray<TSharedPtr<IPropertyHandle>> BagPropertyHandles = ObjectPropertiesHandle->AddChildStructure(DisplayScope.ToSharedRef());
+	const FSimpleDelegate OnBagPropertyChanged = FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnDisplayBagChanged);
+
+	const TWeakPtr<FDevActionObjectCustomization> WeakSelf = StaticCastSharedRef<FDevActionObjectCustomization>(AsShared());
+	for (const TSharedPtr<IPropertyHandle>& BagPropertyHandle : BagPropertyHandles)
 	{
-		IDetailPropertyRow* ActionPropertiesRow = ChildBuilder.AddExternalStructure(DisplayScope.ToSharedRef());
-		ActionPropertiesRow->DisplayName(ObjectPropertiesHandle->GetPropertyDisplayName());
-		ActionPropertiesRow->GetPropertyHandle()->SetOnChildPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnDisplayBagChanged));
+		if (!BagPropertyHandle) { continue; }
+
+		BagPropertyHandle->SetOnPropertyValueChanged(OnBagPropertyChanged);
+		BagPropertyHandle->SetOnChildPropertyValueChanged(OnBagPropertyChanged);
+
+		IDetailPropertyRow& BagPropertyRow = ChildBuilder.AddProperty(BagPropertyHandle.ToSharedRef());
+		BagPropertyRow.OverrideResetToDefault(FResetToDefaultOverride::Create(
+			FIsResetToDefaultVisible::CreateSP(this, &FDevActionObjectCustomization::OnDisplayBagPropertyIsResetToDefaultVisible),
+			FResetToDefaultHandler::CreateSP(this, &FDevActionObjectCustomization::OnDisplayBagPropertyResetToDefaultClicked)));
 	}
 }
 
 void FDevActionObjectCustomization::Initialize()
 {
-	const UClass* ObjectClass = GetObjectClass();
-	FInstancedPropertyBag* ObjectProperties = GetObjectProperties();
+	ObjectClass = GetObjectClass();
+	ObjectProperties = GetObjectProperties();
 
 	if (ObjectClass && ObjectProperties)
 	{
-		const FInstancedPropertyBag ObjectClassBag = FDevCorePropertyBagUtils::MakePropertyBagByClass(ObjectClass, true);
+		CDOBag = FDevCorePropertyBagUtils::MakePropertyBagByClass(ObjectClass, true);
 
 		DisplayBag = *ObjectProperties;
-		DisplayBag.MigrateToNewBagInstance(ObjectClassBag);
+		DisplayBag.MigrateToNewBagInstance(CDOBag);
 
 		*ObjectProperties = FDevCorePropertyBagUtils::MakePropertyBagWithClassOverrides(DisplayBag, ObjectClass);
 	}
@@ -79,6 +117,7 @@ void FDevActionObjectCustomization::Reset()
 {
 	ObjectClassHandle.Reset();
 	ObjectPropertiesHandle.Reset();
+	CDOBag.Reset();
 	DisplayBag.Reset();
 	DisplayScope.Reset();
 }
@@ -88,34 +127,30 @@ UClass* FDevActionObjectCustomization::GetObjectClass() const
 	void* RawData = nullptr;
 	ObjectClassHandle->GetValueData(RawData);
 	const TSoftClassPtr<UObject>* ObjectClassPtr = static_cast<TSoftClassPtr<UObject>*>(RawData);
-	UClass* ObjectClass = (ObjectClassPtr && !ObjectClassPtr->IsNull()) ? ObjectClassPtr->LoadSynchronous() : nullptr;
-	return ObjectClass;
+	UClass* ObjectClassValue = (ObjectClassPtr && !ObjectClassPtr->IsNull()) ? ObjectClassPtr->LoadSynchronous() : nullptr;
+	return ObjectClassValue;
 }
 
 FInstancedPropertyBag* FDevActionObjectCustomization::GetObjectProperties() const
 {
 	void* RawData = nullptr;
 	ObjectPropertiesHandle->GetValueData(RawData);
-	FInstancedPropertyBag* ObjectProperties = static_cast<FInstancedPropertyBag*>(RawData);
-	return ObjectProperties;
+	FInstancedPropertyBag* ObjectPropertiesValue = static_cast<FInstancedPropertyBag*>(RawData);
+	return ObjectPropertiesValue;
 }
 
-void FDevActionObjectCustomization::OnObjectClassChanged(const TWeakPtr<IPropertyUtilities> PropertyUtilitiesPtr)
+void FDevActionObjectCustomization::OnObjectClassChanged()
 {
-	if (const TSharedPtr<IPropertyUtilities> PropertyUtilities = PropertyUtilitiesPtr.Pin())
-	{
-		ObjectPropertiesHandle->NotifyPreChange();
-		PropertyUtilities->RequestForceRefresh();
-		ObjectPropertiesHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
-	}
+	if (!PropertyUtilities) { return; }
+
+	ObjectPropertiesHandle->NotifyPreChange();
+	PropertyUtilities->RequestForceRefresh();
+	ObjectPropertiesHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 }
 
 void FDevActionObjectCustomization::OnDisplayBagChanged()
 {
-	const UClass* ObjectClass = GetObjectClass();
 	if (!ObjectClass) { return; }
-
-	FInstancedPropertyBag* ObjectProperties = GetObjectProperties();
 	if (!ObjectProperties) { return; }
 
 	const FInstancedPropertyBag ObjectPropertiesOverrides = FDevCorePropertyBagUtils::MakePropertyBagWithClassOverrides(DisplayBag, ObjectClass);
@@ -127,6 +162,60 @@ void FDevActionObjectCustomization::OnDisplayBagChanged()
 		*ObjectProperties = ObjectPropertiesOverrides;
 		ObjectPropertiesHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 	}
+}
+
+bool FDevActionObjectCustomization::OnDisplayBagPropertyIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle)
+{
+	if (!ObjectClass) { return false; }
+
+	const FName DisplayBagPropertyName = PropertyHandle->GetProperty()->GetFName();
+	const FPropertyBagPropertyDesc* DisplayBagPropertyDesc = DisplayBag.FindPropertyDescByName(DisplayBagPropertyName);
+	if (!DisplayBagPropertyDesc) { return false; }
+
+	const FGuid DisplayBagPropertyId = DisplayBagPropertyDesc->ID;
+	const FPropertyBagPropertyDesc* CDOBagPropertyDesc = CDOBag.FindPropertyDescByID(DisplayBagPropertyId);
+	if (!CDOBagPropertyDesc) { return false; }
+
+	const FProperty* CDOBagProperty = CDOBagPropertyDesc->CachedProperty;
+	const FProperty* DisplayBagProperty = DisplayBagPropertyDesc->CachedProperty;
+
+	const uint8* CDOBagMemory = CDOBag.GetValue().GetMemory();
+	const uint8* DisplayBagMemory = DisplayBag.GetValue().GetMemory();
+
+	const void* CDOBagValuePtr = CDOBagProperty->ContainerPtrToValuePtr<void>(CDOBagMemory);
+	const void* DisplayBagValuePtr = DisplayBagProperty->ContainerPtrToValuePtr<void>(DisplayBagMemory);
+
+	return !CDOBagProperty->Identical(DisplayBagValuePtr, CDOBagValuePtr);
+}
+
+void FDevActionObjectCustomization::OnDisplayBagPropertyResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle)
+{
+	const FName DisplayBagPropertyName = PropertyHandle->GetProperty()->GetFName();
+	const FPropertyBagPropertyDesc* DisplayBagPropertyDesc = DisplayBag.FindPropertyDescByName(DisplayBagPropertyName);
+	if (!DisplayBagPropertyDesc) { return; }
+
+	const FGuid DisplayBagPropertyId = DisplayBagPropertyDesc->ID;
+	const FPropertyBagPropertyDesc* CDOBagPropertyDesc = CDOBag.FindPropertyDescByID(DisplayBagPropertyId);
+	if (!CDOBagPropertyDesc) { return; }
+
+	const FProperty* CDOBagProperty = CDOBagPropertyDesc->CachedProperty;
+	const FProperty* DisplayBagProperty = DisplayBagPropertyDesc->CachedProperty;
+
+	const uint8* CDOBagMemory = CDOBag.GetValue().GetMemory();
+	uint8* DisplayBagMemory = DisplayBag.GetMutableValue().GetMemory();
+
+	const void* CDOBagValuePtr = CDOBagProperty->ContainerPtrToValuePtr<void>(CDOBagMemory);
+
+	DisplayBagProperty->SetValue_InContainer(DisplayBagMemory, CDOBagValuePtr);
+}
+
+void FDevActionObjectCustomization::OnObjectsReinstanced(const TMap<UObject*, UObject*>& ObjectMap)
+{
+	if (!PropertyUtilities) { return; }
+	if (ObjectMap.IsEmpty()) { return; }
+
+	// Force update the details when BP is compiled, since we may cached hold references to the old object or class.
+	PropertyUtilities->RequestRefresh();
 }
 
 void FDevInputShortcutCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)

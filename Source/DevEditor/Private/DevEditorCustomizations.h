@@ -13,6 +13,8 @@ struct FDevActionObjectCustomization final : IPropertyTypeCustomization, FGCObje
 {
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance() { return MakeShareable(new FDevActionObjectCustomization()); }
 
+	virtual ~FDevActionObjectCustomization() override;
+
 	//~ Begin FGCObject Interface
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 	virtual FString GetReferencerName() const override { return TEXT("FDevActionObjectCustomization"); }
@@ -27,8 +29,16 @@ private:
 	TSharedPtr<IPropertyHandle> ObjectClassHandle;
 	TSharedPtr<IPropertyHandle> ObjectPropertiesHandle;
 
+	TObjectPtr<UClass> ObjectClass = nullptr;
+	FInstancedPropertyBag* ObjectProperties = nullptr;
+
+	FInstancedPropertyBag CDOBag;
 	FInstancedPropertyBag DisplayBag;
 	TSharedPtr<FStructOnScope> DisplayScope;
+
+	TSharedPtr<IPropertyUtilities> PropertyUtilities;
+
+	FDelegateHandle OnObjectsReinstancedHandle;
 
 	void Initialize();
 	void Reset();
@@ -36,8 +46,13 @@ private:
 	UClass* GetObjectClass() const;
 	FInstancedPropertyBag* GetObjectProperties() const;
 
-	void OnObjectClassChanged(const TWeakPtr<IPropertyUtilities> PropertyUtilitiesPtr);
+	void OnObjectClassChanged();
+
 	void OnDisplayBagChanged();
+	bool OnDisplayBagPropertyIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle);
+	void OnDisplayBagPropertyResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle);
+
+	void OnObjectsReinstanced(const TMap<UObject*, UObject*>& ObjectMap);
 };
 
 struct FDevInputShortcutCustomization final : IPropertyTypeCustomization

@@ -28,6 +28,8 @@ private:
 
 struct FDevCorePropertyBagUtils final
 {
+	static DEVCORE_API void AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag);
+
 	static DEVCORE_API void ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag);
 	static DEVCORE_API void ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag, FInstancedPropertyBag& OutOriginalValues);
 

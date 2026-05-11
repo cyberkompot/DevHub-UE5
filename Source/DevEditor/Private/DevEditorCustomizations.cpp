@@ -46,12 +46,41 @@ void FDevActionObjectCustomization::CustomizeChildren(TSharedRef<IPropertyHandle
 	ObjectClassHandle->SetOnPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnObjectClassChanged, TWeakPtr<IPropertyUtilities>(CustomizationUtils.GetPropertyUtilities())));
 
 	ObjectPropertiesHandle->MarkHiddenByCustomization();
-	if (DisplayBag.IsValid())
+	if (DisplayScope)
 	{
 		IDetailPropertyRow* ActionPropertiesRow = ChildBuilder.AddExternalStructure(DisplayScope.ToSharedRef());
 		ActionPropertiesRow->DisplayName(ObjectPropertiesHandle->GetPropertyDisplayName());
 		ActionPropertiesRow->GetPropertyHandle()->SetOnChildPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FDevActionObjectCustomization::OnDisplayBagChanged));
 	}
+}
+
+void FDevActionObjectCustomization::Initialize()
+{
+	const UClass* ObjectClass = GetObjectClass();
+	FInstancedPropertyBag* ObjectProperties = GetObjectProperties();
+
+	if (ObjectClass && ObjectProperties)
+	{
+		const FInstancedPropertyBag ObjectClassBag = FDevCorePropertyBagUtils::MakePropertyBagByClass(ObjectClass, true);
+
+		DisplayBag = *ObjectProperties;
+		DisplayBag.MigrateToNewBagInstance(ObjectClassBag);
+
+		*ObjectProperties = FDevCorePropertyBagUtils::MakePropertyBagWithClassOverrides(DisplayBag, ObjectClass);
+	}
+
+	if (DisplayBag.IsValid())
+	{
+		DisplayScope = MakeShared<FStructOnScope>(DisplayBag.GetPropertyBagStruct(), DisplayBag.GetMutableValue().GetMemory());
+	}
+}
+
+void FDevActionObjectCustomization::Reset()
+{
+	ObjectClassHandle.Reset();
+	ObjectPropertiesHandle.Reset();
+	DisplayBag.Reset();
+	DisplayScope.Reset();
 }
 
 UClass* FDevActionObjectCustomization::GetObjectClass() const
@@ -71,46 +100,13 @@ FInstancedPropertyBag* FDevActionObjectCustomization::GetObjectProperties() cons
 	return ObjectProperties;
 }
 
-void FDevActionObjectCustomization::Initialize()
-{
-	const UClass* ObjectClass = GetObjectClass();
-	FInstancedPropertyBag* ObjectProperties = GetObjectProperties();
-
-	DisplayBag.Reset();
-	DisplayScope.Reset();
-
-	if (ObjectClass && ObjectProperties)
-	{
-		if (!bInitialized)
-		{
-			DisplayBag = *ObjectProperties; // First initialization based on ObjectProperties.
-		}
-
-		const FInstancedPropertyBag ObjectClassBag = FDevCorePropertyBagUtils::MakePropertyBagByClass(ObjectClass, true);
-		DisplayBag.MigrateToNewBagInstance(ObjectClassBag);
-	}
-
-	if (DisplayBag.IsValid())
-	{
-		DisplayScope = MakeShared<FStructOnScope>(DisplayBag.GetPropertyBagStruct(), DisplayBag.GetMutableValue().GetMemory());
-	}
-
-	bInitialized = true;
-}
-
-void FDevActionObjectCustomization::Reset()
-{
-	ObjectClassHandle.Reset();
-	ObjectPropertiesHandle.Reset();
-	DisplayBag.Reset();
-	DisplayScope.Reset();
-}
-
 void FDevActionObjectCustomization::OnObjectClassChanged(const TWeakPtr<IPropertyUtilities> PropertyUtilitiesPtr)
 {
 	if (const TSharedPtr<IPropertyUtilities> PropertyUtilities = PropertyUtilitiesPtr.Pin())
 	{
-		PropertyUtilities->RequestForceRefresh(); //ForceRefresh();
+		ObjectPropertiesHandle->NotifyPreChange();
+		PropertyUtilities->RequestForceRefresh();
+		ObjectPropertiesHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 	}
 }
 

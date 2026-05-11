@@ -21,20 +21,20 @@ struct FDevActionObjectCustomization final : IPropertyTypeCustomization, FGCObje
 	//~ Begin IPropertyTypeCustomization Interface
 	virtual void CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
 	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
-	UClass* GetObjectClass() const;
-	FInstancedPropertyBag* GetObjectProperties() const;
 	//~ End IPropertyTypeCustomization Interface
 
 private:
 	TSharedPtr<IPropertyHandle> ObjectClassHandle;
 	TSharedPtr<IPropertyHandle> ObjectPropertiesHandle;
 
-	bool bInitialized = false;
 	FInstancedPropertyBag DisplayBag;
 	TSharedPtr<FStructOnScope> DisplayScope;
 
 	void Initialize();
 	void Reset();
+
+	UClass* GetObjectClass() const;
+	FInstancedPropertyBag* GetObjectProperties() const;
 
 	void OnObjectClassChanged(const TWeakPtr<IPropertyUtilities> PropertyUtilitiesPtr);
 	void OnDisplayBagChanged();

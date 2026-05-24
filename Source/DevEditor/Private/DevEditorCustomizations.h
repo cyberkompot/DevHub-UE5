@@ -1,59 +1,8 @@
-﻿// Copyright (c) Alexandr Pereverzev.
+// Copyright (c) Alexandr Pereverzev.
 
 #pragma once
 
-#include "DevCore.h"
-#include UE_COMPATIBILITY_INCLUDE_PROPERTY_BAG_PATH
-
 #include "IPropertyTypeCustomization.h"
-
-class FStructOnScope;
-
-struct FDevActionObjectCustomization final : IPropertyTypeCustomization, FGCObject
-{
-	static TSharedRef<IPropertyTypeCustomization> MakeInstance() { return MakeShareable(new FDevActionObjectCustomization()); }
-
-	virtual ~FDevActionObjectCustomization() override;
-
-	//~ Begin FGCObject Interface
-	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override { return TEXT("FDevActionObjectCustomization"); }
-	//~ End FGCObject Interface
-
-	//~ Begin IPropertyTypeCustomization Interface
-	virtual void CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
-	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
-	//~ End IPropertyTypeCustomization Interface
-
-private:
-	TSharedPtr<IPropertyHandle> ObjectClassHandle;
-	TSharedPtr<IPropertyHandle> ObjectPropertiesHandle;
-
-	TObjectPtr<UClass> ObjectClass = nullptr;
-	FInstancedPropertyBag* ObjectProperties = nullptr;
-
-	FInstancedPropertyBag CDOBag;
-	FInstancedPropertyBag DisplayBag;
-	TSharedPtr<FStructOnScope> DisplayScope;
-
-	TSharedPtr<IPropertyUtilities> PropertyUtilities;
-
-	FDelegateHandle OnObjectsReinstancedHandle;
-
-	void Initialize();
-	void Reset();
-
-	UClass* GetObjectClass() const;
-	FInstancedPropertyBag* GetObjectProperties() const;
-
-	void OnObjectClassChanged();
-
-	void OnDisplayBagChanged();
-	bool OnDisplayBagPropertyIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle);
-	void OnDisplayBagPropertyResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle);
-
-	void OnObjectsReinstanced(const TMap<UObject*, UObject*>& ObjectMap);
-};
 
 struct FDevInputShortcutCustomization final : IPropertyTypeCustomization
 {

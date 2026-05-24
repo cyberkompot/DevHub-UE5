@@ -2,31 +2,19 @@
 
 #pragma once
 
-#include "DevCore.h"
-#include UE_COMPATIBILITY_INCLUDE_PROPERTY_BAG_PATH
+#include "Misc/EngineVersionComparison.h"
 
-struct FInstancedPropertyBag;
+#ifndef UE_VERSION_AT_LEAST
+	#define UE_VERSION_AT_LEAST(MajorVersion, MinorVersion, PatchVersion) UE_VERSION_NEWER_THAN(MajorVersion, MinorVersion, PatchVersion - 1)
+#endif
 
-struct FDevCoreOverrideablePropertiesIterator final
-{
-	static constexpr int32 ExpectedPropertiesNum = 32;
-	using FPropertiesInlineAllocator = TInlineAllocator<ExpectedPropertiesNum>;
+#if UE_VERSION_AT_LEAST(5, 5, 0) && !(defined(UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5) && UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5)
+	#include "StructUtils/PropertyBag.h"
+#else
+	#include "PropertyBag.h"
+#endif
 
-	explicit FDevCoreOverrideablePropertiesIterator(const UClass* InClass);
-
-	void operator ++() { ++It; IterateToNext(); }
-	operator bool() const { return !!It; }
-	FProperty* operator *() { return *It; }
-	const FProperty* operator *() const { return *It; }
-
-private:
-	TFieldIterator<FProperty> It;
-	TSet<FName, DefaultKeyFuncs<FName>, TInlineSparseSetAllocator<ExpectedPropertiesNum>> VisitedProperties; // Avoid duplicates by name (can happen via interface + class, or shadowed members).
-
-	void IterateToNext();
-};
-
-struct FDevCorePropertyBagUtils final
+struct FClassBagUtils final
 {
 	static DEVCORE_API void AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag);
 
@@ -46,4 +34,23 @@ struct FDevCorePropertyBagUtils final
 
 	static DEVCORE_API FGuid GetStablePropertyId(const UClass* InClass, FName InPropertyName);
 	static DEVCORE_API FPropertyBagPropertyDesc MakeStablePropertyDesc(const UClass* InClass, const FProperty* InProperty);
+};
+
+struct DEVCORE_API FClassOverrideablePropertiesIterator final
+{
+	static constexpr int32 ExpectedPropertiesNum = 32;
+	using FPropertiesInlineAllocator = TInlineAllocator<ExpectedPropertiesNum>;
+
+	explicit FClassOverrideablePropertiesIterator(const UClass* InClass);
+
+	void operator ++() { ++It; IterateToNext(); }
+	operator bool() const { return !!It; }
+	FProperty* operator *() { return *It; }
+	const FProperty* operator *() const { return *It; }
+
+private:
+	TFieldIterator<FProperty> It;
+	TSet<FName, DefaultKeyFuncs<FName>, TInlineSparseSetAllocator<ExpectedPropertiesNum>> VisitedProperties; // Avoid duplicates by name (can happen via interface + class, or shadowed members).
+
+	void IterateToNext();
 };

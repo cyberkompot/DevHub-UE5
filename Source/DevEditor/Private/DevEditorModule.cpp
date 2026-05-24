@@ -5,6 +5,7 @@
 #include "DevEditorAssetTypeActions.h"
 #include "DevEditorCustomizations.h"
 #include "DevEditorFactories.h"
+#include "ClassBagCustomization.h"
 #include "PropertyEditorModule.h"
 
 using namespace DevMenu::Editor;
@@ -24,22 +25,20 @@ void FDevEditorModule::StartupModule()
 		AssetTools.RegisterAdvancedAssetCategory(MenuCategoryName, INVTEXT("Debug"));
 	}
 
-	/** Dev Actions. */
-	PropertyModule.RegisterCustomPropertyTypeLayout(FDevActionObject::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevActionObjectCustomization::MakeInstance));
-	PropertyModule.NotifyCustomizationModuleChanged();
+	/** Class Bag. */
+	ClassBagCustomizations.Initialize();
 
 	/** Dev Inputs. */
 	PropertyModule.RegisterCustomPropertyTypeLayout(FDevInputShortcut::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevInputShortcutCustomization::MakeInstance));
-	PropertyModule.NotifyCustomizationModuleChanged();
 
 	/** Dev Menus. */
 	AssetTools.RegisterAssetTypeActions((DevMenuAssetTypeActions = MakeShared<FAssetTypeActions_DevMenu>()).ToSharedRef());
-
 	PropertyModule.RegisterCustomPropertyTypeLayout(FDevMenuEntryId::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDevMenuEntryIdCustomization::MakeInstance));
-	PropertyModule.NotifyCustomizationModuleChanged();
 
 	/** Dev Pad. */
-	AssetTools.RegisterAssetTypeActions((DevMenuAssetTypeActions = MakeShared<FAssetTypeActions_DevPadPage>()).ToSharedRef());
+	AssetTools.RegisterAssetTypeActions((DevPadPageAssetTypeActions = MakeShared<FAssetTypeActions_DevPadPage>()).ToSharedRef());
+
+	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
 void FDevEditorModule::ShutdownModule()
@@ -47,10 +46,36 @@ void FDevEditorModule::ShutdownModule()
 	IModuleInterface::ShutdownModule();
 	if (!IsIntegrationAvailable()) { return; }
 
-	/** Dev Menus. */
-	if (DevMenuAssetTypeActions)
+	/** Class Bag. */
+	ClassBagCustomizations.Uninitialize();
+
+	if (FModuleManager::Get().IsModuleLoaded("PropertyEditor"))
 	{
-		if (FModuleManager::Get().IsModuleLoaded("AssetTools")) { FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get().UnregisterAssetTypeActions(DevMenuAssetTypeActions.ToSharedRef()); }
-		DevMenuAssetTypeActions = nullptr;
+		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+		/** Dev Inputs. */
+		PropertyModule.UnregisterCustomPropertyTypeLayout(FDevInputShortcut::StaticStruct()->GetFName());
+
+		/** Dev Menus. */
+		PropertyModule.UnregisterCustomPropertyTypeLayout(FDevMenuEntryId::StaticStruct()->GetFName());
+
+		PropertyModule.NotifyCustomizationModuleChanged();
+	}
+
+	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+	{
+		FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
+
+		/** Dev Menus. */
+		if (DevMenuAssetTypeActions)
+		{
+			AssetToolsModule.Get().UnregisterAssetTypeActions(DevMenuAssetTypeActions.ToSharedRef());
+		}
+
+		/** Dev Pad. */
+		if (DevPadPageAssetTypeActions)
+		{
+			AssetToolsModule.Get().UnregisterAssetTypeActions(DevPadPageAssetTypeActions.ToSharedRef());
+		}
 	}
 }

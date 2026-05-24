@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ClassBagCustomization.h"
 #include "Modules/ModuleManager.h"
 
 class FAssetTypeActions_Base;
@@ -9,13 +10,15 @@ class FAssetTypeActions_Base;
 class FDevEditorModule final : public IModuleInterface
 {
 public:
-	//~ Begin IModuleInterface Interface
+	//~ Begin IModuleInterface Interface.
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
-	//~ End IModuleInterface Interface
+	//~ End IModuleInterface Interface.
 
 private:
-	TSharedPtr<FAssetTypeActions_Base> DevMenuAssetTypeActions;
+	FClassBagCustomizations ClassBagCustomizations;
+	TSharedPtr<FAssetTypeActions_Base> DevMenuAssetTypeActions = nullptr;
+	TSharedPtr<FAssetTypeActions_Base> DevPadPageAssetTypeActions = nullptr;
 
 	bool IsIntegrationAvailable() const { return GIsEditor && !IsRunningCommandlet(); }
 };

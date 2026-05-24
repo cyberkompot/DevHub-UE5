@@ -1,8 +1,8 @@
 // Copyright (c) Alexandr Pereverzev.
 
-#include "Framework/DevCorePropertyBag.h"
+#include "ClassBag.h"
 
-namespace DevCore::PropertyBag
+namespace ClassBag::Private
 {
 	void ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag, FInstancedPropertyBag* OutOriginalValues)
 	{
@@ -23,10 +23,10 @@ namespace DevCore::PropertyBag
 
 		const UClass* Class = InObject->GetClass();
 		uint8* BagMemory = InBag.GetMutableValue().GetMemory();
-		for (FDevCoreOverrideablePropertiesIterator It(Class); It; ++It)
+		for (FClassOverrideablePropertiesIterator It(Class); It; ++It)
 		{
 			const FProperty* ObjectProperty = *It;
-			const FGuid ClassPropertyGuid = FDevCorePropertyBagUtils::GetStablePropertyId(Class, ObjectProperty->GetFName());
+			const FGuid ClassPropertyGuid = FClassBagUtils::GetStablePropertyId(Class, ObjectProperty->GetFName());
 			if (const FPropertyBagPropertyDesc* BagPropertyDesc = InBag.FindPropertyDescByID(ClassPropertyGuid))
 			{
 				const FProperty* BagProperty = BagPropertyDesc->CachedProperty;
@@ -61,10 +61,10 @@ namespace DevCore::PropertyBag
 
 		const UClass* Class = InObject->GetClass();
 		const uint8* BagMemory = InBag.GetValue().GetMemory();
-		for (FDevCoreOverrideablePropertiesIterator It(Class); It; ++It)
+		for (FClassOverrideablePropertiesIterator It(Class); It; ++It)
 		{
 			const FProperty* ObjectProperty = *It;
-			const FGuid ClassPropertyGuid = FDevCorePropertyBagUtils::GetStablePropertyId(Class, ObjectProperty->GetFName());
+			const FGuid ClassPropertyGuid = FClassBagUtils::GetStablePropertyId(Class, ObjectProperty->GetFName());
 			if (const FPropertyBagPropertyDesc* BagPropertyDesc = InBag.FindPropertyDescByID(ClassPropertyGuid))
 			{
 				const FProperty* BagProperty = BagPropertyDesc->CachedProperty;
@@ -86,7 +86,7 @@ namespace DevCore::PropertyBag
 		for (const UClass* CurrentClass = InClass; CurrentClass; CurrentClass = CurrentClass->GetSuperClass())
 		{
 			// Look at the Blueprint’s variable table.
-			if (const UBlueprint* Blueprint = Cast<UBlueprint>(CurrentClass->ClassGeneratedBy))
+			if (const UBlueprint* Blueprint = UBlueprint::GetBlueprintFromClass(CurrentClass))
 			{
 				for (const FBPVariableDescription& Desc : Blueprint->NewVariables)
 				{
@@ -105,32 +105,9 @@ namespace DevCore::PropertyBag
 	}
 }
 
-using namespace DevCore::PropertyBag;
+using namespace ClassBag::Private;
 
-FDevCoreOverrideablePropertiesIterator::FDevCoreOverrideablePropertiesIterator(const UClass* InClass)
-	: It(TFieldIterator<FProperty>(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::ExcludeDeprecated, EFieldIteratorFlags::IncludeInterfaces))
-{
-	IterateToNext();
-}
-
-void FDevCoreOverrideablePropertiesIterator::IterateToNext()
-{
-	while (It)
-	{
-		if (const FProperty* Property = *It; FDevCorePropertyBagUtils::IsPropertyOverrideable(Property))
-		{
-			bool bIsAlreadyInSetPtr = false;
-			if (VisitedProperties.Emplace(Property->GetFName(), &bIsAlreadyInSetPtr); !bIsAlreadyInSetPtr)
-			{
-				break;
-			}
-		}
-
-		++It;
-	}
-}
-
-void FDevCorePropertyBagUtils::AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag)
+void FClassBagUtils::AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag)
 {
 	const UPropertyBag* BagStruct = InBag.GetPropertyBagStruct();
 	if (!BagStruct) { return; }
@@ -144,34 +121,34 @@ void FDevCorePropertyBagUtils::AddPropertyBagToReferenceCollector(FReferenceColl
 	}
 }
 
-void FDevCorePropertyBagUtils::ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag)
+void FClassBagUtils::ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag)
 {
-	DevCore::PropertyBag::ApplyObjectToPropertyBag(InObject, InBag, nullptr);
+	ClassBag::Private::ApplyObjectToPropertyBag(InObject, InBag, nullptr);
 }
 
-void FDevCorePropertyBagUtils::ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag, FInstancedPropertyBag& OutOriginalValues)
+void FClassBagUtils::ApplyObjectToPropertyBag(const UObject* InObject, FInstancedPropertyBag& InBag, FInstancedPropertyBag& OutOriginalValues)
 {
-	DevCore::PropertyBag::ApplyObjectToPropertyBag(InObject, InBag, &OutOriginalValues);
+	ClassBag::Private::ApplyObjectToPropertyBag(InObject, InBag, &OutOriginalValues);
 }
 
-void FDevCorePropertyBagUtils::ApplyPropertyBagToObject(const FInstancedPropertyBag& InBag, UObject* InObject)
+void FClassBagUtils::ApplyPropertyBagToObject(const FInstancedPropertyBag& InBag, UObject* InObject)
 {
-	DevCore::PropertyBag::ApplyPropertyBagToObject(InBag, InObject, nullptr);
+	ClassBag::Private::ApplyPropertyBagToObject(InBag, InObject, nullptr);
 }
 
-void FDevCorePropertyBagUtils::ApplyPropertyBagToObject(const FInstancedPropertyBag& InBag, UObject* InObject, FInstancedPropertyBag& OutOriginalValues)
+void FClassBagUtils::ApplyPropertyBagToObject(const FInstancedPropertyBag& InBag, UObject* InObject, FInstancedPropertyBag& OutOriginalValues)
 {
-	DevCore::PropertyBag::ApplyPropertyBagToObject(InBag, InObject, &OutOriginalValues);
+	ClassBag::Private::ApplyPropertyBagToObject(InBag, InObject, &OutOriginalValues);
 }
 
-FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagByClass(const UClass* InClass, const bool InSetValues)
+FInstancedPropertyBag FClassBagUtils::MakePropertyBagByClass(const UClass* InClass, const bool InSetValues)
 {
 	if (!InClass) { return FInstancedPropertyBag(); }
 
 	return MakePropertyBagByObject(InClass->GetDefaultObject(), InSetValues);
 }
 
-FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagByObject(const UObject* InObject, const bool InSetValues)
+FInstancedPropertyBag FClassBagUtils::MakePropertyBagByObject(const UObject* InObject, const bool InSetValues)
 {
 	if (!InObject) { return FInstancedPropertyBag(); }
 
@@ -179,7 +156,7 @@ FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagByObject(const UO
 
 	constexpr int32 ExpectedPropertiesNum = 32;
 	TArray<FPropertyBagPropertyDesc, TInlineAllocator<ExpectedPropertiesNum>> NewBagDescs;
-	for (FDevCoreOverrideablePropertiesIterator It(Class); It; ++It)
+	for (FClassOverrideablePropertiesIterator It(Class); It; ++It)
 	{
 		const FProperty* ClassProperty = *It;
 		NewBagDescs.Emplace(MakeStablePropertyDesc(Class, ClassProperty));
@@ -196,22 +173,22 @@ FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagByObject(const UO
 	return NewBag;
 }
 
-FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagWithClassOverrides(const FInstancedPropertyBag& InBag, const UClass* InClass)
+FInstancedPropertyBag FClassBagUtils::MakePropertyBagWithClassOverrides(const FInstancedPropertyBag& InBag, const UClass* InClass)
 {
 	if (!InClass) { return FInstancedPropertyBag(); }
 
 	return MakePropertyBagWithObjectOverrides(InBag, InClass->GetDefaultObject());
 }
 
-FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagWithObjectOverrides(const FInstancedPropertyBag& InBag, const UObject* InObject)
+FInstancedPropertyBag FClassBagUtils::MakePropertyBagWithObjectOverrides(const FInstancedPropertyBag& InBag, const UObject* InObject)
 {
 	if (!InObject) { return FInstancedPropertyBag(); }
 	if (!InBag.IsValid()) { return FInstancedPropertyBag(); }
 
 	const UClass* Class = InObject->GetClass();
 	const uint8* BagMemory = InBag.GetValue().GetMemory();
-	TArray<FPropertyBagPropertyDesc, FDevCoreOverrideablePropertiesIterator::FPropertiesInlineAllocator> NewBagDescs;
-	for (FDevCoreOverrideablePropertiesIterator It(Class); It; ++It)
+	TArray<FPropertyBagPropertyDesc, FClassOverrideablePropertiesIterator::FPropertiesInlineAllocator> NewBagDescs;
+	for (FClassOverrideablePropertiesIterator It(Class); It; ++It)
 	{
 		const FProperty* ObjectProperty = *It;
 		const FGuid ObjectPropertyId = GetStablePropertyId(Class, ObjectProperty->GetFName());
@@ -239,7 +216,7 @@ FInstancedPropertyBag FDevCorePropertyBagUtils::MakePropertyBagWithObjectOverrid
 	return NewBag;
 }
 
-bool FDevCorePropertyBagUtils::IsPropertyOverrideable(const FProperty* InProperty)
+bool FClassBagUtils::IsPropertyOverrideable(const FProperty* InProperty)
 {
 	if (!InProperty) { return false; }
 
@@ -266,7 +243,7 @@ bool FDevCorePropertyBagUtils::IsPropertyOverrideable(const FProperty* InPropert
 	return (bSupportedType && bInstanceEditable && bPublic && bRuntimeRelevant);
 }
 
-FGuid FDevCorePropertyBagUtils::GetStablePropertyId(const UClass* InClass, const FName InPropertyName)
+FGuid FClassBagUtils::GetStablePropertyId(const UClass* InClass, const FName InPropertyName)
 {
 	if (!InClass) { return FGuid(); }
 
@@ -277,15 +254,14 @@ FGuid FDevCorePropertyBagUtils::GetStablePropertyId(const UClass* InClass, const
 	}
 	else
 	{
-		// Deterministic GUID from class path + property name (fallback when no Blueprint GUID and no prior ID).
+		// Deterministic GUID from class path + property name (fallback when no Blueprint GUID).
+		const uint32 NameHash = GetTypeHash(InPropertyName.ToString());
 		const uint32 ClassHash = GetTypeHash(InClass->GetPathName());
-		const uint32 NameHash = GetTypeHash(InPropertyName);
-		const uint32 Seed = HashCombineFast(ClassHash, NameHash);
-		return FGuid(ClassHash, NameHash, 0xF3A9C7D2, 0xE8B4FF91);
+		return FGuid(NameHash, ClassHash, 0xF3A9C7D2, 0xE8B4FF91);
 	}
 }
 
-FPropertyBagPropertyDesc FDevCorePropertyBagUtils::MakeStablePropertyDesc(const UClass* InClass, const FProperty* InProperty)
+FPropertyBagPropertyDesc FClassBagUtils::MakeStablePropertyDesc(const UClass* InClass, const FProperty* InProperty)
 {
 	if (InClass && InProperty)
 	{
@@ -297,5 +273,28 @@ FPropertyBagPropertyDesc FDevCorePropertyBagUtils::MakeStablePropertyDesc(const 
 	else
 	{
 		return FPropertyBagPropertyDesc();
+	}
+}
+
+FClassOverrideablePropertiesIterator::FClassOverrideablePropertiesIterator(const UClass* InClass)
+	: It(TFieldIterator<FProperty>(InClass, EFieldIteratorFlags::IncludeSuper, EFieldIteratorFlags::ExcludeDeprecated, EFieldIteratorFlags::IncludeInterfaces))
+{
+	IterateToNext();
+}
+
+void FClassOverrideablePropertiesIterator::IterateToNext()
+{
+	while (It)
+	{
+		if (const FProperty* Property = *It; FClassBagUtils::IsPropertyOverrideable(Property))
+		{
+			bool bIsAlreadyInSetPtr = false;
+			if (VisitedProperties.Emplace(Property->GetFName(), &bIsAlreadyInSetPtr); !bIsAlreadyInSetPtr)
+			{
+				break;
+			}
+		}
+
+		++It;
 	}
 }

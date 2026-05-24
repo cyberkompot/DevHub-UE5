@@ -24,7 +24,11 @@ public class DevEditor : ModuleRules
                 "AssetTools",
                 "Core",
                 "CoreUObject",
+                "Engine",
+                "Slate",
+                "SlateCore",
                 "StructUtils",
+                "StructUtilsEditor",
                 "UnrealEd",
             }
         );

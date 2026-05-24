@@ -38,7 +38,7 @@
 	#endif
 #endif
 
-/** StructUtils/InstancedStruct.h, StructUtils/StructView.h */
+/** StructUtils/InstancedStruct.h, StructUtils/PropertyBag.h, StructUtils/StructView.h */
 #ifndef UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
 	#if UE_VERSION_AT_LEAST(5, 5, 0) && !(defined(UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5) && UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5)
 		#define UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH "StructUtils/InstancedStruct.h"

@@ -2,9 +2,9 @@
 
 #include "DevActionTypes.h"
 
+#include "ClassBag.h"
 #include "DevActionLogging.h"
 #include "Engine/Engine.h"
-#include "Framework/DevCorePropertyBag.h"
 
 namespace DevAction::Setting
 {
@@ -59,8 +59,8 @@ ECheckBoxState FDevActionObject::OnGetActionCheckState(const UObject* WorldConte
 		if (ActionProperties.GetNumPropertiesInBag() != 0)
 		{
 			FInstancedPropertyBag OutOriginalValues;
-			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
-			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
+			FClassBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
+			ON_SCOPE_EXIT { FClassBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
 			return ActionScriptCDO->GetActionCheckState(WorldContextObject);
 		}
 		else
@@ -82,8 +82,8 @@ bool FDevActionObject::OnGetActionVisibility(const UObject* WorldContextObject) 
 		if (ActionProperties.GetNumPropertiesInBag() != 0)
 		{
 			FInstancedPropertyBag OutOriginalValues;
-			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
-			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
+			FClassBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
+			ON_SCOPE_EXIT { FClassBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
 			return ActionScriptCDO->GetActionVisibility(WorldContextObject);
 		}
 		else
@@ -105,8 +105,8 @@ EUserInterfaceActionType FDevActionObject::OnGetActionUserInterfaceType(const UO
 		if (ActionProperties.GetNumPropertiesInBag() != 0)
 		{
 			FInstancedPropertyBag OutOriginalValues;
-			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
-			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
+			FClassBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
+			ON_SCOPE_EXIT { FClassBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
 			return ActionScriptCDO->GetActionUserInterfaceType(WorldContextObject);
 		}
 		else
@@ -128,8 +128,8 @@ void FDevActionObject::OnExecuteAction(const UObject* WorldContextObject) const
 		if (ActionProperties.GetNumPropertiesInBag() != 0)
 		{
 			FInstancedPropertyBag OutOriginalValues;
-			FDevCorePropertyBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
-			ON_SCOPE_EXIT { FDevCorePropertyBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
+			FClassBagUtils::ApplyPropertyBagToObject(ActionProperties, ActionScriptCDO, OutOriginalValues);
+			ON_SCOPE_EXIT { FClassBagUtils::ApplyPropertyBagToObject(OutOriginalValues, ActionScriptCDO); };
 			ActionScriptCDO->ExecuteAction(WorldContextObject);
 		}
 		else

@@ -49,7 +49,6 @@ private:
 	TSharedPtr<IPropertyHandle> BagHandle;
 
 	TObjectPtr<UClass> ObjectClass = nullptr;
-	FInstancedPropertyBag* ObjectProperties = nullptr;
 
 	FInstancedPropertyBag CDOBag;
 	FInstancedPropertyBag DisplayBag;
@@ -71,6 +70,9 @@ private:
 	void OnDisplayBagChanged();
 	bool OnDisplayBagPropertyIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle);
 	void OnDisplayBagPropertyResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle);
+
+	bool OnInlineClassIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle) const;
+	void OnInlineClassResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle);
 
 	void OnBlueprintClassRecompiled(UBlueprint* Blueprint);
 	void OnNativeClassReloaded(EReloadCompleteReason Reason);

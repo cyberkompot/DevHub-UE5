@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "DevCoreGameInstanceSubsystem.generated.h"
 

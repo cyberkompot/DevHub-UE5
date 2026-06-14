@@ -3,6 +3,8 @@
 #pragma once
 
 #include "DevCoreLogging.h" // Included for log macros.
+#include "Logging/LogMacros.h"
+#include "UObject/SoftObjectPtr.h"
 
 struct FDevPadControllerPageActionView;
 class UDevPadPage;

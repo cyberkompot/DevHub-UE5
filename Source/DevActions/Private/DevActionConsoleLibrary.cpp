@@ -5,6 +5,8 @@
 #include "ConsoleSettings.h"
 #include "DevCore.h"
 #include "Engine/Console.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 
 struct FDevActionDummyConsoleCommand final : IConsoleCommand
 {

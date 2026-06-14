@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "Internationalization/Text.h"
+#include "UObject/NameTypes.h"
+
 struct EDevMenuPaths final
 {
 	DEVMENUS_API static const FName None;

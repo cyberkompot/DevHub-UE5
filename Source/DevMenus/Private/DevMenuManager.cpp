@@ -74,6 +74,7 @@ void UDevMenuManager::BeginDestroy()
 
 void UDevMenuManager::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category)
 {
+#if !NO_LOGGING
 	if (Category == LogConsoleResponse.GetCategoryName()
 		|| Category == LogCheatManagerCategoryName)
 	{
@@ -82,6 +83,7 @@ void UDevMenuManager::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, c
 			Widget->PushConsoleResponse(Verbosity, FText::FromStringView(V));
 		}
 	}
+#endif // !NO_LOGGING
 }
 
 void UDevMenuManager::ShowMenu(const FName InMenuPath)

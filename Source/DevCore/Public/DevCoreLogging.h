@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "Containers/UnrealString.h"
+#include "UObject/ReflectedTypeAccessors.h"
+
 #ifndef UE_LOG_FUNCTION
 	#define UE_LOG_FUNCTION(CategoryName, Verbosity, Format, ...) UE_LOG(CategoryName, Verbosity, TEXT("%s: ") Format, ANSI_TO_TCHAR(__FUNCTION__), ##__VA_ARGS__)
 #endif

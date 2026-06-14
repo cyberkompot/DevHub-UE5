@@ -7,6 +7,7 @@
 #include "Layout/WidgetPath.h"
 #include "Templates/SharedPointer.h"
 
+class SMenuAnchor;
 class UDevMenus;
 class UDevInputs;
 

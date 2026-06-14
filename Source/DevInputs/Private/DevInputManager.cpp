@@ -5,6 +5,7 @@
 #include "DevInputLogging.h"
 #include "Framework/DevCorePlaySession.h"
 #include "GameFramework/PlayerInput.h"
+#include "Misc/ScopeExit.h"
 
 using namespace DevInput::Logging;
 

@@ -16,6 +16,13 @@ namespace ClassBag::Editor
 	bool ClassBagCustomization = true;
 	static FAutoConsoleVariableRef CVarClassBagCustomization(TEXT("ClassBag.Editor.Customizations"), ClassBagCustomization, TEXT("Possibility to disable ClassBag customization for debugging purposes."));
 
+	bool ArePropertyBagsEqual(const FInstancedPropertyBag& InA, const FInstancedPropertyBag& InB)
+	{
+		const UPropertyBag* StructA = InA.GetPropertyBagStruct();
+		const UPropertyBag* StructB = InB.GetPropertyBagStruct();
+		return (StructA == StructB) && (!StructA || StructA->CompareScriptStruct(InA.GetValue().GetMemory(), InB.GetValue().GetMemory(), PPF_None));
+	}
+
 	bool IsClassTypeProperty(const FProperty* Property)
 	{
 		return CastField<FSoftClassProperty>(Property)
@@ -24,6 +31,154 @@ namespace ClassBag::Editor
 				&& CastField<FObjectProperty>(Property)->PropertyClass == UClass::StaticClass())
 			|| (CastField<FStructProperty>(Property)
 				&& CastField<FStructProperty>(Property)->Struct == FSoftClassPath::StaticStruct());
+	}
+
+	bool IsContainerTypeProperty(const FProperty* Property)
+	{
+		return CastField<FArrayProperty>(Property)
+			|| CastField<FSetProperty>(Property)
+			|| CastField<FMapProperty>(Property);
+	}
+
+	bool IsInstancedPropertyBagProperty(const FProperty* Property)
+	{
+		return CastField<FStructProperty>(Property)
+			&& CastField<FStructProperty>(Property)->Struct == FInstancedPropertyBag::StaticStruct();
+	}
+
+	bool IsContainerPropertyHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle)
+	{
+		return (PropertyHandle.IsValid() && IsContainerTypeProperty(PropertyHandle->GetProperty()));
+	}
+
+	bool IsGroupPropertyHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle)
+	{
+		return (PropertyHandle.IsValid() && !PropertyHandle->GetProperty());
+	}
+
+	TSharedPtr<IPropertyHandle> FindOwnerHandle(const TSharedPtr<IPropertyHandle>& PropertyHandle)
+	{
+		// Climb past category-like handles that have no backing FProperty, and container properties (TArray/TSet/TMap).
+		TSharedPtr<IPropertyHandle> OwnerPropertyHandle = nullptr;
+		for (TSharedPtr<IPropertyHandle> ParentHandle = PropertyHandle; (ParentHandle = ParentHandle->GetParentHandle()); /** Nop. */)
+		{
+			OwnerPropertyHandle = ParentHandle;
+			if (!IsGroupPropertyHandle(OwnerPropertyHandle) && !IsContainerPropertyHandle(OwnerPropertyHandle)) { break; }
+		}
+		return OwnerPropertyHandle;
+	}
+
+	TSharedPtr<IPropertyHandle> FindChildHandleRecursive(const TSharedPtr<IPropertyHandle>& PropertyHandle, const TFunctionRef<bool(const TSharedPtr<IPropertyHandle>&)>& Predicate)
+	{
+		if (!PropertyHandle.IsValid()) { return nullptr; }
+
+		uint32 NumChildren = 0;
+		if (PropertyHandle->GetNumChildren(NumChildren) != FPropertyAccess::Success) { return nullptr; }
+
+		for (uint32 i = 0; i < NumChildren; ++i)
+		{
+			TSharedPtr<IPropertyHandle> ChildPropertyHandle = PropertyHandle->GetChildHandle(i);
+			if (!ChildPropertyHandle.IsValid()) { continue; }
+
+			if (Predicate(ChildPropertyHandle))
+			{
+				return ChildPropertyHandle;
+			}
+			if (!ChildPropertyHandle->GetProperty())
+			{
+				// Descend into category-like handles that have no backing FProperty, allowing traversal across category boundaries.
+				if (TSharedPtr<IPropertyHandle> Found = FindChildHandleRecursive(ChildPropertyHandle, Predicate))
+				{
+					return Found;
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	TSharedPtr<IPropertyHandle> GetPropertyHandleForClassProperty(const TSharedPtr<IPropertyHandle>& PropertyHandle, FText& OutWarningText)
+	{
+		const TSharedPtr<IPropertyHandle> OwnerHandle = FindOwnerHandle(PropertyHandle);
+		if (!OwnerHandle) { return nullptr; }
+
+		const FName ClassPropertyName = PropertyHandle->HasMetaData(ClassPropertyMetaKeyName) ? FName(PropertyHandle->GetMetaData(ClassPropertyMetaKeyName)) : NAME_None;
+		if (ClassPropertyName.IsNone())
+		{
+			OutWarningText = INVTEXT("“ClassProperty” meta tag value is missing.");
+			return nullptr;
+		}
+
+		TSharedPtr<IPropertyHandle> ClassPropertyHandle = FindChildHandleRecursive(OwnerHandle, [ClassPropertyName](const TSharedPtr<IPropertyHandle>& ChildPropertyHandle)
+		{
+			const FProperty* ChildProperty = ChildPropertyHandle->GetProperty();
+			return ChildProperty && (ChildProperty->GetFName() == ClassPropertyName);
+		});
+		const FProperty* ClassProperty = (ClassPropertyHandle) ? ClassPropertyHandle->GetProperty() : nullptr;
+
+		if (!ClassProperty)
+		{
+			OutWarningText = FText::Format(INVTEXT("Class property “{0}” was not found."), FText::FromName(ClassPropertyName));
+			return nullptr;
+		}
+
+		if (!IsClassTypeProperty(ClassProperty))
+		{
+			OutWarningText = FText::Format(INVTEXT("Class property “{0}” must be of type FSoftClassPath, TSoftClassPtr, TSubclassOf or TObjectPtr<UClass>."), FText::FromName(ClassPropertyName));
+			return nullptr;
+		}
+
+		OutWarningText = FText::GetEmpty();
+		return ClassPropertyHandle;
+	}
+
+	TSharedPtr<IPropertyHandle> GetPropertyHandleForInlineClass(const TSharedPtr<IPropertyHandle>& PropertyHandle, FText& OutWarningText)
+	{
+		const TSharedPtr<IPropertyHandle> OwnerHandle = FindOwnerHandle(PropertyHandle);
+		if (!OwnerHandle) { return nullptr; }
+
+		const FProperty* Property = PropertyHandle->GetProperty();
+		if (!Property) { return nullptr; }
+
+		const TStringView<FNameBuilder::ElementType> PropertyName = FNameBuilder(Property->GetFName()).ToView();
+
+		bool bFoundInsideContainer = false;
+		TSharedPtr<IPropertyHandle> BagPropertyHandle = FindChildHandleRecursive(OwnerHandle, [&PropertyName, &bFoundInsideContainer](const TSharedPtr<IPropertyHandle>& ChildPropertyHandle)
+		{
+			const FProperty* ChildProperty = ChildPropertyHandle->GetProperty();
+			if (!ChildProperty) { return false; }
+			if (!ChildPropertyHandle->HasMetaData(ClassPropertyMetaKeyName)) { return false; }
+			if (ChildPropertyHandle->GetMetaData(ClassPropertyMetaKeyName) != PropertyName) { return false; }
+
+			if (IsInstancedPropertyBagProperty(ChildProperty)) { return true; }
+
+			bFoundInsideContainer =	(CastField<FArrayProperty>(ChildProperty) && IsInstancedPropertyBagProperty(CastField<FArrayProperty>(ChildProperty)->Inner))
+									|| (CastField<FSetProperty>(ChildProperty) && IsInstancedPropertyBagProperty(CastField<FSetProperty>(ChildProperty)->ElementProp))
+									|| (CastField<FMapProperty>(ChildProperty) && IsInstancedPropertyBagProperty(CastField<FMapProperty>(ChildProperty)->ValueProp));
+			return bFoundInsideContainer;
+		});
+		const FProperty* BagProperty = (BagPropertyHandle) ? BagPropertyHandle->GetProperty() : nullptr;
+
+		if (!BagProperty)
+		{
+			OutWarningText = FText::Format(INVTEXT("Bag property specified by meta = (ClassProperty = \"{0}\") was not found."), FText::FromStringView(PropertyName));
+			return nullptr;
+		}
+
+		if (bFoundInsideContainer)
+		{
+			OutWarningText = FText::Format(INVTEXT("Bag property specified by meta = (ClassProperty = \"{0}\") was found in a container property (TArray, TSet, or TMap). “InlineClass” metadata tag is ignored."), FText::FromStringView(PropertyName));
+			return nullptr;
+		}
+
+		if (!IsInstancedPropertyBagProperty(BagProperty))
+		{
+			OutWarningText = FText::Format(INVTEXT("Bag property specified by meta = (ClassProperty = \"{0}\") must be of type FInstancedPropertyBag."), FText::FromStringView(PropertyName));
+			return nullptr;
+		}
+
+		OutWarningText = FText::GetEmpty();
+		return BagPropertyHandle;
 	}
 
 	void ConstructDefaultCustomizationWithWarning(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, FText&& WarningText, const TFunction<TSharedRef<SWidget>()>& ValueWidget)
@@ -58,64 +213,6 @@ namespace ClassBag::Editor
 			]
 			.IsEnabled(PropertyHandle->IsEditable());
 	}
-
-	TSharedPtr<IPropertyHandle> GetPropertyHandleForClassProperty(const TSharedPtr<IPropertyHandle>& PropertyHandle, FText& OutWarningText)
-	{
-		const TSharedPtr<IPropertyHandle> ParentHandle = PropertyHandle->GetParentHandle();
-		if (!ParentHandle) { return nullptr; }
-
-		const FName SchemaPropertyName = PropertyHandle->HasMetaData(ClassPropertyMetaKeyName) ? FName(PropertyHandle->GetMetaData(ClassPropertyMetaKeyName)) : NAME_Name;
-		if (SchemaPropertyName.IsNone())
-		{
-			OutWarningText = INVTEXT("“ClassProperty” meta tag value is missing.");
-			return nullptr;
-		}
-
-		TSharedPtr<IPropertyHandle> SchemaHandle = ParentHandle->GetChildHandle(SchemaPropertyName);
-		const FProperty* SchemaProperty = (SchemaHandle) ? SchemaHandle->GetProperty() : nullptr;
-		if (!SchemaProperty)
-		{
-			OutWarningText = FText::Format(INVTEXT("No sibling shema property named “{0}” was found."), FText::FromName(SchemaPropertyName));
-			return nullptr;
-		}
-
-		if (IsClassTypeProperty(SchemaProperty))
-		{
-			OutWarningText = FText::GetEmpty();
-			return SchemaHandle;
-		}
-
-		OutWarningText = FText::Format(INVTEXT("Sibling property shema “{0}” must be FSoftClassPath, TSoftClassPtr, TSubclassOf or TObjectPtr<UClass>."), FText::FromName(SchemaPropertyName));
-		return nullptr;
-	}
-
-	TSharedPtr<IPropertyHandle> GetPropertyHandleForInlineClass(const TSharedPtr<IPropertyHandle>& PropertyHandle, FText& OutWarningText)
-	{
-		const TSharedPtr<IPropertyHandle> ParentHandle = PropertyHandle->GetParentHandle();
-		if (!ParentHandle) { return nullptr; }
-
-		uint32 NumChildren = 0;
-		if (ParentHandle->GetNumChildren(NumChildren) != FPropertyAccess::Success) { return nullptr; }
-
-		const FString PropertyName = PropertyHandle->GetProperty()->GetFName().ToString();
-		for (uint32 i = 0; i < NumChildren; ++i)
-		{
-			TSharedPtr<IPropertyHandle> ChildHandle = ParentHandle->GetChildHandle(i);
-			const FProperty* ChildProperty = ChildHandle->GetProperty();
-
-			const FStructProperty* ChildStructProperty = CastField<FStructProperty>(ChildProperty);
-			if (ChildStructProperty
-				&& ChildStructProperty->Struct == FInstancedPropertyBag::StaticStruct()
-				&& ChildHandle->HasMetaData(ClassPropertyMetaKeyName)
-				&& ChildHandle->GetMetaData(ClassPropertyMetaKeyName) == PropertyName)
-			{
-				return ChildHandle;
-			}
-		}
-
-		OutWarningText = FText::Format(INVTEXT("No sibling property bag found with meta = (ClassProperty = \"{0}\")."), FText::FromString(PropertyName));
-		return nullptr;
-	}
 }
 
 using namespace ClassBag::Editor;
@@ -145,7 +242,7 @@ void FClassBagInlineClassCustomization::CustomizeHeader(TSharedRef<IPropertyHand
 		ConstructDefaultCustomizationWithWarning(PropertyHandle, HeaderRow, MoveTemp(WarningText),
 			[&PropertyHandle]
 			{
-			 return PropertyHandle->CreatePropertyValueWidgetWithCustomization(nullptr);
+				return PropertyHandle->CreatePropertyValueWidgetWithCustomization(nullptr);
 			});
 	}
 }
@@ -191,6 +288,7 @@ void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHa
 		PropertyUtilities = CustomizationUtils.GetPropertyUtilities();
 
 		ClassHandle->SetOnPropertyValueChanged(FSimpleDelegate::CreateSP(this, &FClassBagClassPropertyCustomization::OnSchemaChanged));
+		const bool bInlineClassMode = ClassHandle->HasMetaData(InlineClassMetaKeyName) && !IsContainerPropertyHandle(PropertyHandle->GetParentHandle()); // InlineClass is no make sense for bags in TArray/TSet/TMap.
 
 		Initialize();
 
@@ -199,7 +297,7 @@ void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHa
 			[
 				PropertyHandle->CreatePropertyNameWidget()
 			];
-		if (ClassHandle->HasMetaData(InlineClassMetaKeyName))
+		if (bInlineClassMode)
 		{
 			TGuardValue<bool> SuppressCustomisationGuard(FClassBagInlineClassIdentifier::SuppressCustomisation, true);
 			HeaderRow
@@ -221,6 +319,24 @@ void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHa
 					[
 						ClassHandle->CreateDefaultPropertyButtonWidgets()
 					]
+				]
+				.IsEnabled(PropertyHandle->IsEditable())
+				.OverrideResetToDefault(FResetToDefaultOverride::Create(
+					FIsResetToDefaultVisible::CreateSP(this, &FClassBagClassPropertyCustomization::OnInlineClassIsResetToDefaultVisible),
+					FResetToDefaultHandler::CreateSP(this, &FClassBagClassPropertyCustomization::OnInlineClassResetToDefaultClicked)));
+		}
+		else
+		{
+			const FSlateFontInfo ValueFont = FAppStyle::Get().GetFontStyle("PropertyWindow.NormalFont");
+			const FText ValueText = (ObjectClass) ? FText::FromName(ObjectClass->GetFName()) : INVTEXT("None");
+			HeaderRow
+				.ValueContent()
+				.VAlign(VAlign_Center)
+				[
+					SNew(SEditableTextBox)
+					.IsEnabled(false)
+					.Font(ValueFont)
+					.Text(ValueText)
 				]
 				.IsEnabled(PropertyHandle->IsEditable());
 		}
@@ -251,7 +367,7 @@ void FClassBagClassPropertyCustomization::CustomizeChildren(TSharedRef<IProperty
 	PropertyHandle->MarkHiddenByCustomization();
 
 	if (!ObjectClass) { return; }
-	if (!ObjectProperties) { return; }
+	if (!GetObjectProperties()) { return; }
 	if (DisplayBag.GetNumPropertiesInBag() == 0) { return; }
 
 	PropertyHandle->RemoveChildren();
@@ -287,16 +403,18 @@ void FClassBagClassPropertyCustomization::CustomizeChildren(TSharedRef<IProperty
 void FClassBagClassPropertyCustomization::Initialize()
 {
 	ObjectClass = GetObjectClass();
-	ObjectProperties = GetObjectProperties();
 
-	if (ObjectClass && ObjectProperties)
+	// Unlike ObjectClass, we cannot cache the bag pointer.
+	// The bag may reside in a TArray, TSet, or TMap whose storage can be reallocated, leaving any cached pointer dangling.
+	if (FInstancedPropertyBag* ObjectProperties = GetObjectProperties(); ObjectClass && ObjectProperties)
 	{
-		CDOBag = FClassBagUtils::MakePropertyBagByClass(ObjectClass, true);
+		// Always actualize the bag data to resolve redirects and type changes,
+		// but do not mark the asset as dirty, as this is not a user-initiated modification.
+		FClassBagUtils::ActualizePropertyBag(ObjectClass, *ObjectProperties);
 
+		CDOBag = FClassBagUtils::MakePropertyBagByClass(ObjectClass, true);
 		DisplayBag = *ObjectProperties;
 		DisplayBag.MigrateToNewBagInstance(CDOBag);
-
-		*ObjectProperties = FClassBagUtils::MakePropertyBagWithClassOverrides(DisplayBag, ObjectClass);
 	}
 
 	if (DisplayBag.IsValid())
@@ -359,14 +477,16 @@ void FClassBagClassPropertyCustomization::OnSchemaChanged()
 void FClassBagClassPropertyCustomization::OnDisplayBagChanged()
 {
 	if (!ObjectClass) { return; }
-	if (!ObjectProperties) { return; }
 	if (!BagHandle.IsValid()) { return; }
+
+	FInstancedPropertyBag* ObjectProperties = GetObjectProperties();
+	if (!ObjectProperties) { return; }
 
 	const FInstancedPropertyBag ObjectPropertiesOverrides = FClassBagUtils::MakePropertyBagWithClassOverrides(DisplayBag, ObjectClass);
 
-	if (ObjectProperties->GetValue() != ObjectPropertiesOverrides.GetValue())
+	// Only dirty the asset if the overrides actually changed (deep value compare).
+	if (!ArePropertyBagsEqual(*ObjectProperties, ObjectPropertiesOverrides))
 	{
-		// Only dirty the asset if the property bag actually changed.
 		BagHandle->NotifyPreChange();
 		*ObjectProperties = ObjectPropertiesOverrides;
 		BagHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
@@ -399,23 +519,41 @@ bool FClassBagClassPropertyCustomization::OnDisplayBagPropertyIsResetToDefaultVi
 
 void FClassBagClassPropertyCustomization::OnDisplayBagPropertyResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle)
 {
+	if (!PropertyHandle.IsValid() || !PropertyHandle->GetProperty()) { return; }
+
 	const FName DisplayBagPropertyName = PropertyHandle->GetProperty()->GetFName();
 	const FPropertyBagPropertyDesc* DisplayBagPropertyDesc = DisplayBag.FindPropertyDescByName(DisplayBagPropertyName);
 	if (!DisplayBagPropertyDesc) { return; }
 
-	const FGuid DisplayBagPropertyId = DisplayBagPropertyDesc->ID;
-	const FPropertyBagPropertyDesc* CDOBagPropertyDesc = CDOBag.FindPropertyDescByID(DisplayBagPropertyId);
+	const FPropertyBagPropertyDesc* CDOBagPropertyDesc = CDOBag.FindPropertyDescByID(DisplayBagPropertyDesc->ID);
 	if (!CDOBagPropertyDesc) { return; }
 
 	const FProperty* CDOBagProperty = CDOBagPropertyDesc->CachedProperty;
 	const FProperty* DisplayBagProperty = DisplayBagPropertyDesc->CachedProperty;
+	if (!CDOBagProperty || !DisplayBagProperty) { return; }
 
 	const uint8* CDOBagMemory = CDOBag.GetValue().GetMemory();
 	uint8* DisplayBagMemory = DisplayBag.GetMutableValue().GetMemory();
-
 	const void* CDOBagValuePtr = CDOBagProperty->ContainerPtrToValuePtr<void>(CDOBagMemory);
 
+	PropertyHandle->NotifyPreChange();
 	DisplayBagProperty->SetValue_InContainer(DisplayBagMemory, CDOBagValuePtr);
+	PropertyHandle->NotifyPostChange(EPropertyChangeType::ResetToDefault);
+
+	OnDisplayBagChanged();
+}
+
+bool FClassBagClassPropertyCustomization::OnInlineClassIsResetToDefaultVisible(TSharedPtr<IPropertyHandle> PropertyHandle) const
+{
+	return ClassHandle.IsValid() && ClassHandle->DiffersFromDefault();
+}
+
+void FClassBagClassPropertyCustomization::OnInlineClassResetToDefaultClicked(TSharedPtr<IPropertyHandle> PropertyHandle)
+{
+	if (ClassHandle.IsValid())
+	{
+		ClassHandle->ResetToDefault();
+	}
 }
 
 void FClassBagClassPropertyCustomization::OnBlueprintClassRecompiled(UBlueprint* Blueprint)
@@ -455,21 +593,19 @@ void FClassBagCustomizations::Initialize()
 		FSoftClassProperty::StaticClass()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FClassBagInlineClassCustomization::MakeInstance),
 		DevPropertyBagInlineSchemaIdentifier);
-	/*
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FObjectProperty::StaticClass()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FClassBagInlineClassCustomization::MakeInstance),
-		DevPropertyBagInlineSchemaIdentifier);
+		DevPropertyBagInlineSchemaIdentifier); // TODO: Fix support for TObjectPtr<UClass>.
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FClassProperty::StaticClass()->GetFName(), // ClassProperty
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FClassBagInlineClassCustomization::MakeInstance),
-		DevPropertyBagInlineSchemaIdentifier);
+		DevPropertyBagInlineSchemaIdentifier); // TODO: Fix support for TSubclassOf<>.
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FStructProperty::StaticClass()->GetFName(), //StructProperty
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FClassBagInlineClassCustomization::MakeInstance),
-		DevPropertyBagInlineSchemaIdentifier);
-	*/
-	
+		DevPropertyBagInlineSchemaIdentifier); // TODO: Fix support for FSoftClassPath.
+
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		FInstancedPropertyBag::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FClassBagClassPropertyCustomization::MakeInstance),
@@ -485,12 +621,10 @@ void FClassBagCustomizations::Uninitialize()
 		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
 		PropertyModule.UnregisterCustomPropertyTypeLayout(FSoftClassProperty::StaticClass()->GetFName(), DevPropertyBagInlineSchemaIdentifier);
-		/*
 		PropertyModule.UnregisterCustomPropertyTypeLayout(FObjectProperty::StaticClass()->GetFName(), DevPropertyBagInlineSchemaIdentifier);
 		PropertyModule.UnregisterCustomPropertyTypeLayout(FClassProperty::StaticClass()->GetFName(), DevPropertyBagInlineSchemaIdentifier);
 		PropertyModule.UnregisterCustomPropertyTypeLayout(FStructProperty::StaticClass()->GetFName(), DevPropertyBagInlineSchemaIdentifier);
-		*/
-		
+
 		PropertyModule.UnregisterCustomPropertyTypeLayout(FInstancedPropertyBag::StaticStruct()->GetFName(), PropertyBagSchemaPropertyIdentifier);
 
 		PropertyModule.NotifyCustomizationModuleChanged();

@@ -16,14 +16,14 @@ public class DevCore : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
+                "Core",
+                "CoreUObject",
             }
         );
 
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "Core",
-                "CoreUObject",
                 "Engine",
                 "StructUtils",
                 "Slate",

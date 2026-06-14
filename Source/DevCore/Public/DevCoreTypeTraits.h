@@ -6,10 +6,16 @@
 
 #if UE_VERSION_AT_LEAST(5, 6, 0)
 
-template<class T>
+template <typename T>
 struct TRemoveConst
 {
-	using Type = std::remove_const_t<T>;
+	using Type = T;
+};
+
+template <typename T>
+struct TRemoveConst<const T>
+{
+	using Type = T;
 };
 
 #endif

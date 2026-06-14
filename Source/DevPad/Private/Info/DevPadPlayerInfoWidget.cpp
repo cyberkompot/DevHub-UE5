@@ -3,6 +3,7 @@
 #include "Info/DevPadPlayerInfoWidget.h"
 
 #include "Framework/DevCorePlaySession.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/WorldSettings.h"
 
 FText UDevPadPlayerInfoWidget::GetInfoText(const FString& Format) const

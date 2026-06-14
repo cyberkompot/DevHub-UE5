@@ -69,7 +69,7 @@ struct FDevActionBase : public FDevAction
 	GENERATED_BODY()
 
 	/** Action label. */
-	UPROPERTY(EditAnywhere, Category = "Dev Action")
+	UPROPERTY(EditAnywhere, Category = "Action")
 	FText Label;
 
 protected:
@@ -86,10 +86,10 @@ struct FDevActionObject : public FDevActionBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Action")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action", meta = (InlineClass))
 	TSoftClassPtr<UDevActionScript> ActionScript;
 
-	UPROPERTY(EditAnywhere, Category = "Dev Action", meta = (HideInDetailPanel))
+	UPROPERTY(EditAnywhere, Category = "Action", DisplayName = "Action Script", meta = (ClassProperty = "ActionScript", DisplayAfter = "Label"))
 	FInstancedPropertyBag ActionProperties;
 
 protected:
@@ -187,7 +187,7 @@ struct FDevActionsSet : public FDevActionBase
 	GENERATED_BODY()
 
 	/** Set of actions that need to be executed. */
-	UPROPERTY(EditAnywhere, Category = "Dev Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere, Category = "Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	TArray<FInstancedStruct> Actions;
 
 protected:
@@ -208,7 +208,7 @@ struct FDevActionsStack : public FDevActionBase
 	GENERATED_BODY()
 
 	/** Set of actions that need to be executed. */
-	UPROPERTY(EditAnywhere, Category = "Dev Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere, Category = "Action", Meta = (BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	TArray<FInstancedStruct> Actions;
 
 protected:

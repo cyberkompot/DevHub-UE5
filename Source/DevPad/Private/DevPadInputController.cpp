@@ -6,6 +6,7 @@
 #include "DevInputShortcutBuilder.h"
 #include "DevInputTypes.h"
 #include "DevPadLogging.h"
+#include "GameFramework/PlayerInput.h"
 
 const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputController::PadInputShortcuts
 {

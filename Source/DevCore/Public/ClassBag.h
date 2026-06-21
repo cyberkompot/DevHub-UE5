@@ -8,7 +8,7 @@
 #define UE_VERSION_NEWER_THAN_OR_EQUAL(MajorVersion, MinorVersion, PatchVersion) UE_GREATER_SORT(ENGINE_MAJOR_VERSION, MajorVersion, UE_GREATER_SORT(ENGINE_MINOR_VERSION, MinorVersion, UE_GREATER_SORT(ENGINE_PATCH_VERSION, PatchVersion, true)))
 #endif
 
-#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 5, 0) && !(defined(UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5) && UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5)
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 5, 0) && !UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5
 #include "StructUtils/PropertyBag.h"
 #else
 #include "PropertyBag.h"
@@ -114,17 +114,6 @@ struct FClassBagUtils final
 	 */
 	static UE_API FPropertyBagPropertyDesc MakeStablePropertyDesc(const UClass* InClass, const FProperty* InProperty);
 
-	/**
-	 * Reports objects referenced by the bag to a reference collector.
-	 *
-	 * Call this from the AddReferencedObjects of any owner that holds the bag by value,
-	 * to keep those references alive across garbage collection.
-	 *
-	 * @param InCollector Target collector.
-	 * @param InBag Bag whose references are reported.
-	 */
-	static UE_API void AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag);
-
 #if WITH_EDITOR
 	/**
 	 * Migrates the bag in place so its structure matches the current layout of the class, re-keying surviving
@@ -168,7 +157,7 @@ struct UE_API FClassBagCompatiblePropertiesIterator final
 
 private:
 	TFieldIterator<FProperty> It;
-	TSet<FName, DefaultKeyFuncs<FName>, TInlineSparseSetAllocator<ExpectedPropertiesNum>> VisitedProperties; // Avoid duplicates by name (can happen via interface + class, or shadowed members).
+	TSet<FName, DefaultKeyFuncs<FName>, TInlineSetAllocator<ExpectedPropertiesNum>> VisitedProperties; // Avoid duplicates by name (can happen via interface + class, or shadowed members).
 
 	/** Advances iterator until it lands on an overridable, not-yet-visited property, or reaches the end. */
 	void IterateToNext();

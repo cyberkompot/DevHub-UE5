@@ -8,6 +8,120 @@
 #include "IPropertyUtilities.h"
 #include "PropertyBagDetails.h"
 
+#if UE_VERSION_OLDER_THAN(5, 6, 0)
+#include "PropertyEditor/Private/PropertyNode.h"
+#include "PropertyEditor/Private/PropertyHandleImpl.h"
+
+// See DEFINE_PRIVATE_ACCESS in https://github.com/VoxelPlugin/VoxelCore/blob/master/Source/VoxelCore/Public/VoxelMinimal/VoxelMacros.h
+#define DEFINE_PRIVATE_ACCESS(Class, Property) \
+	namespace PrivateAccess \
+	{ \
+		template<typename> \
+		struct TClass_ ## Property; \
+		\
+		template<> \
+		struct TClass_ ## Property<Class> \
+		{ \
+			template<auto PropertyPtr> \
+			struct TProperty_ ## Property \
+			{ \
+				friend auto& Property(Class& Object) \
+				{ \
+					return Object.*PropertyPtr; \
+				} \
+				friend auto& Property(const Class& Object) \
+				{ \
+					return Object.*PropertyPtr; \
+				} \
+			}; \
+		}; \
+		template struct TClass_ ## Property<Class>::TProperty_ ## Property<&Class::Property>; \
+		\
+		auto& Property(Class& Object); \
+		auto& Property(const Class& Object); \
+	}
+
+namespace ClassBag::EngineCompatibility
+{
+	DEFINE_PRIVATE_ACCESS(FPropertyNode, ChildNodes);
+}
+#endif
+
+namespace ClassBag::EngineCompatibility
+{
+	TSharedPtr<SWidget> FPropertyBagDetails_MakeAddPropertyWidget(const TSharedRef<IPropertyHandle> PropertyHandle, const IPropertyTypeCustomizationUtils& CustomizationUtils)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 2, 0)
+		return FPropertyBagDetails::MakeAddPropertyWidget(PropertyHandle, CustomizationUtils.GetPropertyUtilities());
+#else
+		return FPropertyBagDetails::MakeAddPropertyWidget(PropertyHandle, CustomizationUtils.GetPropertyUtilities().Get());
+#endif
+	}
+
+	EPropertyChangeType::Type EPropertyChangeType_ResetToDefault()
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 6, 0)
+		return  EPropertyChangeType::ResetToDefault;
+#else
+		return EPropertyChangeType::ValueSet;
+#endif
+	};
+
+	uint8* FStructView_GetMutableValue(FStructView StructView)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 3, 0)
+		return StructView.GetMemory();
+#else
+		return StructView.GetMutableMemory();
+#endif
+	};
+
+	TSharedRef<SWidget> IPropertyHandle_CreatePropertyValueWidgetWithCustomization(const TSharedPtr<IPropertyHandle>& PropertyHandle, const IDetailsView* DetailsView)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 4, 0)
+		return PropertyHandle->CreatePropertyValueWidgetWithCustomization(nullptr);
+#else
+		return PropertyHandle->CreatePropertyValueWidget(false);
+#endif
+	}
+
+	void IPropertyHandle_RemoveChildren(const TSharedRef<IPropertyHandle>& PropertyHandle)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 6, 0)
+		PropertyHandle->RemoveChildren();
+#else
+		if (const TSharedPtr<FPropertyNode> PropertyNode = StaticCastSharedRef<FPropertyHandleBase>(PropertyHandle)->GetPropertyNode())
+		{
+			PrivateAccess::ChildNodes(*PropertyNode).Empty();
+		}
+#endif
+	}
+
+	void IPropertyUtilities_RequestForceRefresh(const TSharedPtr<IPropertyUtilities>& PropertyUtilities)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 4, 0)
+		PropertyUtilities->RequestForceRefresh();
+#else
+		static bool bForceRefreshRequested = false;
+		if (!bForceRefreshRequested)
+		{
+			bForceRefreshRequested = true;
+			PropertyUtilities->EnqueueDeferredAction(FSimpleDelegate::CreateLambda([PropertyUtilitiesWeak = TWeakPtr<IPropertyUtilities>(PropertyUtilities)]
+			{
+				bForceRefreshRequested = false;
+				if (const TSharedPtr<IPropertyUtilities> PropertyUtilitiesPtr = PropertyUtilitiesWeak.Pin())
+				{
+					PropertyUtilitiesPtr->ForceRefresh();
+				}
+			}));
+		}
+#endif
+	}
+}
+
+using namespace ClassBag::EngineCompatibility;
+
+
 namespace ClassBag::Editor
 {
 	const FLazyName ClassPropertyMetaKeyName = "ClassProperty";
@@ -30,7 +144,7 @@ namespace ClassBag::Editor
 			|| (CastField<FObjectProperty>(Property)
 				&& CastField<FObjectProperty>(Property)->PropertyClass == UClass::StaticClass())
 			|| (CastField<FStructProperty>(Property)
-				&& CastField<FStructProperty>(Property)->Struct == FSoftClassPath::StaticStruct());
+				&& CastField<FStructProperty>(Property)->Struct == TBaseStructure<FSoftClassPath>::Get());
 	}
 
 	bool IsContainerTypeProperty(const FProperty* Property)
@@ -242,7 +356,7 @@ void FClassBagInlineClassCustomization::CustomizeHeader(TSharedRef<IPropertyHand
 		ConstructDefaultCustomizationWithWarning(PropertyHandle, HeaderRow, MoveTemp(WarningText),
 			[&PropertyHandle]
 			{
-				return PropertyHandle->CreatePropertyValueWidgetWithCustomization(nullptr);
+				return IPropertyHandle_CreatePropertyValueWidgetWithCustomization(PropertyHandle, nullptr);
 			});
 	}
 }
@@ -273,8 +387,14 @@ FClassBagClassPropertyCustomization::~FClassBagClassPropertyCustomization()
 void FClassBagClassPropertyCustomization::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(ObjectClass);
-	FClassBagUtils::AddPropertyBagToReferenceCollector(Collector, CDOBag);
-	FClassBagUtils::AddPropertyBagToReferenceCollector(Collector, DisplayBag);
+	const UScriptStruct* BagStruct = FInstancedPropertyBag::StaticStruct();
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 2, 0)
+	Collector.AddPropertyReferencesWithStructARO(BagStruct, &CDOBag);
+	Collector.AddPropertyReferencesWithStructARO(BagStruct, &DisplayBag);
+#else
+	Collector.AddReferencedObjects(BagStruct, &CDOBag);
+	Collector.AddReferencedObjects(BagStruct, &DisplayBag);
+#endif
 }
 
 void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)
@@ -311,7 +431,7 @@ void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHa
 					.HAlign(HAlign_Fill)
 					.FillWidth(1)
 					[
-						ClassHandle->CreatePropertyValueWidgetWithCustomization(nullptr)
+						IPropertyHandle_CreatePropertyValueWidgetWithCustomization(ClassHandle, nullptr)
 					]
 					+ SHorizontalBox::Slot()
 					.AutoWidth()
@@ -347,7 +467,7 @@ void FClassBagClassPropertyCustomization::CustomizeHeader(TSharedRef<IPropertyHa
 		ConstructDefaultCustomizationWithWarning(PropertyHandle, HeaderRow, MoveTemp(WarningText),
 			[&PropertyHandle, &CustomizationUtils]
 			{
-				return FPropertyBagDetails::MakeAddPropertyWidget(PropertyHandle, CustomizationUtils.GetPropertyUtilities()).ToSharedRef();
+				return FPropertyBagDetails_MakeAddPropertyWidget(PropertyHandle, CustomizationUtils).ToSharedRef();
 			});
 	}
 }
@@ -357,10 +477,17 @@ void FClassBagClassPropertyCustomization::CustomizeChildren(TSharedRef<IProperty
 	// If bag's class is missing, invalid, or wrong-type, use the standard FInstancedPropertyBag children renderer.
 	if (!ClassHandle)
 	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 6, 0)
 		FPropertyBagInstanceDataDetails::FConstructParams Params;
 		Params.BagStructProperty = PropertyHandle;
 		Params.PropUtils = CustomizationUtils.GetPropertyUtilities();
-		ChildBuilder.AddCustomBuilder(MakeShared<FPropertyBagInstanceDataDetails>(Params));
+		TSharedRef<FPropertyBagInstanceDataDetails> CustomBuilder = MakeShared<FPropertyBagInstanceDataDetails>(Params);
+#elif UE_VERSION_NEWER_THAN_OR_EQUAL(5, 2, 0)
+		TSharedRef<FPropertyBagInstanceDataDetails> CustomBuilder = MakeShared<FPropertyBagInstanceDataDetails>(PropertyHandle, CustomizationUtils.GetPropertyUtilities(), false);
+#else
+		TSharedRef<FPropertyBagInstanceDataDetails> CustomBuilder = MakeShared<FPropertyBagInstanceDataDetails>(PropertyHandle, CustomizationUtils.GetPropertyUtilities().Get(), false);
+#endif
+		ChildBuilder.AddCustomBuilder(MoveTemp(CustomBuilder));
 		return;
 	}
 
@@ -370,7 +497,7 @@ void FClassBagClassPropertyCustomization::CustomizeChildren(TSharedRef<IProperty
 	if (!GetObjectProperties()) { return; }
 	if (DisplayBag.GetNumPropertiesInBag() == 0) { return; }
 
-	PropertyHandle->RemoveChildren();
+	IPropertyHandle_RemoveChildren(PropertyHandle);
 
 	const TArray<TSharedPtr<IPropertyHandle>> BagPropertyHandles = PropertyHandle->AddChildStructure(DisplayScope.ToSharedRef());
 	const FSimpleDelegate OnBagPropertyChanged = FSimpleDelegate::CreateSP(this, &FClassBagClassPropertyCustomization::OnDisplayBagChanged);
@@ -406,20 +533,23 @@ void FClassBagClassPropertyCustomization::Initialize()
 
 	// Unlike ObjectClass, we cannot cache the bag pointer.
 	// The bag may reside in a TArray, TSet, or TMap whose storage can be reallocated, leaving any cached pointer dangling.
-	if (FInstancedPropertyBag* ObjectProperties = GetObjectProperties(); ObjectClass && ObjectProperties)
+	if (FInstancedPropertyBag* ObjectProperties = GetObjectProperties())
 	{
 		// Always actualize the bag data to resolve redirects and type changes,
 		// but do not mark the asset as dirty, as this is not a user-initiated modification.
 		FClassBagUtils::ActualizePropertyBag(ObjectClass, *ObjectProperties);
 
-		CDOBag = FClassBagUtils::MakePropertyBagByClass(ObjectClass, true);
-		DisplayBag = *ObjectProperties;
-		DisplayBag.MigrateToNewBagInstance(CDOBag);
+		if (ObjectClass)
+		{
+			CDOBag = FClassBagUtils::MakePropertyBagByClass(ObjectClass, true);
+			DisplayBag = *ObjectProperties;
+			DisplayBag.MigrateToNewBagInstance(CDOBag);
+		}
 	}
 
 	if (DisplayBag.IsValid())
 	{
-		DisplayScope = MakeShared<FStructOnScope>(DisplayBag.GetPropertyBagStruct(), DisplayBag.GetMutableValue().GetMemory());
+		DisplayScope = MakeShared<FStructOnScope>(DisplayBag.GetPropertyBagStruct(), FStructView_GetMutableValue(DisplayBag.GetMutableValue()));
 	}
 }
 
@@ -446,7 +576,7 @@ UClass* FClassBagClassPropertyCustomization::GetObjectClass() const
 		UClass** ClassPtr = static_cast<UClass**>(RawData);
 		return ClassPtr ? *ClassPtr : nullptr;
 	}
-	if (const FStructProperty* StructProperty = CastField<FStructProperty>(SchemaProperty); StructProperty && StructProperty->Struct == FSoftClassPath::StaticStruct())
+	if (const FStructProperty* StructProperty = CastField<FStructProperty>(SchemaProperty); StructProperty && StructProperty->Struct == TBaseStructure<FSoftClassPath>::Get())
 	{
 		const FSoftClassPath* SoftClassPathPtr = static_cast<FSoftClassPath*>(RawData);
 		return (SoftClassPathPtr && !SoftClassPathPtr->IsNull()) ? SoftClassPathPtr->ResolveClass() : nullptr;
@@ -466,12 +596,12 @@ FInstancedPropertyBag* FClassBagClassPropertyCustomization::GetObjectProperties(
 
 void FClassBagClassPropertyCustomization::OnSchemaChanged()
 {
-	if (!PropertyUtilities) { return; }
 	if (!BagHandle.IsValid()) { return; }
 
-	BagHandle->NotifyPreChange();
-	PropertyUtilities->RequestForceRefresh();
-	BagHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
+	if (PropertyUtilities)
+	{
+		IPropertyUtilities_RequestForceRefresh(PropertyUtilities);
+	}
 }
 
 void FClassBagClassPropertyCustomization::OnDisplayBagChanged()
@@ -533,12 +663,12 @@ void FClassBagClassPropertyCustomization::OnDisplayBagPropertyResetToDefaultClic
 	if (!CDOBagProperty || !DisplayBagProperty) { return; }
 
 	const uint8* CDOBagMemory = CDOBag.GetValue().GetMemory();
-	uint8* DisplayBagMemory = DisplayBag.GetMutableValue().GetMemory();
+	uint8* DisplayBagMemory = FStructView_GetMutableValue(DisplayBag.GetMutableValue());
 	const void* CDOBagValuePtr = CDOBagProperty->ContainerPtrToValuePtr<void>(CDOBagMemory);
 
 	PropertyHandle->NotifyPreChange();
 	DisplayBagProperty->SetValue_InContainer(DisplayBagMemory, CDOBagValuePtr);
-	PropertyHandle->NotifyPostChange(EPropertyChangeType::ResetToDefault);
+	PropertyHandle->NotifyPostChange(EPropertyChangeType_ResetToDefault());
 
 	OnDisplayBagChanged();
 }
@@ -560,7 +690,7 @@ void FClassBagClassPropertyCustomization::OnBlueprintClassRecompiled(UBlueprint*
 {
 	if (PropertyUtilities)
 	{
-		PropertyUtilities->RequestForceRefresh();
+		IPropertyUtilities_RequestForceRefresh(PropertyUtilities);
 	}
 }
 
@@ -568,7 +698,7 @@ void FClassBagClassPropertyCustomization::OnNativeClassReloaded(EReloadCompleteR
 {
 	if (PropertyUtilities)
 	{
-		PropertyUtilities->RequestForceRefresh();
+		IPropertyUtilities_RequestForceRefresh(PropertyUtilities);
 	}
 }
 
@@ -579,7 +709,7 @@ void FClassBagClassPropertyCustomization::OnObjectsReinstanced(const TMap<UObjec
 	{
 		if (PropertyUtilities)
 		{
-			PropertyUtilities->RequestForceRefresh();
+			IPropertyUtilities_RequestForceRefresh(PropertyUtilities);
 		}
 	}
 }

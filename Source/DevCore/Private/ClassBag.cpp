@@ -4,6 +4,46 @@
 
 #include "Hash/xxhash.h"
 
+namespace ClassBag::EngineCompatibility
+{
+	FGuid FGuid_NewGuidFromHashBytes(const void* HashData, const int64 DataLen)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 7, 0)
+		return FGuid::NewGuidFromHashBytes(HashData, DataLen);
+#else
+		alignas(uint32) uint8 Buffer[16];
+		if (DataLen < 16 || !IsAligned(HashData, alignof(uint32)))
+		{
+			FMemory::Memcpy(Buffer, HashData, FMath::Min(DataLen, 16));
+			if (DataLen < 16) { FMemory::Memzero(&Buffer[DataLen], 16 - DataLen); }
+			HashData = Buffer;
+		}
+
+		const uint32* HashInts = reinterpret_cast<const uint32*>(HashData);
+		uint32 A = uint32(HashInts[0]);
+		uint32 B = uint32(HashInts[1]);
+		uint32 C = uint32(HashInts[2]);
+		uint32 D = uint32(HashInts[3]);
+
+		B = (B & ~0x0000f000) | 0x00003000;
+		C = (C & ~0xc0000000) | 0x80000000;
+		return FGuid(A, B, C, D);
+#endif
+	}
+
+	uint8* FStructView_GetMutableValue(FStructView StructView)
+	{
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 3, 0)
+		return StructView.GetMemory();
+#else
+		return StructView.GetMutableMemory();
+#endif
+	};
+}
+
+using namespace ClassBag::EngineCompatibility;
+
+
 namespace ClassBag::Private
 {
 	bool IsPropertyOverridable(const FProperty* InProperty)
@@ -105,7 +145,7 @@ namespace ClassBag::Private
 		}
 
 		const UClass* Class = InObject->GetClass();
-		uint8* BagMemory = InBag.GetMutableValue().GetMemory();
+		uint8* BagMemory = FStructView_GetMutableValue(InBag.GetMutableValue());
 		for (const FPropertyBagPropertyDesc& BagPropertyDesc : BagDescs)
 		{
 			const FProperty* ObjectProperty = FindCompatibleObjectProperty(Class, BagPropertyDesc);
@@ -116,7 +156,7 @@ namespace ClassBag::Private
 
 			if (OutOriginalValues)
 			{
-				OutOriginalValues->SetValue(BagPropertyDesc.Name, ObjectProperty, InObject);
+				(void)OutOriginalValues->SetValue(BagPropertyDesc.Name, ObjectProperty, InObject);
 			}
 
 			BagProperty->SetValue_InContainer(BagMemory, ObjectValuePtr);
@@ -220,7 +260,7 @@ namespace ClassBag::Private
 
 		// Copy values across using the stable ID to resolved property mapping.
 		const uint8* SourceMemory = InBag.GetValue().GetMemory();
-		uint8* NewMemory = NewBag.GetMutableValue().GetMemory();
+		uint8* NewMemory = FStructView_GetMutableValue(NewBag.GetMutableValue());
 		for (int32 Index = 0; Index < NewDescs.Num(); ++Index)
 		{
 			const FProperty* SourceProperty = SourceProperties[Index];
@@ -351,7 +391,7 @@ FGuid FClassBagUtils::GetStablePropertyId(const UClass* InClass, const FName InP
 	alignas(uint32) uint8 HashBytes[16];
 	FNameBuilder PropertyNameBuilder(InPropertyName);
 	FXxHash128::HashBuffer(PropertyNameBuilder.GetData(), PropertyNameBuilder.Len()).ToByteArray(HashBytes);
-	return FGuid::NewGuidFromHashBytes(HashBytes, UE_ARRAY_COUNT(HashBytes));
+	return FGuid_NewGuidFromHashBytes(HashBytes, UE_ARRAY_COUNT(HashBytes));
 }
 
 FPropertyBagPropertyDesc FClassBagUtils::MakeStablePropertyDesc(const UClass* InClass, const FProperty* InProperty)
@@ -366,20 +406,6 @@ FPropertyBagPropertyDesc FClassBagUtils::MakeStablePropertyDesc(const UClass* In
 	else
 	{
 		return FPropertyBagPropertyDesc();
-	}
-}
-
-void FClassBagUtils::AddPropertyBagToReferenceCollector(FReferenceCollector& InCollector, FInstancedPropertyBag& InBag)
-{
-	const UPropertyBag* BagStruct = InBag.GetPropertyBagStruct();
-	if (!BagStruct) { return; }
-
-	TObjectPtr<const UPropertyBag> BagStructPtr(BagStruct);
-	InCollector.AddReferencedObject(BagStructPtr);
-
-	if (uint8* BagMemory = InBag.GetMutableValue().GetMemory())
-	{
-		InCollector.AddPropertyReferencesWithStructARO(BagStruct, BagMemory);
 	}
 }
 

@@ -13,6 +13,8 @@ public class DevEditor : ModuleRules
             PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
         }
 
+        PrivateIncludePaths.Add(System.IO.Path.Combine(EngineDirectory, "Source/Editor")); // Required for ClassBag compatibility across UE 5.1-5.6.
+
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
@@ -25,6 +27,7 @@ public class DevEditor : ModuleRules
                 "Core",
                 "CoreUObject",
                 "Engine",
+                "PropertyEditor",
                 "Slate",
                 "SlateCore",
                 "StructUtils",

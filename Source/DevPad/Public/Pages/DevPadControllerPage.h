@@ -28,10 +28,7 @@ private:
 	FConstStructView StructView;
 };
 
-/**
- * DevHub Pad Page allows to associate actions with game controller buttons.
- * @see https://github.com/cyberkompot/DevHub-UE5
- */
+/** DevHub Pad Page allows to associate actions with game controller buttons. */
 UCLASS(BlueprintType, Blueprintable, DisplayName = "Controller Page", Category = "DevHub|Pad", EditInlineNew, CollapseCategories, Meta = (LoadBehavior = "LazyOnDemand"))
 class DEVPAD_API UDevPadControllerPage : public UDevPadPageBase
 {
@@ -83,10 +80,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Thumbstick Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct RightThumbstickAction;
-
-
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Left + Right Thumbsticks Action", Category = "Button Shortcuts", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	FInstancedStruct LeftPlusRightThumbsticksAction;
 
 
 	//~ Begin IDevPadPage interface.

@@ -13,9 +13,9 @@ public:
 	FText GetInfoText(const FString& Format = TEXT("{Mode}: {Name} ({Class}), {Location}, {Camera}, Slomo: {Slomo}")) const;
 
 protected:
-	//~ Begin UUserWidget Interface
+	//~ Begin UUserWidget Interface.
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	//~ Begin UUserWidget Interface
+	//~ End UUserWidget Interface.
 
 	FStringFormatNamedArguments FormatArguments;
 };

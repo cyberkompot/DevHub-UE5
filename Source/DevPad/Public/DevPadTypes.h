@@ -254,7 +254,7 @@ public:
 	virtual void PopulatePageWidget(const UObject* WorldContextObject, const FDevPadWidgetContext& PageWidgetContext) const {}
 };
 
-UCLASS(Abstract, BlueprintType, Blueprintable, Category = "DevHub|Pad", Meta = (Hidden))
+UCLASS(Abstract, BlueprintType, Blueprintable, Category = "DevHub|Pad", Meta = (Hidden, LoadBehavior = "LazyOnDemand"))
 class DEVPAD_API UDevPadPageBase : public UDevPadPage
 {
 	GENERATED_BODY()

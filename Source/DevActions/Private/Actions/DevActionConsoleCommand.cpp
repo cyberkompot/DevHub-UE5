@@ -2,8 +2,8 @@
 
 #include "Actions/DevActionConsoleCommand.h"
 
-#include "DevActionConsoleLibrary.h"
 #include "DevActionLogging.h"
+#include "DevConsole.h"
 #include "Engine/Console.h"
 #include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
@@ -11,7 +11,7 @@
 
 IConsoleCommand* FDevActionConsoleCommandView::GetCCommand() const
 {
-	return FDevActionConsoleLibrary::Get().FindConsoleCommand(Command);
+	return FDevConsole::FindConsoleCommand(Command);
 }
 
 bool FDevActionConsoleCommandView::IsActionEnabled(const UObject* WorldContextObject) const
@@ -60,45 +60,5 @@ FStringView FDevActionConsoleCommandView::GetActionToolTip() const
 
 void FDevActionConsoleCommandView::ExecuteAction(const UObject* WorldContextObject) const
 {
-	if (Command.IsEmpty())
-	{
-		UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Console command is not defined"));
-		return;
-	}
-
-#if UE_COMPATIBILITY_DEFINITION_ALLOW_EXEC_COMMANDS
-
-	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
-	{
-		// 1. Routing through the ViewportConsole.
-		if (const UGameViewportClient* GameViewport = World->GetGameViewport())
-		{
-			if (const TObjectPtr<UConsole>& Console = GameViewport->ViewportConsole)
-			{
-				Console->ConsoleCommand(Command);
-				return;
-			}
-		}
-
-		// 2. Routing via FirstPlayerController.
-		if (APlayerController* PlayerController = World->GetFirstPlayerController())
-		{
-			if (PlayerController->Player)
-			{
-				PlayerController->ConsoleCommand(Command, true);
-				return;
-			}
-		}
-
-		// 3. Routing via GEngine with world.
-		GEngine->Exec(World, *Command);
-		return;
-	}
-
-	// 4. Routing via GEngine without world.
-	GEngine->Exec(nullptr, *Command);
-
-#else
-	UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Console commands are disabled in this build"));
-#endif // UE_COMPATIBILITY_DEFINITION_ALLOW_EXEC_COMMANDS
+	FDevConsole::ConsoleCommand(WorldContextObject, Command);
 }

@@ -16,13 +16,23 @@
 	"Installed": false,
 	"Modules": [
 		{
+			"Name": "DevActions",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "DevConsole",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "DevCore",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "DevActions",
-			"Type": "Runtime",
+			"Name": "DevEditor",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		},
 		{
@@ -33,11 +43,6 @@
 		{
 			"Name": "DevMenus",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "DevEditor",
-			"Type": "Editor",
 			"LoadingPhase": "Default"
 		},
 		{

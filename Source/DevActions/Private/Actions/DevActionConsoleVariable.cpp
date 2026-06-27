@@ -2,12 +2,12 @@
 
 #include "Actions/DevActionConsoleVariable.h"
 
-#include "DevActionConsoleLibrary.h"
 #include "DevActionLogging.h"
+#include "DevConsole.h"
 
 IConsoleVariable* FDevActionConsoleVariableView::GetCVar() const
 {
-	return FDevActionConsoleLibrary::Get().FindConsoleVariable(CVarName);
+	return FDevConsole::FindConsoleVariable(CVarName);
 }
 
 bool FDevActionConsoleVariableView::IsActionEnabled(const UObject* WorldContextObject) const

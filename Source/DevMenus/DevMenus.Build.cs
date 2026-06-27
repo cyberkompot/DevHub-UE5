@@ -8,7 +8,7 @@ public class DevMenus : ModuleRules
 	public DevMenus(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		if (Target.GlobalDefinitions.Contains("DEVHUB_NO_PCH"))
+		if (Target.GlobalDefinitions.Contains("NO_PCH"))
 		{
 			PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
 		}

@@ -8,7 +8,7 @@ public class DevActions : ModuleRules
 	public DevActions(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		if (Target.GlobalDefinitions.Contains("DEVHUB_NO_PCH"))
+		if (Target.GlobalDefinitions.Contains("NO_PCH"))
 		{
 			PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
 		}
@@ -25,6 +25,12 @@ public class DevActions : ModuleRules
 				"StructUtils",
 				"Slate",
 				"SlateCore",
+			});
+
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"DevConsole",
 			});
 
 		if (Target.bBuildEditor)

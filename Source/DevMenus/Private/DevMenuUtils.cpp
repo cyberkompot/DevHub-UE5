@@ -24,7 +24,7 @@ FString FDevMenuPaths::GetName(const FString& InEntryPath)
 
 int32 FDevMenuPaths::GetPathDepth(const FName& InEntryPath)
 {
-	TStringBuilder<NAME_SIZE> EntryPathBuilder;
+	FNameBuilder EntryPathBuilder;
 	InEntryPath.AppendString(EntryPathBuilder);
 
 	int32 Count = 0;
@@ -55,7 +55,7 @@ FName FDevMenuPaths::Combine(const FName& InDirectoryPath, const FName& InEntryN
 {
 	if (!InDirectoryPath.IsNone() && !InEntryName.IsNone())
 	{
-		FStringBuilderBase CombinedPath;
+		FNameBuilder CombinedPath;
 		InDirectoryPath.AppendString(CombinedPath);
 		CombinedPath.AppendChar(PathDelimiter);
 		InEntryName.AppendString(CombinedPath);

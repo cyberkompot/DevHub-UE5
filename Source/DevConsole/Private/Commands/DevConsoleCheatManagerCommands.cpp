@@ -1,13 +1,13 @@
 // Copyright (c) Alexandr Pereverzev.
 
-#include "DevConsoleDynamicConsoleVariable.h"
+#include "DevConsoleTypes.h"
 #include "DevConsoleInternals.h"
 #include "GameFramework/WorldSettings.h"
 
 namespace DevConsole::Extension
 {
 	FDevConsoleDynamicFloatConsoleVariableWithWorld ExtSlomoCVar(TEXT("Ext.Slomo"), TEXT("Modify time dilation to affect the apparent passage of time."),
-        FDevConsoleDynamicFloatConsoleVariableWithWorld::FGetter::CreateLambda([](const UWorld* World)
+        FDevConsoleDynamicFloatConsoleVariableWithWorld::FGetter::CreateLambda([](UWorld* World)
         {
         	if (World)
         	{
@@ -26,7 +26,7 @@ namespace DevConsole::Extension
 	        }
         	return 1.0f;
         }),
-		FDevConsoleDynamicFloatConsoleVariableWithWorld::FSetter::CreateLambda([](const UWorld* World, const float& Value)
+		FDevConsoleDynamicFloatConsoleVariableWithWorld::FSetter::CreateLambda([](UWorld* World, const float& Value)
 		{
 			if (World)
 			{

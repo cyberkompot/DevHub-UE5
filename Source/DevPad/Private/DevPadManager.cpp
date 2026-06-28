@@ -16,6 +16,8 @@
 #include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
 
+using namespace DevPad::Settings;
+
 UDevPadManager::UDevPadManager()
 {
 	InputController = CreateDefaultSubobject<UDevPadInputController>("InputController", true);
@@ -24,7 +26,11 @@ UDevPadManager::UDevPadManager()
 
 void UDevPadManager::Initialize()
 {
+	PadWidgetAlignmentCVar->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
+	PadWidgetScaleCVar->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
+
 	UConsole::OnConsoleActivationStateChanged.AddUObject(this, &ThisClass::OnConsoleActivationStateChanged);
+
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
 	{
 		DevMenus->OnMenuShow().AddUObject(this, &ThisClass::PausePad);
@@ -36,7 +42,11 @@ void UDevPadManager::Reset()
 {
 	HidePad();
 
+	PadWidgetAlignmentCVar->OnChangedDelegate().RemoveAll(this);
+	PadWidgetScaleCVar->OnChangedDelegate().RemoveAll(this);
+
 	UConsole::OnConsoleActivationStateChanged.RemoveAll(this);
+
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
 	{
 		DevMenus->OnMenuShow().RemoveAll(this);
@@ -388,8 +398,8 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
-	PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
-	PadLayoutWidget->SetScale(Settings->PadWidgetScale);
+	PadLayoutWidget->SetAlignment(PadWidgetAlignmentCVar->GetEnum<EDevPadAlignment>());
+	PadLayoutWidget->SetScale(PadWidgetScaleCVar->GetFloat());
 	PadLayoutWidget->SetContent(PadWidget);
 	PadLayoutWidget->AddToViewport();
 	return true;
@@ -564,5 +574,14 @@ void UDevPadManager::OnConsoleActivationStateChanged(const bool bActive)
 	else
 	{
 		ResumePad();
+	}
+}
+
+void UDevPadManager::OnSettingsChanged(IConsoleVariable* ConsoleVariable)
+{
+	if (PadLayoutWidget)
+	{
+		PadLayoutWidget->SetAlignment(PadWidgetAlignmentCVar->GetEnum<EDevPadAlignment>());
+		PadLayoutWidget->SetScale(PadWidgetScaleCVar->GetFloat());
 	}
 }

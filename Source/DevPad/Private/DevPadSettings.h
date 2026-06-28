@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "DevConsoleTypes.h"
 #include "DevInputTypes.h"
 #include "DevPadTypes.h"
 #include "DevPadSettings.generated.h"
@@ -9,6 +10,23 @@
 class UDevPadPage;
 class UDevPadPageWidget;
 class UDevPadPanelWidget;
+
+#define UE_API DEVCONSOLE_API
+
+namespace DevPad::Settings
+{
+	extern TDevConsoleDynamicConsoleVariable<EDevPadAlignment> PadWidgetAlignmentCVar;
+	extern FDevConsoleDynamicFloatConsoleVariable PadWidgetScaleCVar;
+}
+
+UENUM(BlueprintType, Category = "DevHub|Pad")
+enum struct EDevPadAlignmentChange : uint8
+{
+	ToTop,
+	ToBottom,
+	ToLeft,
+	ToRight,
+};
 
 UCLASS(Config = Game, DefaultConfig, Category = "DevHub|Pad", DisplayName = "Dev Pad")
 class UDevPadSettings final : public UDeveloperSettings
@@ -45,3 +63,5 @@ public:
 	TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 	TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 };
+
+#undef UE_API

@@ -77,4 +77,5 @@ private:
 	void PopulateWidgetPageContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 
 	void OnConsoleActivationStateChanged(bool bActive);
+	void OnSettingsChanged(IConsoleVariable* ConsoleVariable);
 };

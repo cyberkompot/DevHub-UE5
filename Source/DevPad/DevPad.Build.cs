@@ -21,8 +21,9 @@ public class DevPad : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "DevCore",
                 "DevActions",
+                "DevCore",
+                "DevConsole",
                 "DevInputs",
                 "DevMenus",
                 "CommonUI",

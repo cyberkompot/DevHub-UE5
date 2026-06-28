@@ -6,7 +6,7 @@
 
 namespace DevConsole::Extension
 {
-	FAutoConsoleCommandWithWorldAndArgs ExtIncCVarCommand(TEXT("Ext.IncCVar"), TEXT("Increase Console Variable on give value."),
+	FAutoConsoleCommandWithWorldAndArgs ExtIncCVarCommand(TEXT("IncVar"), TEXT("Increase Console Variable on give value."),
 		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World)
 		{
 			if (Args.Num() == 2)
@@ -46,7 +46,7 @@ namespace DevConsole::Extension
 			}
 	}));
 
-	FAutoConsoleCommandWithWorldAndArgs ExtDecCVarCommand(TEXT("Ext.DecCVar"), TEXT("Decrease Console Variable on give value."),
+	FAutoConsoleCommandWithWorldAndArgs ExtDecCVarCommand(TEXT("DecVar"), TEXT("Decrease Console Variable on give value."),
 		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World)
 		{
 			if (Args.Num() == 2)
@@ -86,7 +86,7 @@ namespace DevConsole::Extension
 			}
 	}));
 
-	FAutoConsoleCommandWithWorldAndArgs ExtToggleCVarCommand(TEXT("Ext.ToggleCVar"), TEXT("Toggle Console Variable."),
+	FAutoConsoleCommandWithWorldAndArgs ExtToggleCVarCommand(TEXT("ToggleVar"), TEXT("Toggle Console Variable."),
 		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, const UWorld* World)
 		{
 			if (Args.Num() == 1)

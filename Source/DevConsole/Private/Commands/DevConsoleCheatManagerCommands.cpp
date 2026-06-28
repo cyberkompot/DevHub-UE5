@@ -6,8 +6,8 @@
 
 namespace DevConsole::Extension
 {
-	FDevConsoleDynamicFloatConsoleVariableWithWorld ExtSlomoCVar(TEXT("Ext.Slomo"), TEXT("Modify time dilation to affect the apparent passage of time."),
-        FDevConsoleDynamicFloatConsoleVariableWithWorld::FGetter::CreateLambda([](UWorld* World)
+	FDevConsoleDynamicFloatConsoleVariable ExtSlomoCVar(TEXT("CheatManager.Slomo"), TEXT("Modify time dilation to affect the apparent passage of time."),
+        FDevConsoleDynamicFloatConsoleVariable::FGetter::CreateLambda([](const UWorld* World)
         {
         	if (World)
         	{
@@ -26,7 +26,7 @@ namespace DevConsole::Extension
 	        }
         	return 1.0f;
         }),
-		FDevConsoleDynamicFloatConsoleVariableWithWorld::FSetter::CreateLambda([](UWorld* World, const float& Value)
+		FDevConsoleDynamicFloatConsoleVariable::FSetter::CreateLambda([](const float& Value, const UWorld* World)
 		{
 			if (World)
 			{
@@ -43,5 +43,5 @@ namespace DevConsole::Extension
 			{
 				UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("World is missing"));
 			}
-		}));
+		}), ECVF_Cheat);
 }

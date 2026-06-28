@@ -6,7 +6,7 @@
 
 namespace DevConsole::Extension
 {
-	FAutoConsoleCommandWithWorld ExtHideAllStatsCommand(TEXT("Ext.Stats.HideAllStats"), TEXT("Hides all stats."),
+	FAutoConsoleCommandWithWorld ExtHideAllStatsCommand(TEXT("Stats.HideAllStats"), TEXT("Hides all stats."),
 		FConsoleCommandWithWorldDelegate::CreateLambda([](UWorld* World)
 		{
 			if (GEngine)

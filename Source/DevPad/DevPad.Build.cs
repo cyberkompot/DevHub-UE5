@@ -23,7 +23,6 @@ public class DevPad : ModuleRules
             {
                 "DevActions",
                 "DevCore",
-                "DevConsole",
                 "DevInputs",
                 "DevMenus",
                 "CommonUI",

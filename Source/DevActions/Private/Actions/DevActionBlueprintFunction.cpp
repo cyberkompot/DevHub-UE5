@@ -2,7 +2,7 @@
 
 #include "Actions/DevActionBlueprintFunction.h"
 
-#include "DevActionLogging.h"
+#include "DevActionInternals.h"
 #include "Engine/Blueprint.h"
 
 void FDevActionBlueprintFunction::OnExecuteAction(const UObject* WorldContextObject) const

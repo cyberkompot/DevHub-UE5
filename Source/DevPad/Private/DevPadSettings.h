@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DevConsoleTypes.h"
+#include "DevActionConsoleAccessor.h"
 #include "DevInputTypes.h"
 #include "DevPadTypes.h"
 #include "DevPadSettings.generated.h"
@@ -11,12 +11,10 @@ class UDevPadPage;
 class UDevPadPageWidget;
 class UDevPadPanelWidget;
 
-#define UE_API DEVCONSOLE_API
-
 namespace DevPad::Settings
 {
-	extern TDevConsoleDynamicConsoleVariable<EDevPadAlignment> PadWidgetAlignmentCVar;
-	extern FDevConsoleDynamicFloatConsoleVariable PadWidgetScaleCVar;
+	extern TDevActionConsoleAccessor<EDevPadAlignment> PadWidgetAlignmentAccessor;
+	extern FDevActionFloatConsoleAccessor PadWidgetScaleAccessor;
 }
 
 UENUM(BlueprintType, Category = "DevHub|Pad")
@@ -63,5 +61,3 @@ public:
 	TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 	TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 };
-
-#undef UE_API

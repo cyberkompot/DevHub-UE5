@@ -38,6 +38,15 @@
 	#endif
 #endif
 
+/** CommonUITypes.h */
+#ifndef UE_COMPATIBILITY_INCLUDE_COMMON_UI_TYPES_PATH
+	#if UE_VERSION_AT_LEAST(5, 5, 0)
+		#define UE_COMPATIBILITY_INCLUDE_COMMON_UI_TYPES_PATH "CommonUITypes.h"
+	#else
+		#define UE_COMPATIBILITY_INCLUDE_COMMON_UI_TYPES_PATH "CommonInputBaseTypes.h"
+	#endif
+#endif
+
 /** StructUtils/InstancedStruct.h, StructUtils/PropertyBag.h, StructUtils/StructView.h */
 #ifndef UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
 	#if UE_VERSION_AT_LEAST(5, 5, 0) && !(defined(UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5) && UE_ENABLE_INCLUDE_ORDER_DEPRECATED_IN_5_5)
@@ -77,6 +86,9 @@
 
 /** FReferenceCollector::AddReferencedObject() */
 #define UE_COMPATIBILITY_REFERENCE_COLLECTOR_ADD_REFERENCED_OBJECT_WEAK_OBJECT_PTR UE_VERSION_AT_LEAST(5, 3, 0)
+
+/** IConsoleVariable::FResolvedContext */
+#define UE_COMPATIBILITY_CONSOLE_VARIABLE_RESOLVED_CONTEXT UE_VERSION_AT_LEAST(5, 7, 0)
 
 /** IConsoleVariable::IsEnabled() */
 #define UE_COMPATIBILITY_SUPPORTED_CONSOLE_VARIABLE_IS_ENABLED UE_VERSION_AT_LEAST(5, 5, 0)

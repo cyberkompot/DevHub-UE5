@@ -27,12 +27,6 @@ public class DevActions : ModuleRules
 				"SlateCore",
 			});
 
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"DevConsole",
-			});
-
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("UnrealEd");

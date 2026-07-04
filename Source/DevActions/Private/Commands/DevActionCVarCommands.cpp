@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Alexandr Pereverzev.
 
-#include "DevConsoleInternals.h"
-#include "DevConsole.h"
+#include "DevActionInternals.h"
+#include "DevActionTypes.h"
 #include "Engine/Engine.h"
+#include "HAL/IConsoleManager.h"
 
 namespace DevConsole::Extension
 {
@@ -13,7 +14,7 @@ namespace DevConsole::Extension
 			{
 				const FString& CVarName = Args[0];
 				const FString& Value = Args[1];
-				if (IConsoleVariable* CVar = FDevConsole::FindConsoleVariable(CVarName))
+				if (IConsoleVariable* CVar = FDevActionInternals::FindConsoleVariableOrAccessor(CVarName))
 				{
 					if (CVar->IsVariableString())
 					{
@@ -32,17 +33,17 @@ namespace DevConsole::Extension
 					}
 					else
 					{
-						UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Value is not a numeric type: CVar = %s, Value = %s"), *CVarName, *Value);
+						UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Value is not a numeric type: CVar = %s, Value = %s"), *CVarName, *Value);
 					}
 				}
 				else
 				{
-					UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
+					UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
 				}
 			}
 			else
 			{
-				UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Invalid argument count. Expected two arguments: Console Variable name, and value"));
+				UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Invalid arguments count. Expected two arguments: Console Variable name, and value"));
 			}
 	}));
 
@@ -53,7 +54,7 @@ namespace DevConsole::Extension
 			{
 				const FString& CVarName = Args[0];
 				const FString& Value = Args[1];
-				if (IConsoleVariable* CVar = FDevConsole::FindConsoleVariable(CVarName))
+				if (IConsoleVariable* CVar = FDevActionInternals::FindConsoleVariableOrAccessor(CVarName))
 				{
 					if (CVar->IsVariableString())
 					{
@@ -72,17 +73,17 @@ namespace DevConsole::Extension
 					}
 					else
 					{
-						UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Value is not a numeric type: CVar = %s, Value = %s"), *CVarName, *Value);
+						UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Value is not a numeric type: CVar = %s, Value = %s"), *CVarName, *Value);
 					}
 				}
 				else
 				{
-					UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
+					UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
 				}
 			}
 			else
 			{
-				UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Invalid argument count. Expected two arguments: Console Variable name, and value"));
+				UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Invalid arguments count. Expected two arguments: Console Variable name, and value"));
 			}
 	}));
 
@@ -92,7 +93,7 @@ namespace DevConsole::Extension
 			if (Args.Num() == 1)
 			{
 				const FString& CVarName = Args[0];
-				if (IConsoleVariable* CVar = FDevConsole::FindConsoleVariable(CVarName))
+				if (IConsoleVariable* CVar = FDevActionInternals::FindConsoleVariableOrAccessor(CVarName))
 				{
 					if (!CVar->IsVariableString())
 					{
@@ -100,17 +101,17 @@ namespace DevConsole::Extension
 					}
 					else
 					{
-						UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("String console variables are not supported: CVar = %s"), *CVarName);
+						UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("String console variables are not supported: CVar = %s"), *CVarName);
 					}
 				}
 				else
 				{
-					UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
+					UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Console variable not found: CVar = %s"), *CVarName);
 				}
 			}
 			else
 			{
-				UE_LOG_FUNCTION(LogDevConsole, Warning, TEXT("Invalid argument count. Expected one argument: Console Variable"));
+				UE_LOG_FUNCTION(LogDevActions, Warning, TEXT("Invalid argument count. Expected one argument: Console Variable"));
 			}
 	}));
 }

@@ -3,7 +3,7 @@
 #include "DevActionTypes.h"
 
 #include "ClassBag.h"
-#include "DevActionLogging.h"
+#include "DevActionInternals.h"
 #include "Engine/Engine.h"
 
 namespace DevAction::Setting

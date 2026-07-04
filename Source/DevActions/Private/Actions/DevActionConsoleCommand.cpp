@@ -2,16 +2,13 @@
 
 #include "Actions/DevActionConsoleCommand.h"
 
-#include "DevActionLogging.h"
-#include "DevConsole.h"
-#include "Engine/Console.h"
-#include "Engine/Engine.h"
-#include "Engine/GameViewportClient.h"
-#include "GameFramework/PlayerController.h"
+#include "DevActionInternals.h"
+#include "DevActions.h"
+#include "HAL/IConsoleManager.h"
 
 IConsoleCommand* FDevActionConsoleCommandView::GetCCommand() const
 {
-	return FDevConsole::FindConsoleCommand(Command);
+	return FDevActions::FindConsoleCommand(Command);
 }
 
 bool FDevActionConsoleCommandView::IsActionEnabled(const UObject* WorldContextObject) const
@@ -60,5 +57,5 @@ FStringView FDevActionConsoleCommandView::GetActionToolTip() const
 
 void FDevActionConsoleCommandView::ExecuteAction(const UObject* WorldContextObject) const
 {
-	FDevConsole::ConsoleCommand(WorldContextObject, Command);
+	FDevActions::ExecuteConsoleCommand(WorldContextObject, Command);
 }

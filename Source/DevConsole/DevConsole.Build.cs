@@ -18,7 +18,6 @@ public class DevConsole : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "DevConsole",
                 "DevCore",
                 "CoreUObject",
                 "Engine",
@@ -29,5 +28,7 @@ public class DevConsole : ModuleRules
         {
             PrivateDependencyModuleNames.Add("UnrealEd");
         }
+
+        PrivateIncludePaths.Add(System.IO.Path.Combine(EngineDirectory, "Source/Runtime/Core/Private"));
     }
 }

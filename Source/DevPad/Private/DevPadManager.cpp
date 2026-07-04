@@ -26,8 +26,8 @@ UDevPadManager::UDevPadManager()
 
 void UDevPadManager::Initialize()
 {
-	PadWidgetAlignmentCVar->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
-	PadWidgetScaleCVar->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
+	PadWidgetAlignmentAccessor->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
+	PadWidgetScaleAccessor->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
 
 	UConsole::OnConsoleActivationStateChanged.AddUObject(this, &ThisClass::OnConsoleActivationStateChanged);
 
@@ -42,8 +42,8 @@ void UDevPadManager::Reset()
 {
 	HidePad();
 
-	PadWidgetAlignmentCVar->OnChangedDelegate().RemoveAll(this);
-	PadWidgetScaleCVar->OnChangedDelegate().RemoveAll(this);
+	PadWidgetAlignmentAccessor->OnChangedDelegate().RemoveAll(this);
+	PadWidgetScaleAccessor->OnChangedDelegate().RemoveAll(this);
 
 	UConsole::OnConsoleActivationStateChanged.RemoveAll(this);
 
@@ -398,8 +398,8 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
-	PadLayoutWidget->SetAlignment(PadWidgetAlignmentCVar->GetEnum<EDevPadAlignment>());
-	PadLayoutWidget->SetScale(PadWidgetScaleCVar->GetFloat());
+	PadLayoutWidget->SetAlignment(PadWidgetAlignmentAccessor->GetEnum<EDevPadAlignment>());
+	PadLayoutWidget->SetScale(PadWidgetScaleAccessor->GetFloat());
 	PadLayoutWidget->SetContent(PadWidget);
 	PadLayoutWidget->AddToViewport();
 	return true;
@@ -581,7 +581,7 @@ void UDevPadManager::OnSettingsChanged(IConsoleVariable* ConsoleVariable)
 {
 	if (PadLayoutWidget)
 	{
-		PadLayoutWidget->SetAlignment(PadWidgetAlignmentCVar->GetEnum<EDevPadAlignment>());
-		PadLayoutWidget->SetScale(PadWidgetScaleCVar->GetFloat());
+		PadLayoutWidget->SetAlignment(PadWidgetAlignmentAccessor->GetEnum<EDevPadAlignment>());
+		PadLayoutWidget->SetScale(PadWidgetScaleAccessor->GetFloat());
 	}
 }

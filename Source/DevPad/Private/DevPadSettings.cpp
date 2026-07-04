@@ -7,22 +7,22 @@
 
 namespace DevPad::Settings
 {
-	TDevConsoleDynamicConsoleVariable<EDevPadAlignment> PadWidgetAlignmentCVar = TDevConsoleDynamicConsoleVariable<EDevPadAlignment>(TEXT("DevHub.Pad.Settings.Alignment"), TEXT("DevHub Pad HUD widget alignment (0 - TopLeft, 1 - TopRight, 2 - BottomLeft, 3 - BottomRight)"),
-		TDevConsoleDynamicConsoleVariable<EDevPadAlignment>::FGetter::CreateLambda([](const UWorld* World)
+	TDevActionConsoleAccessor<EDevPadAlignment> PadWidgetAlignmentAccessor = TDevActionConsoleAccessor<EDevPadAlignment>(TEXT("DevHub.Pad.Settings.Alignment"), TEXT("DevHub Pad HUD widget alignment (0 - TopLeft, 1 - TopRight, 2 - BottomLeft, 3 - BottomRight)"),
+		TDevActionConsoleAccessor<EDevPadAlignment>::FGetter::CreateLambda([](const UWorld* World)
 		{
 			return GetDefault<UDevPadSettings>()->PadWidgetAlignment;
 		}),
-		TDevConsoleDynamicConsoleVariable<EDevPadAlignment>::FSetter::CreateLambda([](const EDevPadAlignment& Value, const UWorld* World)
+		TDevActionConsoleAccessor<EDevPadAlignment>::FSetter::CreateLambda([](const EDevPadAlignment& Value, const UWorld* World)
 		{
 			GetMutableDefault<UDevPadSettings>()->PadWidgetAlignment = Value;
 		}));
 
-	FDevConsoleDynamicFloatConsoleVariable PadWidgetScaleCVar = FDevConsoleDynamicFloatConsoleVariable(TEXT("DevHub.Pad.Settings.Scale"), TEXT("DevHub Pad HUD widget scaling [0.5 - 1.0]"),
-		FDevConsoleDynamicFloatConsoleVariable::FGetter::CreateLambda([](UWorld* World)
+	FDevActionFloatConsoleAccessor PadWidgetScaleAccessor = FDevActionFloatConsoleAccessor(TEXT("DevHub.Pad.Settings.Scale"), TEXT("DevHub Pad HUD widget scaling [0.5 - 1.0]"),
+		FDevActionFloatConsoleAccessor::FGetter::CreateLambda([](UWorld* World)
 		{
 			return GetDefault<UDevPadSettings>()->PadWidgetScale;
 		}),
-		FDevConsoleDynamicFloatConsoleVariable::FSetter::CreateLambda([](const float& Value, UWorld* World)
+		FDevActionFloatConsoleAccessor::FSetter::CreateLambda([](const float& Value, UWorld* World)
 		{
 			GetMutableDefault<UDevPadSettings>()->PadWidgetScale = FMath::Clamp(Value, 0.5f, 1.0f);
 		}));
@@ -33,9 +33,9 @@ namespace DevPad::Settings
 			if (Args.Num() == 1)
 			{
 				const FString& EnumName = Args[0];
-				const EDevPadAlignment OriginalAlignment = PadWidgetAlignmentCVar->GetEnum<EDevPadAlignment>();
+				const EDevPadAlignment OriginalAlignment = PadWidgetAlignmentAccessor->GetEnum<EDevPadAlignment>();
 				EDevPadAlignment NewAlignment = OriginalAlignment;
-				switch (DevConsole::Implementation::EnumFromString<EDevPadAlignmentChange>(*EnumName))
+				switch (FDevCoreEnums::EnumFromString<EDevPadAlignmentChange>(EnumName))
 				{
 					case EDevPadAlignmentChange::ToTop:
 						NewAlignment = (OriginalAlignment == EDevPadAlignment::TopLeft || OriginalAlignment == EDevPadAlignment::BottomLeft) ? EDevPadAlignment::TopLeft : EDevPadAlignment::TopRight;
@@ -55,7 +55,7 @@ namespace DevPad::Settings
 				}
 				if (NewAlignment != OriginalAlignment)
 				{
-					PadWidgetAlignmentCVar->Set<EDevPadAlignment>(NewAlignment);
+					PadWidgetAlignmentAccessor->SetEnum<EDevPadAlignment>(NewAlignment);
 				}
 			}
 			else

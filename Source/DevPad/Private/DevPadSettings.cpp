@@ -7,6 +7,20 @@
 
 namespace DevPad::Settings
 {
+	TDevActionConsoleAccessor<EDevPadGamepadPlatform> PadWidgetGamepadAccessor = TDevActionConsoleAccessor<EDevPadGamepadPlatform>(TEXT("DevHub.Pad.Settings.Gamepad"), TEXT("DevHub Pad HUD widget gamepad fo PC platforms (0 - AutoDetected, 1 - XBOX, 2 - PlayStation, 3 - Steam)"),
+		TDevActionConsoleAccessor<EDevPadGamepadPlatform>::FGetter::CreateLambda([](UWorld* World)
+		{
+			return GetDefault<UDevPadSettings>()->PadWidgetGamepad;
+		}),
+		TDevActionConsoleAccessor<EDevPadGamepadPlatform>::FSetter::CreateLambda([](const EDevPadGamepadPlatform& Value, UWorld* World)
+		{
+			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			{
+				Settings->PadWidgetGamepad = Value;
+				Settings->NotifySettingsChanged();
+			}
+		}));
+
 	TDevActionConsoleAccessor<EDevPadAlignment> PadWidgetAlignmentAccessor = TDevActionConsoleAccessor<EDevPadAlignment>(TEXT("DevHub.Pad.Settings.Alignment"), TEXT("DevHub Pad HUD widget alignment (0 - TopLeft, 1 - TopRight, 2 - BottomLeft, 3 - BottomRight)"),
 		TDevActionConsoleAccessor<EDevPadAlignment>::FGetter::CreateLambda([](const UWorld* World)
 		{
@@ -14,7 +28,11 @@ namespace DevPad::Settings
 		}),
 		TDevActionConsoleAccessor<EDevPadAlignment>::FSetter::CreateLambda([](const EDevPadAlignment& Value, const UWorld* World)
 		{
-			GetMutableDefault<UDevPadSettings>()->PadWidgetAlignment = Value;
+			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			{
+				Settings->PadWidgetAlignment = Value;
+				Settings->NotifySettingsChanged();
+			}
 		}));
 
 	FDevActionFloatConsoleAccessor PadWidgetScaleAccessor = FDevActionFloatConsoleAccessor(TEXT("DevHub.Pad.Settings.Scale"), TEXT("DevHub Pad HUD widget scaling [0.5 - 1.0]"),
@@ -24,7 +42,11 @@ namespace DevPad::Settings
 		}),
 		FDevActionFloatConsoleAccessor::FSetter::CreateLambda([](const float& Value, UWorld* World)
 		{
-			GetMutableDefault<UDevPadSettings>()->PadWidgetScale = FMath::Clamp(Value, 0.5f, 1.0f);
+			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			{
+				Settings->PadWidgetScale = FMath::Clamp(Value, 1.f, 2.f);
+				Settings->NotifySettingsChanged();
+			}
 		}));
 
 	FAutoConsoleCommandWithWorldAndArgs PadWidgetChangeAlignmentCommand(TEXT("DevHub.Pad.Settings.ChangeAlignment"), TEXT("Changes DevHub Pad HUD widget alignment (0 - ToTop, 1 - ToBottom, 2 - ToLeft, 3 - ToRight)"),
@@ -87,6 +109,8 @@ namespace DevPad::Settings
 }
 
 using namespace DevPad::Settings;
+
+UDevPadSettings::FOnSettingsChanged UDevPadSettings::OnSettingsChangedDelegate;
 
 UDevPadSettings::UDevPadSettings()
 {

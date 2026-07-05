@@ -10,15 +10,15 @@
 
 const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputController::PadInputShortcuts
 {
-	{ EDevPadInput::DPadUp, "D-pad Up | Num 8" },
-	{ EDevPadInput::DPadLeft, "D-pad Left | Num 7" },
+	{ EDevPadInput::DPadUp, "D-pad Up | Num 7" },
 	{ EDevPadInput::DPadRight, "D-pad Right | Num 4" },
-	{ EDevPadInput::DPadDown, "D-pad Down | Num 1" },
+	{ EDevPadInput::DPadLeft, "D-pad Left | Num 1" },
+	{ EDevPadInput::DPadDown, "D-pad Down | Num 0" },
 
 	{ EDevPadInput::FaceUp, "Face Up | Num 9" },
-	{ EDevPadInput::FaceLeft, "Face Left | Num 6" },
-	{ EDevPadInput::FaceRight, "Face Right | Num 3" },
-	{ EDevPadInput::FaceDown, "Face Down | Num 2" },
+	{ EDevPadInput::FaceRight, "Face Right | Num 6" },
+	{ EDevPadInput::FaceLeft, "Face Left | Num 3" },
+	{ EDevPadInput::FaceDown, "Face Down | Num ." },
 
 	{ EDevPadInput::LeftShoulder, "Left Shoulder | Num /" },
 	{ EDevPadInput::RightShoulder, "Right Shoulder | Num *" },
@@ -26,12 +26,12 @@ const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputControl
 	{ EDevPadInput::LeftTrigger, "Left Trigger | Num -" },
 	{ EDevPadInput::RightTrigger, "Right Trigger | Num +" },
 
-	{ EDevPadInput::LeftThumbstick, "Left Thumbstick | Num 0" },
-	{ EDevPadInput::RightThumbstick, "Right Thumbstick | Num ." },
+	{ EDevPadInput::LeftThumbstick, "Left Thumbstick | Num 8" },
+	{ EDevPadInput::RightThumbstick, "Right Thumbstick | Num 2" },
 
 	{ EDevPadInput::LeftPlusRightShoulders, "Left Shoulder + Right Shoulder | Num / + Num *" },
-	{ EDevPadInput::LeftPlusRightTriggers, "Left Trigger + Right Trigger | Num + + Enter" },
-	{ EDevPadInput::LeftPlusRightThumbsticks, "Left Thumbstick + Right Thumbstick | Num 0 + Num ." },
+	{ EDevPadInput::LeftPlusRightTriggers, "Left Trigger + Right Trigger | Num - + Num +" },
+	{ EDevPadInput::LeftPlusRightThumbsticks, "Left Thumbstick + Right Thumbstick | Num 8 + Num 2" },
 };
 
 UDevPadInputController::UDevPadInputController()

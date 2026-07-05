@@ -20,7 +20,7 @@ class UDevPadLayoutWidget final : public UUserWidget
 
 public:
 	void SetAlignment(const EDevPadAlignment InAlignment);
-	void SetContent(UWidget* InWidget);
+	void SetContent(UWidget* InWidget) const;
 	void SetScale(const float InScale);
 
 protected:
@@ -30,7 +30,7 @@ protected:
 
 private:
 	EDevPadAlignment Alignment = EDevPadAlignment::BottomRight;
-	float Scale = 0.33f;
+	float Scale = 1.f;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UVerticalBox> VBox;
@@ -50,7 +50,7 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UCanvasPanelSlot> VBoxSlot;
 
-	float GetContentWidthFraction() const { return FMath::Lerp(0.f, 0.5f, Scale); }
+	float GetContentWidthFraction() const;
 
 	void ApplyAlignment() const;
 	void ApplyScale() const;

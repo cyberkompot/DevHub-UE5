@@ -25,6 +25,7 @@ public class DevPad : ModuleRules
                 "DevCore",
                 "DevInputs",
                 "DevMenus",
+                "CommonInput",
                 "CommonUI",
                 "CoreUObject",
                 "DeveloperSettings",

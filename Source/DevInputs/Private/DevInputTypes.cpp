@@ -2,12 +2,12 @@
 
 #include "DevInputTypes.h"
 
+#include "CommonInputBaseTypes.h"
 #include "DevInputShortcutBuilder.h"
 #include "Modules/ModuleManager.h"
 
 using Special = EDevInputTokens::Special;
 using PairedModifiers = EDevInputTokens::PairedModifiers;
-
 
 bool FDevInputToken::IsValid() const
 {
@@ -18,7 +18,6 @@ FString FDevInputToken::ToString(const EDevInputDisplayNameLength InDisplayNameL
 {
 	return EDevInputTokens::GetTokenDisplayName(*this, InDisplayNameLength).ToString();
 }
-
 
 const FDevInputToken EDevInputTokens::None(NAME_None);
 
@@ -103,6 +102,7 @@ namespace
 #undef DEBUG_INPUTS_ADD_ONE_ALIAS
 #undef DEBUG_INPUTS_ADD_TWO_ALIASES
 #undef DEBUG_INPUTS_ADD_THREE_ALIASES
+#undef DEBUG_INPUTS_ADD_FOUR_ALIASES
 
 	const TSet<FDevInputToken> ModifierTokens
 	{
@@ -240,3 +240,9 @@ void FDevInputShortcutBinding::PopulateInputSequence(FDevInputSequence& OutInput
 
 	FDevInputShortcutBuilder::FromName(Shortcut.GetName(), OutInputSequence);
 }
+
+const FName EDevInputGamepadNames::Generic = FCommonInputDefaults::GamepadGeneric;
+const FLazyName EDevInputGamepadNames::Xbox = "XSX";
+const FLazyName EDevInputGamepadNames::PS4 = "PS4";
+const FLazyName EDevInputGamepadNames::PS5 = "PS5";
+const FLazyName EDevInputGamepadNames::Steam = "Steam";

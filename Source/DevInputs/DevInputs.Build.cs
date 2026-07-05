@@ -28,6 +28,7 @@ public class DevInputs : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"ApplicationCore",
 				"InputCore",
 				"Slate",
 				"SlateCore",

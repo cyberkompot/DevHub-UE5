@@ -17,11 +17,13 @@ struct FKey;
 class FDevInputProcessor final : public TSharedFromThis<FDevInputProcessor>, public IInputProcessor
 {
 public:
+	FDevInputProcessor();
+
 	EDevInputType CurrentInputType = EDevInputType::Undefined;
-	EDevInputControllerPlatform CurrentInputControllerPlatform = EDevInputControllerPlatform::Invalid;
+	FName CurrentGamepadName = EDevInputGamepadNames::Generic;
 
 	FDevInputTypeChanged OnInputTypeChanged;
-	FDevInputControllerPlatformChanged OnInputControllerPlatformChanged;
+	FDevInputGamepadChanged OnInputGamepadChanged;
 	FDevInputEvent OnInputEvent;
 
 	void Reset();
@@ -31,12 +33,20 @@ public:
 
 private:
 	const FDevInputKeyEventArgs* CurrentInputEvent = nullptr;
-	bool bConsumeInputEvent = false;
+
+	bool bConsumeCurrentInputEvent = false;
 	TSet<FKey> ConsumedDownKeys;
+
+	FName LastGamepadInputDeviceName;
+	FString LastGamepadHardwareDeviceIdentifier;
 
 	EDevInputType GetInputType(const FKey& Key) const;
 	void SetCurrentInputType(const EDevInputType InInputType);
-	void SetCurrentControllerPlatform(const EDevInputControllerPlatform InInputControllerPlatform);
+
+	FName GetGamepadNameByPlatform() const;
+	FName GetGamepadNameByHardware(const FName InInputDeviceName, const FString& InHardwareDeviceIdentifier) const;
+	void SetCurrentGamepadName(const FName InGamepadName);
+	void RefreshCurrentGamepadName();
 
 	bool ProcessDownEvent(const FDevInputKeyEventArgs& Params);
 	bool ProcessUpEvent(const FDevInputKeyEventArgs& Params);

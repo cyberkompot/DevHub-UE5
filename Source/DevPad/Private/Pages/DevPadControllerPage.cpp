@@ -97,13 +97,13 @@ FDevPadControllerPageActionView UDevPadControllerPage::GetPageAction(const UObje
 		switch (InPadInput)
 		{
 			case EDevPadInput::DPadUp: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadUpAction);
-			case EDevPadInput::DPadLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadLeftAction);
 			case EDevPadInput::DPadRight: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadRightAction);
+			case EDevPadInput::DPadLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadLeftAction);
 			case EDevPadInput::DPadDown: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.DPadDownAction);
 
 			case EDevPadInput::FaceUp: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceUpAction);
-			case EDevPadInput::FaceLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceLeftAction);
 			case EDevPadInput::FaceRight: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceRightAction);
+			case EDevPadInput::FaceLeft: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceLeftAction);
 			case EDevPadInput::FaceDown: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.FaceDownAction);
 
 			case EDevPadInput::LeftTrigger: return FDevPadControllerPageActionView(InControllerPage, InControllerPage.LeftTriggerAction);

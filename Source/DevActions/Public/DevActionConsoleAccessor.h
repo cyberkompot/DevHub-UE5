@@ -50,8 +50,8 @@ private:
 
 /** Console accessor with getter and setter, exposed to the console as a command. Supports bool, int32, float, FString and enum types. */
 template<typename TVariableType, typename = typename TEnableIf<
-	TIsSame<TVariableType, bool>::Value || TIsSame<TVariableType, int32>::Value ||
-	TIsSame<TVariableType, float>::Value || TIsSame<TVariableType, FString>::Value || TIsEnum<TVariableType>::Value>::Type>
+	TIsSame<TVariableType, bool>::Value || TIsSame<TVariableType, int32>::Value || TIsSame<TVariableType, float>::Value ||
+	TIsSame<TVariableType, FName>::Value || TIsSame<TVariableType, FString>::Value || TIsEnum<TVariableType>::Value>::Type>
 class TDevActionConsoleAccessor : public IConsoleAccessor, FNoncopyable
 {
 public:
@@ -112,6 +112,7 @@ public:
 		if constexpr (TIsSame<TVariableType, bool>::Value) { Setter.Execute(FCString::Atoi(InValue) != 0, GetWorld()); }
 		else if constexpr (TIsSame<TVariableType, int32>::Value) { Setter.Execute(FCString::Atoi(InValue), GetWorld()); }
 		else if constexpr (TIsSame<TVariableType, float>::Value) { Setter.Execute(FCString::Atof(InValue), GetWorld()); }
+		else if constexpr (TIsSame<TVariableType, FName>::Value) { Setter.Execute(FName(InValue), GetWorld()); }
 		else if constexpr (TIsSame<TVariableType, FString>::Value) { Setter.Execute(FString(InValue), GetWorld()); }
 		else if constexpr (TIsEnum<TVariableType>::Value) { Setter.Execute(FDevCoreEnums::EnumFromString<TVariableType>(InValue), GetWorld()); }
 #if UE_COMPATIBILITY_CONSOLE_VARIABLE_RESOLVED_CONTEXT
@@ -127,6 +128,7 @@ public:
 		if constexpr (TIsSame<TVariableType, bool>::Value) { return Getter.Execute(GetWorld()); }
 		else if constexpr (TIsSame<TVariableType, int32>::Value) { return (Getter.Execute(GetWorld()) != 0); }
 		else if constexpr (TIsSame<TVariableType, float>::Value) { return (Getter.Execute(GetWorld()) != 0.0f); }
+		else if constexpr (TIsSame<TVariableType, FName>::Value) { return (FCString::Atoi(*Getter.Execute(GetWorld()).ToString()) != 0); }
 		else if constexpr (TIsSame<TVariableType, FString>::Value) { return (FCString::Atoi(*Getter.Execute(GetWorld())) != 0); }
 		else if constexpr (TIsEnum<TVariableType>::Value) { return (static_cast<int32>(Getter.Execute(GetWorld())) != 0); }
 		else { return false; }
@@ -138,6 +140,7 @@ public:
 		if constexpr (TIsSame<TVariableType, bool>::Value) { return Getter.Execute(GetWorld()) ? 1 : 0; }
 		else if constexpr (TIsSame<TVariableType, int32>::Value) { return Getter.Execute(GetWorld()); }
 		else if constexpr (TIsSame<TVariableType, float>::Value) { return static_cast<int32>(Getter.Execute(GetWorld())); }
+		else if constexpr (TIsSame<TVariableType, FName>::Value) { return FCString::Atoi(*Getter.Execute(GetWorld()).ToString()); }
 		else if constexpr (TIsSame<TVariableType, FString>::Value) { return FCString::Atoi(*Getter.Execute(GetWorld())); }
 		else if constexpr (TIsEnum<TVariableType>::Value) { return static_cast<int32>(Getter.Execute(GetWorld())); }
 		else { return 0; }
@@ -149,6 +152,7 @@ public:
 		if constexpr (TIsSame<TVariableType, bool>::Value) { return Getter.Execute(GetWorld()) ? 1.0f : 0.0f; }
 		else if constexpr (TIsSame<TVariableType, int32>::Value) { return static_cast<float>(Getter.Execute(GetWorld())); }
 		else if constexpr (TIsSame<TVariableType, float>::Value) { return Getter.Execute(GetWorld()); }
+		else if constexpr (TIsSame<TVariableType, FName>::Value) { return FCString::Atof(*Getter.Execute(GetWorld()).ToString()); }
 		else if constexpr (TIsSame<TVariableType, FString>::Value) { return FCString::Atof(*Getter.Execute(GetWorld())); }
 		else if constexpr (TIsEnum<TVariableType>::Value) { return static_cast<float>(static_cast<int32>(Getter.Execute(GetWorld()))); }
 		else { return 0.0f; }
@@ -160,6 +164,7 @@ public:
 		if constexpr (TIsSame<TVariableType, bool>::Value) { return Getter.Execute(GetWorld()) ? TEXT("1") : TEXT("0"); }
 		else if constexpr (TIsSame<TVariableType, int32>::Value) { return FString::FromInt(Getter.Execute(GetWorld())); }
 		else if constexpr (TIsSame<TVariableType, float>::Value) { return FString::Printf(TEXT("%g"), Getter.Execute(GetWorld())); }
+		else if constexpr (TIsSame<TVariableType, FName>::Value) { return Getter.Execute(GetWorld()).ToString(); }
 		else if constexpr (TIsSame<TVariableType, FString>::Value) { return Getter.Execute(GetWorld()); }
 		else if constexpr (TIsEnum<TVariableType>::Value) { return FDevCoreEnums::EnumToString(Getter.Execute(GetWorld())); }
 		else { return FString(); }
@@ -193,7 +198,7 @@ public:
 	virtual bool IsVariableBool() const override { return static_cast<bool>(TIsSame<TVariableType, bool>::Value); }
 	virtual bool IsVariableInt() const override { return static_cast<bool>(TIsSame<TVariableType, int32>::Value || TIsEnum<TVariableType>::Value); }
 	virtual bool IsVariableFloat() const override { return static_cast<bool>(TIsSame<TVariableType, float>::Value); }
-	virtual bool IsVariableString() const override { return static_cast<bool>(TIsSame<TVariableType, FString>::Value); }
+	virtual bool IsVariableString() const override { return static_cast<bool>(TIsSame<TVariableType, FString>::Value || TIsSame<TVariableType, FName>::Value); }
 	//~ End IConsoleObject interface.
 
 private:
@@ -235,11 +240,13 @@ private:
 extern template class TDevActionConsoleAccessor<bool>;
 extern template class TDevActionConsoleAccessor<int32>;
 extern template class TDevActionConsoleAccessor<float>;
+extern template class TDevActionConsoleAccessor<FName>;
 extern template class TDevActionConsoleAccessor<FString>;
 
 using FDevActionBoolConsoleAccessor = TDevActionConsoleAccessor<bool>;
 using FDevActionIntConsoleAccessor = TDevActionConsoleAccessor<int32>;
 using FDevActionFloatConsoleAccessor = TDevActionConsoleAccessor<float>;
+using FDevActionNameConsoleAccessor = TDevActionConsoleAccessor<FName>;
 using FDevActionStringConsoleAccessor = TDevActionConsoleAccessor<FString>;
 
 #undef UE_API

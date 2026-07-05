@@ -8,6 +8,7 @@
 #include "Widgets/DevPadPanelWidget.h"
 #include "DevPadManager.generated.h"
 
+class UDevPadSettings;
 class UDevPadInputController;
 class UDevPadLayoutWidget;
 class UDevPadPanelWidget;
@@ -77,5 +78,5 @@ private:
 	void PopulateWidgetPageContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 
 	void OnConsoleActivationStateChanged(bool bActive);
-	void OnSettingsChanged(IConsoleVariable* ConsoleVariable);
+	void OnSettingsChanged(const UDevPadSettings* Settings) const;
 };

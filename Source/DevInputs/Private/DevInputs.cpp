@@ -147,9 +147,9 @@ EDevInputType UDevInputs::GetCurrentInputType() const
 	return InputProcessor->CurrentInputType;
 }
 
-EDevInputControllerPlatform UDevInputs::GetInputCurrentControllerPlatform() const
+FName UDevInputs::GetCurrentGamepadName() const
 {
-	return InputProcessor->CurrentInputControllerPlatform;
+	return InputProcessor->CurrentGamepadName;
 }
 
 void UDevInputs::ConsumeInputEvent() const
@@ -167,9 +167,9 @@ FDevInputTypeChanged& UDevInputs::OnInputTypeChanged() const
 	return InputProcessor->OnInputTypeChanged;
 }
 
-FDevInputControllerPlatformChanged& UDevInputs::OnInputControllerPlatformChanged() const
+FDevInputGamepadChanged& UDevInputs::OnInputGamepadChanged() const
 {
-	return InputProcessor->OnInputControllerPlatformChanged;
+	return InputProcessor->OnInputGamepadChanged;
 }
 
 FDevInputEvent& UDevInputs::OnInputEvent() const

@@ -13,6 +13,8 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
+
 namespace
 {
 	FSlateChildSize MakeSize(const float InValue)
@@ -53,7 +55,7 @@ void UDevPadLayoutWidget::SetAlignment(const EDevPadAlignment InAlignment)
 	ApplyAlignment();
 }
 
-void UDevPadLayoutWidget::SetContent(UWidget* InWidget)
+void UDevPadLayoutWidget::SetContent(UWidget* InWidget) const
 {
 	if (ScaleBox->GetContent() == InWidget) { return; }
 	ScaleBox->SetContent(InWidget);
@@ -62,8 +64,13 @@ void UDevPadLayoutWidget::SetContent(UWidget* InWidget)
 void UDevPadLayoutWidget::SetScale(const float InScale)
 {
 	if (FMath::IsNearlyEqual(Scale, InScale)) { return; }
-	Scale = FMath::Clamp(InScale, 0.f, 1.f);
+	Scale = FMath::Clamp(InScale, 1.f, 2.f);
 	ApplyScale();
+}
+
+float UDevPadLayoutWidget::GetContentWidthFraction() const
+{
+	return FMath::Lerp(0.25f, 0.5f, Scale - 1.f);
 }
 
 void UDevPadLayoutWidget::ApplyAlignment() const
@@ -111,3 +118,5 @@ void UDevPadLayoutWidget::ApplyScale() const
 		HSpacerSlot->SetSize(MakeSize(1.f - Size));
 	}
 }
+
+PRAGMA_ENABLE_OPTIMIZATION

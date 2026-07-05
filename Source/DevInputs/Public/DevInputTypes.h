@@ -442,15 +442,15 @@ enum class EDevInputType : uint8
 	Touch = 4,
 };
 
-UENUM(BlueprintType)
-enum class EDevInputControllerPlatform : uint8
+struct EDevInputGamepadNames
 {
-	Invalid = 0,
-	Unknown  = 1,
-	PlayStation = 2,
-	Xbox = 3,
+	static DEVINPUTS_API const FName Generic;
+	static DEVINPUTS_API const FLazyName Xbox;
+	static DEVINPUTS_API const FLazyName PS4;
+	static DEVINPUTS_API const FLazyName PS5;
+	static DEVINPUTS_API const FLazyName Steam;
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputEvent, const FDevInputKeyEventArgs&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputTypeChanged, const EDevInputType);
-DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputControllerPlatformChanged, const EDevInputControllerPlatform);
+DECLARE_MULTICAST_DELEGATE_OneParam(FDevInputGamepadChanged, const FName);

@@ -45,11 +45,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, DisplayName = "D-Pad Up Action", Category = "D-Pad Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct DPadUpAction;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "D-Pad Left Action", Category = "D-Pad Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	FInstancedStruct DPadLeftAction;
-
 	UPROPERTY(EditDefaultsOnly, DisplayName = "D-Pad Right Action", Category = "D-Pad Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct DPadRightAction;
+
+	UPROPERTY(EditDefaultsOnly, DisplayName = "D-Pad Left Action", Category = "D-Pad Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
+	FInstancedStruct DPadLeftAction;
 
 	UPROPERTY(EditDefaultsOnly, DisplayName = "D-Pad Down Action", Category = "D-Pad Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct DPadDownAction;
@@ -59,10 +59,10 @@ public:
 	FInstancedStruct FaceUpAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Face Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	FInstancedStruct FaceLeftAction;
+	FInstancedStruct FaceRightAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Face Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
-	FInstancedStruct FaceRightAction;
+	FInstancedStruct FaceLeftAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Face Buttons", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct))
 	FInstancedStruct FaceDownAction;

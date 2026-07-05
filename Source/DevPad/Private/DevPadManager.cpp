@@ -26,9 +26,7 @@ UDevPadManager::UDevPadManager()
 
 void UDevPadManager::Initialize()
 {
-	PadWidgetAlignmentAccessor->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
-	PadWidgetScaleAccessor->OnChangedDelegate().AddUObject(this,  &ThisClass::OnSettingsChanged);
-
+	UDevPadSettings::OnSettingsChanged().AddUObject(this,  &ThisClass::OnSettingsChanged);
 	UConsole::OnConsoleActivationStateChanged.AddUObject(this, &ThisClass::OnConsoleActivationStateChanged);
 
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
@@ -42,9 +40,7 @@ void UDevPadManager::Reset()
 {
 	HidePad();
 
-	PadWidgetAlignmentAccessor->OnChangedDelegate().RemoveAll(this);
-	PadWidgetScaleAccessor->OnChangedDelegate().RemoveAll(this);
-
+	UDevPadSettings::OnSettingsChanged().RemoveAll(this);
 	UConsole::OnConsoleActivationStateChanged.RemoveAll(this);
 
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
@@ -577,11 +573,11 @@ void UDevPadManager::OnConsoleActivationStateChanged(const bool bActive)
 	}
 }
 
-void UDevPadManager::OnSettingsChanged(IConsoleVariable* ConsoleVariable)
+void UDevPadManager::OnSettingsChanged(const UDevPadSettings* Settings) const
 {
 	if (PadLayoutWidget)
 	{
-		PadLayoutWidget->SetAlignment(PadWidgetAlignmentAccessor->GetEnum<EDevPadAlignment>());
-		PadLayoutWidget->SetScale(PadWidgetScaleAccessor->GetFloat());
+		PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
+		PadLayoutWidget->SetScale(Settings->PadWidgetScale);
 	}
 }

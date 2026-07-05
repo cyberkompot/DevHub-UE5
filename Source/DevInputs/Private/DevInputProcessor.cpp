@@ -6,6 +6,7 @@
 #include "DevInputLogging.h"
 #include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerInput.h"
+#include "GenericPlatform/GenericApplicationMessageHandler.h"
 #include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 #if UE_COMPATIBILITY_INPUT_KEY_EVENT_ARGS
 #include "InputKeyEventArgs.h"
@@ -14,13 +15,20 @@
 
 using namespace DevInput::Logging;
 
+FDevInputProcessor::FDevInputProcessor()
+{
+	CurrentGamepadName = GetGamepadNameByPlatform();
+}
+
 void FDevInputProcessor::Reset()
 {
 	OnInputTypeChanged.Clear();
-	OnInputControllerPlatformChanged.Clear();
+	OnInputGamepadChanged.Clear();
 	OnInputEvent.Clear();
 	ConsumedDownKeys.Reset();
-	CurrentInputControllerPlatform = EDevInputControllerPlatform::Invalid;
+	CurrentGamepadName = GetGamepadNameByPlatform();
+	LastGamepadInputDeviceName = NAME_None;
+	LastGamepadHardwareDeviceIdentifier.Reset();
 }
 
 void FDevInputProcessor::ConsumeInputEvent()
@@ -34,9 +42,9 @@ void FDevInputProcessor::ConsumeInputEvent()
 		InputKeyManager.GetCodesFromKey(Key, KeyCodePtr, CharacterPtr);
 		const uint32 KeyCode = (KeyCodePtr) ? *KeyCodePtr : 0;
 		const uint32 Character = (CharacterPtr) ? *CharacterPtr : 0;
-		UE_CLOG_FUNCTION(!bConsumeInputEvent, LogDevInputs, Verbose, TEXT("Input event consumed: Key = %s, KeyCode = %u, Character = %u, Event = %s"), *Key.ToString(), KeyCode, Character, *EnumToString(CurrentInputEvent->Event));
+		UE_CLOG_FUNCTION(!bConsumeCurrentInputEvent, LogDevInputs, Verbose, TEXT("Input event consumed: Key = %s, KeyCode = %u, Character = %u, Event = %s"), *Key.ToString(), KeyCode, Character, *EnumToString(CurrentInputEvent->Event));
 
-		bConsumeInputEvent = true;
+		bConsumeCurrentInputEvent = true;
 	}
 	else
 	{
@@ -91,30 +99,93 @@ void FDevInputProcessor::SetCurrentInputType(const EDevInputType InInputType)
 	}
 }
 
-void FDevInputProcessor::SetCurrentControllerPlatform(const EDevInputControllerPlatform InInputControllerPlatform)
+FName FDevInputProcessor::GetGamepadNameByPlatform() const
 {
-	if (CurrentInputControllerPlatform != InInputControllerPlatform)
-	{
-		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Input controller platform changed: Platform = %s"), *EnumToString(InInputControllerPlatform));
+#if defined(PLATFORM_PS4) && PLATFORM_PS4
+	return EDevInputGamepadNames::PS4;
+#elif defined(PLATFORM_PS5) && PLATFORM_PS5
+	return EDevInputGamepadNames::PS5;
+#elif (defined(PLATFORM_XSX) && PLATFORM_XSX) || (defined(PLATFORM_XBOXONEGDK) && PLATFORM_XBOXONEGDK)
+	return EDevInputGamepadNames::Xbox;
+#else
+	return EDevInputGamepadNames::Generic;
+#endif
+}
 
-		CurrentInputControllerPlatform = InInputControllerPlatform;
-		OnInputControllerPlatformChanged.Broadcast(InInputControllerPlatform);
+FName FDevInputProcessor::GetGamepadNameByHardware(const FName InInputDeviceName, const FString& InHardwareDeviceIdentifier) const
+{
+	// PlayStation.
+	if (InHardwareDeviceIdentifier.Contains(TEXT("DualSense")))
+	{
+		return EDevInputGamepadNames::PS5;
 	}
+	if (InHardwareDeviceIdentifier.Contains(TEXT("DualShock")))
+	{
+		return EDevInputGamepadNames::PS4;
+	}
+	if (InHardwareDeviceIdentifier.Contains(TEXT("VID_054C"))) // SONY vendor ID.
+	{
+		const bool bIsDualSense = InHardwareDeviceIdentifier.Contains(TEXT("PID_0CE6")) // DualSense.
+			|| InHardwareDeviceIdentifier.Contains(TEXT("PID_0DF2")); // DualSense Edge.
+		return (bIsDualSense) ? EDevInputGamepadNames::PS5 : EDevInputGamepadNames::PS4;
+	}
+
+	// Xbox.
+	if ((InInputDeviceName == "XInputInterface") || InHardwareDeviceIdentifier.Contains(TEXT("Xbox")))
+	{
+		return EDevInputGamepadNames::Xbox;
+	}
+
+	// Steam.
+	if ((InInputDeviceName == "SteamController") || InHardwareDeviceIdentifier.Contains(TEXT("VID_28DE"))) // Valve vendor ID.
+	{
+		return EDevInputGamepadNames::Steam;
+	}
+
+	return GetGamepadNameByPlatform();
+}
+
+void FDevInputProcessor::SetCurrentGamepadName(const FName InGamepadName)
+{
+	if (CurrentGamepadName != InGamepadName)
+	{
+		UE_LOG_FUNCTION(LogDevInputs, Verbose, TEXT("Gamepad changed: Gamepad = %s"), *InGamepadName.ToString());
+
+		CurrentGamepadName = InGamepadName;
+		OnInputGamepadChanged.Broadcast(InGamepadName);
+	}
+}
+
+void FDevInputProcessor::RefreshCurrentGamepadName()
+{
+#if PLATFORM_DESKTOP
+	if (const FInputDeviceScope* DeviceScope = FInputDeviceScope::GetCurrent())
+	{
+		if ((DeviceScope->InputDeviceName != LastGamepadInputDeviceName) || (DeviceScope->HardwareDeviceIdentifier != LastGamepadHardwareDeviceIdentifier))
+		{
+			LastGamepadInputDeviceName = DeviceScope->InputDeviceName;
+			LastGamepadHardwareDeviceIdentifier = DeviceScope->HardwareDeviceIdentifier;
+			SetCurrentGamepadName(GetGamepadNameByHardware(DeviceScope->InputDeviceName, DeviceScope->HardwareDeviceIdentifier));
+		}
+	}
+#else
+	// Consoles only support their native gamepads. This value is initialized in the constructor.
+#endif
 }
 
 bool FDevInputProcessor::ProcessDownEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
-	bConsumeInputEvent = false;
+	bConsumeCurrentInputEvent = false;
 	ON_SCOPE_EXIT
 	{
 		CurrentInputEvent = nullptr;
-		bConsumeInputEvent = false;
+		bConsumeCurrentInputEvent = false;
 	};
 
 	OnInputEvent.Broadcast(Params);
 
-	if (bConsumeInputEvent)
+	if (bConsumeCurrentInputEvent)
 	{
 		ConsumedDownKeys.Add(Params.Key);
 	}
@@ -122,38 +193,38 @@ bool FDevInputProcessor::ProcessDownEvent(const FDevInputKeyEventArgs& Params)
 	{
 		ConsumedDownKeys.Remove(Params.Key);
 	}
-	return bConsumeInputEvent;
+	return bConsumeCurrentInputEvent;
 }
 
 bool FDevInputProcessor::ProcessUpEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
-	bConsumeInputEvent = ConsumedDownKeys.Contains(Params.Key);;
+	bConsumeCurrentInputEvent = ConsumedDownKeys.Contains(Params.Key);
 	ON_SCOPE_EXIT
 	{
 		CurrentInputEvent = nullptr;
-		bConsumeInputEvent = false;
+		bConsumeCurrentInputEvent = false;
 	};
 
 	OnInputEvent.Broadcast(Params);
 
 	ConsumedDownKeys.Remove(Params.Key);
-	return bConsumeInputEvent;
+	return bConsumeCurrentInputEvent;
 }
 
 bool FDevInputProcessor::ProcessUnpairedEvent(const FDevInputKeyEventArgs& Params)
 {
 	CurrentInputEvent = &Params;
-	bConsumeInputEvent = false;
+	bConsumeCurrentInputEvent = false;
 	ON_SCOPE_EXIT
 	{
 		CurrentInputEvent = nullptr;
-		bConsumeInputEvent = false;
+		bConsumeCurrentInputEvent = false;
 	};
 
 	OnInputEvent.Broadcast(Params);
 
-	return bConsumeInputEvent;
+	return bConsumeCurrentInputEvent;
 }
 
 bool FDevInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
@@ -164,7 +235,13 @@ bool FDevInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const F
 
 	UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Key down: Key = %s, KeyCode = %u, Character = %u"), *InKeyEvent.GetKey().ToString(), InKeyEvent.GetKeyCode(), InKeyEvent.GetCharacter());
 
-	SetCurrentInputType(GetInputType(InKeyEvent.GetKey()));
+	const EDevInputType InputType = GetInputType(InKeyEvent.GetKey());
+
+	SetCurrentInputType(InputType);
+	if (InputType == EDevInputType::Gamepad)
+	{
+		RefreshCurrentGamepadName();
+	}
 
 	FDevInputKeyEventArgs Params = {};
 	Params.Key = InKeyEvent.GetKey();
@@ -227,7 +304,6 @@ bool FDevInputProcessor::HandleMouseMoveEvent(FSlateApplication& SlateApp, const
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
-	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }
@@ -241,7 +317,6 @@ bool FDevInputProcessor::HandleMouseButtonDownEvent(FSlateApplication& SlateApp,
 	UE_LOG_FUNCTION(LogDevInputs, VeryVerbose, TEXT("Mouse button down: Button = %s"), *MouseEvent.GetEffectingButton().ToString());
 
 	SetCurrentInputType(EDevInputType::Mouse);
-	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	FDevInputKeyEventArgs Params = {};
 	Params.Key = MouseEvent.GetEffectingButton();
@@ -292,7 +367,6 @@ bool FDevInputProcessor::HandleMouseButtonDoubleClickEvent(FSlateApplication& Sl
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
-	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }
@@ -304,7 +378,6 @@ bool FDevInputProcessor::HandleMouseWheelOrGestureEvent(FSlateApplication& Slate
 #endif
 
 	SetCurrentInputType(EDevInputType::Mouse);
-	SetCurrentControllerPlatform(EDevInputControllerPlatform::Invalid);
 
 	return false;
 }
@@ -316,6 +389,7 @@ bool FDevInputProcessor::HandleMotionDetectedEvent(FSlateApplication& SlateApp, 
 #endif
 
 	SetCurrentInputType(EDevInputType::Gamepad);
+	RefreshCurrentGamepadName();
 
 	return false;
 }

@@ -83,13 +83,13 @@ public:
 
 public:
 	EDevInputType GetCurrentInputType() const;
-	EDevInputControllerPlatform GetInputCurrentControllerPlatform() const;
+	FName GetCurrentGamepadName() const;
 
 	void ConsumeInputEvent() const;
 	void EmulateKeyPress(const FKey& InKey) const;
 
 	FDevInputTypeChanged& OnInputTypeChanged() const;
-	FDevInputControllerPlatformChanged& OnInputControllerPlatformChanged() const;
+	FDevInputGamepadChanged& OnInputGamepadChanged() const;
 	FDevInputEvent& OnInputEvent() const;
 
 public:

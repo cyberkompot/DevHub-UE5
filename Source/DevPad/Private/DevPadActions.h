@@ -5,6 +5,7 @@
 #include "DevActionTypes.h"
 #include "DevPadActions.generated.h"
 
+struct FDevPadExecutionContext;
 class UDevPad;
 class UDevPadPage;
 
@@ -15,10 +16,10 @@ struct FDevPadActionBase : public FDevActionBase
 
 protected:
 	//~ Begin FDevAction interface.
-	virtual void OnExecuteAction(const UObject* WorldContextObject) const override;
+	virtual void OnExecuteAction(const UObject* WorldContextObject) const override final;
 	//~ End FDevAction interface.
 
-	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const {};
+	virtual void OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const {};
 };
 
 USTRUCT(NotBlueprintType, NotBlueprintable, Category = "DevHub|Action", meta = (Hidden))
@@ -42,7 +43,7 @@ struct FDevPadActionOpenSubPage : public FDevPadActionSubPageBase
 
 protected:
 	//~ Begin FDevPadActionBase interface.
-	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	virtual void OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const override;
 	//~ End FDevPadActionBase interface.
 };
 
@@ -53,7 +54,7 @@ struct FDevPadActionToggleSubPage : public FDevPadActionSubPageBase
 
 protected:
 	//~ Begin FDevPadActionBase interface.
-	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	virtual void OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const override;
 	//~ End FDevPadActionBase interface.
 };
 
@@ -64,6 +65,6 @@ struct FDevPadActionCloseSubPage : public FDevPadActionSubPageBase
 
 protected:
 	//~ Begin FDevPadActionBase interface.
-	virtual void OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const override;
+	virtual void OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const override;
 	//~ End FDevPadActionBase interface.
 };

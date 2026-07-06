@@ -140,10 +140,10 @@ private:
 UENUM(BlueprintType, Category = "DevHub|Pad")
 enum struct EDevPadAlignment : uint8
 {
-	TopLeft,
-	TopRight,
-	BottomLeft,
-	BottomRight,
+	TopLeft = 0,
+	TopRight = 1,
+	BottomLeft = 2,
+	BottomRight = 3,
 };
 
 UENUM(BlueprintType, Category = "DevHub|Pad")
@@ -151,28 +151,28 @@ enum struct EDevPadInput : uint8
 {
 	Invalid = 0 UMETA(Hidden),
 
-	DPadUp,
-	DPadLeft,
-	DPadRight,
-	DPadDown,
+	DPadUp = 1,
+	DPadRight = 2,
+	DPadLeft = 3,
+	DPadDown = 4,
 
-	FaceUp,
-	FaceLeft,
-	FaceRight,
-	FaceDown,
+	FaceUp = 5,
+	FaceRight = 6,
+	FaceLeft = 7,
+	FaceDown = 8,
 
-	LeftShoulder,
-	RightShoulder,
+	LeftShoulder = 9,
+	RightShoulder = 10,
 
-	LeftTrigger,
-	RightTrigger,
+	LeftTrigger = 11,
+	RightTrigger = 12,
 
-	LeftThumbstick,
-	RightThumbstick,
+	LeftThumbstick = 13,
+	RightThumbstick = 14,
 
-	LeftPlusRightShoulders,
-	LeftPlusRightTriggers,
-	LeftPlusRightThumbsticks,
+	LeftPlusRightShoulders = 15,
+	LeftPlusRightTriggers = 16,
+	LeftPlusRightThumbsticks = 17,
 };
 
 UENUM(BlueprintType, Category = "DevHub|Pad")
@@ -196,9 +196,19 @@ struct DEVPAD_API FDevPadExecutionContext
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevPad")
 	EDevPadInput PadInput = EDevPadInput::Invalid;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevPad")
+	TObjectPtr<UDevPadPage> TopPage = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DevPad")
+	TObjectPtr<UDevPadPage> OwningPage = nullptr;
+
 	FORCEINLINE UDevPad* GetPad() const { return DevPad; }
 	FORCEINLINE UDevPadStack* GetPadStack() const { return PadStack; }
+	FORCEINLINE UDevPadPage* GetTopPage() const { return TopPage; }
+	FORCEINLINE UDevPadPage* GetOwningPage() const { return OwningPage; }
 	FORCEINLINE EDevPadInput GetPadInput() const { return PadInput; }
+
+	bool IsValid() const { return (DevPad && PadStack); }
 };
 
 USTRUCT(BlueprintType, Category = "DevHub|Pad")

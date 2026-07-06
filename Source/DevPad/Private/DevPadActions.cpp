@@ -8,9 +8,9 @@
 
 void FDevPadActionBase::OnExecuteAction(const UObject* WorldContextObject) const
 {
-	if (UDevPad* DevPad = UDevPad::Get(WorldContextObject))
+	if (const UDevPad* DevPad = UDevPad::Get(WorldContextObject))
 	{
-		OnExecuteActionWithSubsystem(WorldContextObject, DevPad);
+		OnExecuteActionWithContext(WorldContextObject, DevPad->GetCurrentExecutionContext());
 	}
 	else
 	{
@@ -18,17 +18,26 @@ void FDevPadActionBase::OnExecuteAction(const UObject* WorldContextObject) const
 	}
 }
 
-void FDevPadActionOpenSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionOpenSubPage::OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const
 {
-	DevPad->OpenSubPage(Page.LoadSynchronous());
+	if (ExecutionContext.DevPad)
+	{
+		ExecutionContext.DevPad->OpenSubPage(Page.LoadSynchronous());
+	}
 }
 
-void FDevPadActionToggleSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionToggleSubPage::OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const
 {
-	DevPad->ToggleSubPage(Page.LoadSynchronous());
+	if (ExecutionContext.DevPad)
+	{
+		ExecutionContext.DevPad->ToggleSubPage(Page.LoadSynchronous());
+	}
 }
 
-void FDevPadActionCloseSubPage::OnExecuteActionWithSubsystem(const UObject* WorldContextObject, UDevPad* DevPad) const
+void FDevPadActionCloseSubPage::OnExecuteActionWithContext(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext) const
 {
-	DevPad->CloseSubPage(Page.LoadSynchronous());
+	if (ExecutionContext.DevPad)
+	{
+		ExecutionContext.DevPad->CloseSubPage(Page.LoadSynchronous());
+	}
 }

@@ -29,7 +29,7 @@ enum struct EDevPadAlignmentChange : uint8
 UENUM(BlueprintType, Category = "DevHub|Pad")
 enum struct EDevPadGamepadPlatform : uint8
 {
-	AutoDetect = 0 UMETA(DisplayName = "Auto-detect"),
+	AutoDetect = 0 UMETA(DisplayName = "Autodetect"),
 	Xbox = 1 UMETA(DisplayName = "XBOX"),
 	PlayStation = 2 UMETA(DisplayName = "PlayStation"),
 	Steam = 3 UMETA(DisplayName = "Steam"),

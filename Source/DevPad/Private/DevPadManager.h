@@ -44,6 +44,8 @@ public:
 	void CloseCurrentSubPage() const;
 	void CloseAllSubPages() const;
 
+	FORCEINLINE const FDevPadExecutionContext& GetCurrentExecutionContext() const { return CurrentExecutionContext; }
+
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadInputController> InputController = nullptr;
@@ -60,13 +62,16 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<UDevPadLayoutWidget> PadLayoutWidget = nullptr;
 
+	UPROPERTY(Transient)
+	FDevPadExecutionContext CurrentExecutionContext;
+
 	FORCEINLINE bool IsPadPaused() const { return InputController->IsInputPaused(); }
 	void ResumePad() const;
 	void PausePad() const;
 
 	void ExecutePadInput(const EDevPadInput InPadInput);
-	EDevPadInputExecution ExecutePageInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
-	EDevPadInputExecution ExecuteDefaultInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext);
+	EDevPadInputExecution ExecutePageInput(const UObject* WorldContextObject);
+	EDevPadInputExecution ExecuteDefaultInput(const UObject* WorldContextObject);
 
 	bool CreateWidget();
 	void DestroyWidget();

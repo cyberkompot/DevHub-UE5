@@ -167,6 +167,22 @@ void UDevPadManager::OpenSubPage(UDevPadPage* InPage) const
 		return;
 	}
 
+	if (CurrentExecutionContext.IsValid())
+	{
+		if (const UDevPadPage* OwningPage = CurrentExecutionContext.GetOwningPage())
+		{
+			for (const UDevPadPage* TopPage = StackController->GetTopPage(); TopPage; TopPage = StackController->GetTopPage())
+			{
+				if (TopPage == OwningPage)
+				{
+					break;
+				}
+				UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad closing sub-page: Page = %s"), *PageToLog(TopPage));
+				StackController->PopFromStack();
+			}
+		}
+	}
+
 	UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad opening sub-page: Page = %s"), *PageToLog(InPage));
 	StackController->PushToStack(InPage);
 	RefreshWidget();
@@ -301,16 +317,19 @@ void UDevPadManager::ExecutePadInput(const EDevPadInput InPadInput)
 	ExecutionContext.DevPad = UDevPad::Get(WorldContextObject);
 	ExecutionContext.PadInput = InPadInput;
 	ExecutionContext.PadStack = StackController;
+	ExecutionContext.TopPage = StackController->GetTopPage();
+	ExecutionContext.OwningPage = nullptr;
 
+	TGuardValue<FDevPadExecutionContext> CurrentExecutionContextGuard(CurrentExecutionContext, ExecutionContext);
 	EDevPadInputExecution Execution = EDevPadInputExecution::Continue;
 
 	if (Execution == EDevPadInputExecution::Continue)
 	{
-		Execution = ExecutePageInput(WorldContextObject, ExecutionContext);
+		Execution = ExecutePageInput(WorldContextObject);
 	}
 	if (Execution == EDevPadInputExecution::Continue)
 	{
-		Execution = ExecuteDefaultInput(WorldContextObject, ExecutionContext);
+		Execution = ExecuteDefaultInput(WorldContextObject);
 	}
 
 	if (Execution == EDevPadInputExecution::Break)
@@ -319,28 +338,30 @@ void UDevPadManager::ExecutePadInput(const EDevPadInput InPadInput)
 	}
 }
 
-EDevPadInputExecution UDevPadManager::ExecutePageInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext)
+EDevPadInputExecution UDevPadManager::ExecutePageInput(const UObject* WorldContextObject)
 {
-	const TArray<UDevPadPage*>& Pages = ExecutionContext.PadStack->GetAllPages();
+	const TArray<UDevPadPage*>& Pages = StackController->GetAllPages();
 	for (int32 i = Pages.Num() - 1; i >= 0; --i)
 	{
-		if (const UDevPadPage* Page = Pages[i])
+		if (UDevPadPage* Page = Pages[i])
 		{
-			if (const EDevPadInputExecution Execution = Page->ExecutePageInput(WorldContextObject, ExecutionContext); Execution == EDevPadInputExecution::Break)
+			CurrentExecutionContext.OwningPage = Page;
+			if (const EDevPadInputExecution Execution = Page->ExecutePageInput(WorldContextObject, CurrentExecutionContext); Execution == EDevPadInputExecution::Break)
 			{
-				UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad page action executed: PadInput = %s, Page = %s"), *EnumToLog(ExecutionContext.PadInput), *PageToLog(Page));
+				UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("DevPad page action executed: PadInput = %s, Page = %s"), *EnumToLog(CurrentExecutionContext.PadInput), *PageToLog(Page));
 				RefreshWidget();
 				return EDevPadInputExecution::Break;
 			}
 		}
 	}
 
+	CurrentExecutionContext.OwningPage = nullptr;
 	return EDevPadInputExecution::Continue;
 }
 
-EDevPadInputExecution UDevPadManager::ExecuteDefaultInput(const UObject* WorldContextObject, const FDevPadExecutionContext& ExecutionContext)
+EDevPadInputExecution UDevPadManager::ExecuteDefaultInput(const UObject* WorldContextObject)
 {
-	switch (ExecutionContext.PadInput)
+	switch (CurrentExecutionContext.PadInput)
 	{
 		case EDevPadInput::LeftShoulder:
 			NavigateToPreviousPage();
@@ -356,7 +377,7 @@ EDevPadInputExecution UDevPadManager::ExecuteDefaultInput(const UObject* WorldCo
 
 		default:
 			// Default input execute always ends with the break to suppress further input handling.
-			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("No DevPad action associated with input: PadInput = %s"), *EnumToLog(ExecutionContext.PadInput));
+			UE_LOG_FUNCTION(LogDevPad, Verbose, TEXT("No DevPad action associated with input: PadInput = %s"), *EnumToLog(CurrentExecutionContext.PadInput));
 			return EDevPadInputExecution::Break;
 	}
 }

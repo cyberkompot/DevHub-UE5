@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DevCoreGameInstanceSubsystem.h"
+#include "DevPadTypes.h"
 #include "DevPad.generated.h"
 
 class UDevPadPage;
@@ -19,7 +20,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintPure, Category = "DevHub|Pad")
-	bool IsPadVisible() const;
+	bool IsVisible() const;
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void ShowPad(const FName InPageName = NAME_None) const;
@@ -52,6 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DevHub|Pad")
 	void CloseAllSubPages() const;
+
+public:
+	FDevPadExecutionContext GetCurrentExecutionContext() const;
 
 public:
 	//~ Begin USubsystem Interface

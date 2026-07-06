@@ -90,5 +90,6 @@ public:
 	//~ End IDevPadPage interface.
 
 protected:
-	FDevPadControllerPageActionView GetPageAction(const UObject* WorldContextObject, const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const;
+	FDevPadControllerPageActionView GetPageActionInPage(const UDevPadControllerPage* InPadPage, const EDevPadInput InPadInput) const;
+	FDevPadControllerPageActionView GetPageActionInStack(const UDevPadStack* InPadStack, const EDevPadInput InPadInput) const;
 };

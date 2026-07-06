@@ -17,7 +17,7 @@ UDevPad::UDevPad()
 	PadManager->SetPadRegistry(*PadRegistry);
 }
 
-bool UDevPad::IsPadVisible() const
+bool UDevPad::IsVisible() const
 {
 	return PadManager->IsPadVisible();
 }
@@ -70,6 +70,11 @@ void UDevPad::CloseCurrentSubPage() const
 void UDevPad::CloseAllSubPages() const
 {
 	PadManager->CloseAllSubPages();
+}
+
+FDevPadExecutionContext UDevPad::GetCurrentExecutionContext() const
+{
+	return PadManager->GetCurrentExecutionContext();
 }
 
 void UDevPad::Initialize(FSubsystemCollectionBase& Collection)

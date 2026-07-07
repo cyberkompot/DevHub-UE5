@@ -26,9 +26,9 @@ FSlateBrush UDevPadCommonActionWidget::GetIcon() const
 		{
 #if PLATFORM_DESKTOP
 			// Gamepad type override from settings on desktop platforms.
-			if (const UDevPadSettings* Settings = GetDefault<UDevPadSettings>())
+			if (const UDevPadSavableSettings* SavableSettings = GetDefault<UDevPadSavableSettings>())
 			{
-				switch (Settings->PadWidgetGamepad)
+				switch (SavableSettings->PadWidgetGamepad)
 				{
 				case EDevPadGamepadPlatform::Xbox:
 					CurrentGamepadName = EDevInputGamepadNames::Xbox;
@@ -71,28 +71,28 @@ void UDevPadCommonActionWidget::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	if (!SettingsChangedHandle.IsValid())
+	if (!SavableSettingsChangedHandle.IsValid())
 	{
-		SettingsChangedHandle = UDevPadSettings::OnSettingsChanged().AddUObject(this, &ThisClass::OnSettingsChanged);
+		SavableSettingsChangedHandle = UDevPadSavableSettings::OnSettingsChanged().AddUObject(this, &ThisClass::OnSettingsChanged);
 	}
 }
 
 void UDevPadCommonActionWidget::BeginDestroy()
 {
-	if (SettingsChangedHandle.IsValid())
+	if (SavableSettingsChangedHandle.IsValid())
 	{
-		UDevPadSettings::OnSettingsChanged().Remove(SettingsChangedHandle);
-		SettingsChangedHandle.Reset();
+		UDevPadSavableSettings::OnSettingsChanged().Remove(SavableSettingsChangedHandle);
+		SavableSettingsChangedHandle.Reset();
 	}
 
 	Super::BeginDestroy();
 }
 
-void UDevPadCommonActionWidget::OnSettingsChanged(const UDevPadSettings* Settings)
+void UDevPadCommonActionWidget::OnSettingsChanged(const UDevPadSavableSettings* SavableSettings)
 {
-	if (LastPadWidgetGamepad != Settings->PadWidgetGamepad)
+	if (LastPadWidgetGamepad != SavableSettings->PadWidgetGamepad)
 	{
-		LastPadWidgetGamepad = Settings->PadWidgetGamepad;
+		LastPadWidgetGamepad = SavableSettings->PadWidgetGamepad;
 		if (IsConstructed())
 		{
 			UpdateActionWidget();

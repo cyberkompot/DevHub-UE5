@@ -8,7 +8,7 @@
 #include "Widgets/DevPadPanelWidget.h"
 #include "DevPadManager.generated.h"
 
-class UDevPadSettings;
+class UDevPadSavableSettings;
 class UDevPadInputController;
 class UDevPadLayoutWidget;
 class UDevPadPanelWidget;
@@ -29,6 +29,7 @@ public:
 	FORCEINLINE void SetPadRegistry(UDevPadRegistry& InPadRegistry) { PadRegistry = &InPadRegistry; }
 
 public:
+	FORCEINLINE const FDevPadExecutionContext& GetCurrentExecutionContext() const { return CurrentExecutionContext; }
 	FORCEINLINE bool IsPadVisible() const { return (!!PadWidget); }
 
 	void ShowPad(const FName InPageName);
@@ -43,8 +44,6 @@ public:
 	void CloseSubPage(UDevPadPage* InPage) const;
 	void CloseCurrentSubPage() const;
 	void CloseAllSubPages() const;
-
-	FORCEINLINE const FDevPadExecutionContext& GetCurrentExecutionContext() const { return CurrentExecutionContext; }
 
 private:
 	UPROPERTY(Transient)
@@ -83,5 +82,5 @@ private:
 	void PopulateWidgetPageContent(const UObject* WorldContextObject, const UDevPadPage* TopPage, UDevPadPanelData* Data) const;
 
 	void OnConsoleActivationStateChanged(bool bActive);
-	void OnSettingsChanged(const UDevPadSettings* Settings) const;
+	void OnSavableSettingsChanged(const UDevPadSavableSettings* SavableSettings) const;
 };

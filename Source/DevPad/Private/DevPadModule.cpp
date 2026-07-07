@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Alexandr Pereverzev.
 
-#include "DevPadModule.h"
+#include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDevPadModule, DevPad)
-
-void FDevPadModule::StartupModule()
-{
-
-}
+IMPLEMENT_MODULE(FDefaultModuleImpl, DevPad)

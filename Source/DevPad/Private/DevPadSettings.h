@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "DevActionConsoleAccessor.h"
 #include "DevInputTypes.h"
 #include "DevPadTypes.h"
 #include "DevPadSettings.generated.h"
@@ -10,12 +9,6 @@
 class UDevPadPage;
 class UDevPadPageWidget;
 class UDevPadPanelWidget;
-
-namespace DevPad::Settings
-{
-	extern TDevActionConsoleAccessor<EDevPadAlignment> PadWidgetAlignmentAccessor;
-	extern FDevActionFloatConsoleAccessor PadWidgetScaleAccessor;
-}
 
 UENUM(BlueprintType, Category = "DevHub|Pad")
 enum struct EDevPadAlignmentChange : uint8
@@ -43,10 +36,6 @@ class UDevPadSettings final : public UDeveloperSettings
 public:
 	UDevPadSettings();
 
-	static const FLazyName AutoDetectedGamepad;
-
-	DECLARE_MULTICAST_DELEGATE_OneParam(FOnSettingsChanged, const UDevPadSettings*)
-
 	UPROPERTY(Config, EditAnywhere, Category = "DevPad", DisplayName = "Shortcut")
 	FDevInputShortcut PadShortcut = "Num 5 | Special Right + D-pad Down";
 
@@ -65,6 +54,7 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Widgets")
 	TMap<TSoftClassPtr<UDevPadPage>, TSoftClassPtr<UDevPadPageWidget>> PageWidgetClasses;
 
+private:
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Gamepad")
 	EDevPadGamepadPlatform PadWidgetGamepad = EDevPadGamepadPlatform::AutoDetect;
 
@@ -74,13 +64,43 @@ public:
 	UPROPERTY(Config, EditDefaultsOnly, Category = "DevPad|Display", DisplayName = "Pad Scale", meta = (ClampMin = 1.f, ClampMax = 2.f))
 	float PadWidgetScale = 1.f;
 
+public:
 	TSoftClassPtr<UDevPadInfoWidget> GetInfoWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 	TSoftClassPtr<UDevPadPageWidget> GetPageWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const;
 
-	void NotifySettingsChanged() const { OnSettingsChanged().Broadcast(this); };
+	//~ Begin UObject interface.
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif // WITH_EDITOR
+	//~ End UObject interface.
 
-	static FOnSettingsChanged& OnSettingsChanged() { return OnSettingsChangedDelegate; }
+	friend class UDevPadSavableSettings;
+};
 
-private:
-	static FOnSettingsChanged OnSettingsChangedDelegate;
+UCLASS(Config = DevHub)
+class UDevPadSavableSettings final : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UDevPadSavableSettings();
+
+	DECLARE_MULTICAST_DELEGATE_OneParam(FOnSettingsChanged, const ThisClass*)
+	static FOnSettingsChanged& OnSettingsChanged();
+
+	UPROPERTY(Config)
+	EDevPadGamepadPlatform PadWidgetGamepad = EDevPadGamepadPlatform::AutoDetect;
+
+	UPROPERTY(Config)
+	EDevPadAlignment PadWidgetAlignment = EDevPadAlignment::BottomRight;
+
+	UPROPERTY(Config)
+	float PadWidgetScale = 1.f;
+
+	void Reset();
+	void SaveAndNotify();
+
+	//~ Begin UObject interface.
+	virtual void PostInitProperties() override;
+	//~ End UObject interface.
 };

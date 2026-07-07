@@ -16,8 +16,6 @@
 #include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
 
-using namespace DevPad::Settings;
-
 UDevPadManager::UDevPadManager()
 {
 	InputController = CreateDefaultSubobject<UDevPadInputController>("InputController", true);
@@ -26,7 +24,7 @@ UDevPadManager::UDevPadManager()
 
 void UDevPadManager::Initialize()
 {
-	UDevPadSettings::OnSettingsChanged().AddUObject(this,  &ThisClass::OnSettingsChanged);
+	UDevPadSavableSettings::OnSettingsChanged().AddUObject(this, &ThisClass::OnSavableSettingsChanged);
 	UConsole::OnConsoleActivationStateChanged.AddUObject(this, &ThisClass::OnConsoleActivationStateChanged);
 
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
@@ -40,7 +38,7 @@ void UDevPadManager::Reset()
 {
 	HidePad();
 
-	UDevPadSettings::OnSettingsChanged().RemoveAll(this);
+	UDevPadSavableSettings::OnSettingsChanged().RemoveAll(this);
 	UConsole::OnConsoleActivationStateChanged.RemoveAll(this);
 
 	if (UDevMenus* DevMenus = UDevMenus::Get(this))
@@ -391,6 +389,13 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
+	const UDevPadSavableSettings* SavableSettings = GetDefault<UDevPadSavableSettings>();
+	if (!SavableSettings)
+	{
+		UE_LOG_FUNCTION(LogDevPad, Warning, TEXT("DevPad savable settings are missing. DevPad could not be constructed and shown"));
+		return false;
+	}
+
 	const TSubclassOf<UDevPadPanelWidget> PadWidgetClass = Settings->PadWidgetClass.LoadSynchronous();
 	if (!PadWidgetClass)
 	{
@@ -415,8 +420,8 @@ bool UDevPadManager::CreateWidget()
 		return false;
 	}
 
-	PadLayoutWidget->SetAlignment(PadWidgetAlignmentAccessor->GetEnum<EDevPadAlignment>());
-	PadLayoutWidget->SetScale(PadWidgetScaleAccessor->GetFloat());
+	PadLayoutWidget->SetAlignment(SavableSettings->PadWidgetAlignment);
+	PadLayoutWidget->SetScale(SavableSettings->PadWidgetScale);
 	PadLayoutWidget->SetContent(PadWidget);
 	PadLayoutWidget->AddToViewport();
 	return true;
@@ -594,11 +599,11 @@ void UDevPadManager::OnConsoleActivationStateChanged(const bool bActive)
 	}
 }
 
-void UDevPadManager::OnSettingsChanged(const UDevPadSettings* Settings) const
+void UDevPadManager::OnSavableSettingsChanged(const UDevPadSavableSettings* SavableSettings) const
 {
 	if (PadLayoutWidget)
 	{
-		PadLayoutWidget->SetAlignment(Settings->PadWidgetAlignment);
-		PadLayoutWidget->SetScale(Settings->PadWidgetScale);
+		PadLayoutWidget->SetAlignment(SavableSettings->PadWidgetAlignment);
+		PadLayoutWidget->SetScale(SavableSettings->PadWidgetScale);
 	}
 }

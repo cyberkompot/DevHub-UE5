@@ -25,8 +25,8 @@ public:
 
 private:
 	EDevPadGamepadPlatform LastPadWidgetGamepad = EDevPadGamepadPlatform::AutoDetect;
-	FDelegateHandle SettingsChangedHandle;
+	FDelegateHandle SavableSettingsChangedHandle;
 
-	void OnSettingsChanged(const UDevPadSettings* Settings);
+	void OnSettingsChanged(const UDevPadSavableSettings* SavableSettings);
 #endif // PLATFORM_DESKTOP
 };

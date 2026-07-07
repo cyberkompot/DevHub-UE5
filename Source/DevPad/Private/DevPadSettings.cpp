@@ -2,6 +2,7 @@
 
 #include "DevPadSettings.h"
 
+#include "DevActionConsoleAccessor.h"
 #include "DevPadLogging.h"
 #include "DevPadTypes.h"
 
@@ -10,42 +11,42 @@ namespace DevPad::Settings
 	TDevActionConsoleAccessor<EDevPadGamepadPlatform> PadWidgetGamepadAccessor = TDevActionConsoleAccessor<EDevPadGamepadPlatform>(TEXT("DevHub.Pad.Settings.Gamepad"), TEXT("DevHub Pad HUD widget gamepad fo PC platforms (0 - AutoDetected, 1 - XBOX, 2 - PlayStation, 3 - Steam)"),
 		TDevActionConsoleAccessor<EDevPadGamepadPlatform>::FGetter::CreateLambda([](UWorld* World)
 		{
-			return GetDefault<UDevPadSettings>()->PadWidgetGamepad;
+			return GetDefault<UDevPadSavableSettings>()->PadWidgetGamepad;
 		}),
 		TDevActionConsoleAccessor<EDevPadGamepadPlatform>::FSetter::CreateLambda([](const EDevPadGamepadPlatform& Value, UWorld* World)
 		{
-			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			if (UDevPadSavableSettings* SavableSettings = GetMutableDefault<UDevPadSavableSettings>())
 			{
-				Settings->PadWidgetGamepad = Value;
-				Settings->NotifySettingsChanged();
+				SavableSettings->PadWidgetGamepad = Value;
+				SavableSettings->SaveAndNotify();
 			}
 		}));
 
 	TDevActionConsoleAccessor<EDevPadAlignment> PadWidgetAlignmentAccessor = TDevActionConsoleAccessor<EDevPadAlignment>(TEXT("DevHub.Pad.Settings.Alignment"), TEXT("DevHub Pad HUD widget alignment (0 - TopLeft, 1 - TopRight, 2 - BottomLeft, 3 - BottomRight)"),
 		TDevActionConsoleAccessor<EDevPadAlignment>::FGetter::CreateLambda([](const UWorld* World)
 		{
-			return GetDefault<UDevPadSettings>()->PadWidgetAlignment;
+			return GetDefault<UDevPadSavableSettings>()->PadWidgetAlignment;
 		}),
 		TDevActionConsoleAccessor<EDevPadAlignment>::FSetter::CreateLambda([](const EDevPadAlignment& Value, const UWorld* World)
 		{
-			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			if (UDevPadSavableSettings* SavableSettings = GetMutableDefault<UDevPadSavableSettings>())
 			{
-				Settings->PadWidgetAlignment = Value;
-				Settings->NotifySettingsChanged();
+				SavableSettings->PadWidgetAlignment = Value;
+				SavableSettings->SaveAndNotify();
 			}
 		}));
 
 	FDevActionFloatConsoleAccessor PadWidgetScaleAccessor = FDevActionFloatConsoleAccessor(TEXT("DevHub.Pad.Settings.Scale"), TEXT("DevHub Pad HUD widget scaling [0.5 - 1.0]"),
 		FDevActionFloatConsoleAccessor::FGetter::CreateLambda([](UWorld* World)
 		{
-			return GetDefault<UDevPadSettings>()->PadWidgetScale;
+			return GetDefault<UDevPadSavableSettings>()->PadWidgetScale;
 		}),
 		FDevActionFloatConsoleAccessor::FSetter::CreateLambda([](const float& Value, UWorld* World)
 		{
-			if (UDevPadSettings* Settings = GetMutableDefault<UDevPadSettings>())
+			if (UDevPadSavableSettings* SavableSettings = GetMutableDefault<UDevPadSavableSettings>())
 			{
-				Settings->PadWidgetScale = FMath::Clamp(Value, 1.f, 2.f);
-				Settings->NotifySettingsChanged();
+				SavableSettings->PadWidgetScale = FMath::Clamp(Value, 1.f, 2.f);
+				SavableSettings->SaveAndNotify();
 			}
 		}));
 
@@ -110,8 +111,6 @@ namespace DevPad::Settings
 
 using namespace DevPad::Settings;
 
-UDevPadSettings::FOnSettingsChanged UDevPadSettings::OnSettingsChangedDelegate;
-
 UDevPadSettings::UDevPadSettings()
 {
 	CommonPage = FSoftObjectPath(TEXT("/DevHub/Data/Pad/DP_Common.DP_Common"));
@@ -140,4 +139,47 @@ TSoftClassPtr<UDevPadInfoWidget> UDevPadSettings::GetInfoWidgetClass(const TSubc
 TSoftClassPtr<UDevPadPageWidget> UDevPadSettings::GetPageWidgetClass(const TSubclassOf<UDevPadPage> PageClass) const
 {
 	return GetWidgetClass<UDevPadPageWidget>(PageWidgetClasses, PageClass);
+}
+
+void UDevPadSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	if (UDevPadSavableSettings* SavableSettings = GetMutableDefault<UDevPadSavableSettings>())
+	{
+		SavableSettings->Reset();
+		SavableSettings->SaveAndNotify();
+	}
+}
+
+UDevPadSavableSettings::UDevPadSavableSettings()
+{
+	Reset();
+}
+
+UDevPadSavableSettings::FOnSettingsChanged& UDevPadSavableSettings::OnSettingsChanged()
+{
+	static FOnSettingsChanged OnSettingsChangedDelegate = FOnSettingsChanged();
+	return OnSettingsChangedDelegate;
+}
+
+void UDevPadSavableSettings::Reset()
+{
+	if (const UDevPadSettings* Settings = GetDefault<UDevPadSettings>())
+	{
+		PadWidgetGamepad = Settings->PadWidgetGamepad;
+		PadWidgetAlignment = Settings->PadWidgetAlignment;
+		PadWidgetScale = Settings->PadWidgetScale;
+	}
+}
+
+void UDevPadSavableSettings::SaveAndNotify()
+{
+	SaveConfig();
+	OnSettingsChanged().Broadcast(this);
+}
+
+void UDevPadSavableSettings::PostInitProperties()
+{
+	Super::PostInitProperties();
+	LoadConfig();
 }

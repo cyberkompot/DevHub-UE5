@@ -64,7 +64,7 @@ private:
 	UPROPERTY(Transient)
 	FDevPadExecutionContext CurrentExecutionContext;
 
-	FORCEINLINE bool IsPadPaused() const { return InputController->IsInputPaused(); }
+	bool IsPadPaused() const { return InputController->IsInputPaused(); }
 	void ResumePad() const;
 	void PausePad() const;
 

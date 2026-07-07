@@ -5,6 +5,8 @@
 #include "DevActionTypes.h"
 #include "DevPadLogging.h"
 
+using namespace DevPad::Logging;
+
 TSoftClassPtr<UDevPadInfoWidget> UDevPadControllerPage::GetInfoWidgetClass(const UObject* WorldContextObject) const
 {
 	return (!InfoWidgetClass.IsNull())

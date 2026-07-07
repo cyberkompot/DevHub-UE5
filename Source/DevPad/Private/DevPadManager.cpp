@@ -16,6 +16,8 @@
 #include "Widgets/DevPadLayoutWidget.h"
 #include "Widgets/DevPadPanelWidget.h"
 
+using namespace DevPad::Logging;
+
 UDevPadManager::UDevPadManager()
 {
 	InputController = CreateDefaultSubobject<UDevPadInputController>("InputController", true);

@@ -5,6 +5,8 @@
 #include "DevCoreCompatibility.h"
 #include "DevPadLogging.h"
 
+using namespace DevPad::Logging;
+
 void UDevPadStackController::Reset()
 {
 	CommonPage = nullptr;

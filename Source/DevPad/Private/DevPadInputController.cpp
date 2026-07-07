@@ -8,6 +8,8 @@
 #include "DevPadLogging.h"
 #include "GameFramework/PlayerInput.h"
 
+using namespace DevPad::Logging;
+
 const TArray<TKeyValuePair<EDevPadInput, FDevInputShortcut>> UDevPadInputController::PadInputShortcuts
 {
 	{ EDevPadInput::DPadUp, "D-pad Up | Num 7" },

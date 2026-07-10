@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "DevCoreTypeTraits.h"
 #include "DevMenuTypes.h"
 #include "Templates/Decay.h"
 #include "Templates/EnableIf.h"
-#include "Templates/IsMemberPointer.h"
 #include "Templates/UnrealTypeTraits.h"
 
 /** Dev Menu entries factory. Implemented as a namespace to allow usage via `using namespace FDevMenuFactory;`. */

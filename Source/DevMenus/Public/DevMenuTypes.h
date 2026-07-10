@@ -12,7 +12,6 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Framework/MultiBox/ToolMenuBase.h"
 #include "Misc/Attribute.h"
-#include "Templates/ChooseClass.h"
 #include "Templates/UnrealTemplate.h"
 #include "Templates/UnrealTypeTraits.h"
 #include "DevMenuTypes.generated.h"

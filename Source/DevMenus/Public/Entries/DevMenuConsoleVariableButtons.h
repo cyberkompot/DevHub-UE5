@@ -6,10 +6,22 @@
 #include "Actions/DevActionConsoleVariable.h"
 #include "DevMenuConsoleVariableButtons.generated.h"
 
+USTRUCT(BlueprintType, Category = "DevHub", DisplayName = "Console Variable")
+struct DEVMENUS_API FTest
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Test;
+};
+
 USTRUCT(NotBlueprintable, BlueprintType, Category = "DevHub|Menu", Meta = (DisplayName = "Console Variable Button"))
 struct DEVMENUS_API FDevMenuConsoleVariableButton : public FDevMenuExecutionBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ShowOnlyInnerProperties))
+	FTest Action;
 
 	/** Console variable name (e.g., "r.Fog", "t.MaxFPS"). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Menu", Meta = (DisplayAfter = "InputShortcut"))

@@ -5,6 +5,8 @@
 #include "DevPadLogging.h"
 #include "DevPadSettings.h"
 
+using namespace DevPad::Logging;
+
 UDevPadPage* FDevPadRegistryEntry::LoadSynchronous() const
 {
 	CachedPtr = (!SoftPtr.IsNull()) ? SoftPtr.LoadSynchronous() : nullptr;

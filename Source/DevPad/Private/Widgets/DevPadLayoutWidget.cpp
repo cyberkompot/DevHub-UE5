@@ -13,8 +13,6 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 namespace
 {
 	FSlateChildSize MakeSize(const float InValue)
@@ -118,5 +116,3 @@ void UDevPadLayoutWidget::ApplyScale() const
 		HSpacerSlot->SetSize(MakeSize(1.f - Size));
 	}
 }
-
-PRAGMA_ENABLE_OPTIMIZATION

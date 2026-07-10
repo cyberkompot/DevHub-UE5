@@ -2,8 +2,10 @@
 
 #include "DevMenuLogging.h"
 
+#include "DevCoreCompatibility.h"
+#include UE_COMPATIBILITY_INCLUDE_INSTANCED_STRUCT_PATH
+
 #include "DevMenuTypes.h"
-#include "InstancedStruct.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Layout/WidgetPath.h"
 

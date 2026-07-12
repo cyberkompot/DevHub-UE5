@@ -59,7 +59,7 @@ struct FDevMenuWidgetBuilderContext final : IDevMenuBuilderContext
 
 	virtual FNewMenuDelegate CreatePopulateNewMenuDelegate(IDevMenuEntry& InEntry) const override
 	{
-		const FName MenuEntryPath = FDevMenuPaths::Combine(GetGeneratedMenu().GetEntryPath(), InEntry.GetEntryPath());
+		const FName MenuEntryPath = FDevMenuPaths::Combine(GetGeneratedMenu().GetEntryName(), InEntry.GetEntryName());
 		return FNewMenuDelegate::CreateUObject(&WidgetBuilder, &UDevMenuWidgetBuilder::PopulateSubMenu, MenuEntryPath);
 	};
 

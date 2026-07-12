@@ -14,7 +14,7 @@ struct FDevMenuLayoutBeginSection : public FDevMenuItemBase
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return Super::GetEntryFlags() | EDevMenuEntryFlags::Section | EDevMenuEntryFlags::ProxyEntry; };
-	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().BeginSection(GetEntryPath(), GetLabel()); };
+	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().BeginSection(GetEntryName(), GetLabel()); };
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -45,7 +45,7 @@ struct FDevMenuLayoutSubMenu : public FDevMenuItemBase
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return Super::GetEntryFlags() | EDevMenuEntryFlags::SubMenu | EDevMenuEntryFlags::ProxyEntry; };
-	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSubMenu(GetLabel(), GetToolTip(), InContext.CreatePopulateNewMenuDelegate(*this), false, FSlateIcon(), false,GetEntryPath()); };
+	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSubMenu(GetLabel(), GetToolTip(), InContext.CreatePopulateNewMenuDelegate(*this), false, FSlateIcon(), false,GetEntryName()); };
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -77,7 +77,7 @@ struct FDevMenuLayoutFactory final
 	static TEntryType CreateLayoutEntry(IDevMenuEntry& InSourceEntry, const FLayoutContext& InLayoutContext)
 	{
 		TEntryType Entry{};
-		Entry.EntryName = FDevMenuPaths::Combine(InLayoutContext.EmbeddedPath, InSourceEntry.GetEntryPath());
+		Entry.EntryName = FDevMenuPaths::Combine(InLayoutContext.EmbeddedPath, InSourceEntry.GetEntryName());
 		Entry.Label = InSourceEntry.GetLabel().Get();
 		Entry.ToolTip = InSourceEntry.GetToolTip().Get();
 		// TODO: Set duplicate flag.
@@ -88,7 +88,7 @@ struct FDevMenuLayoutFactory final
 	{
 		FDevMenuInstancedEntry InstancedEntry = InSourceEntry.DuplicateEntry();
 		FDevMenuEntry& Entry = InstancedEntry.GetMutable<FDevMenuEntry>();
-		Entry.SetEntryName(FDevMenuPaths::Combine(InLayoutContext.EmbeddedPath, InSourceEntry.GetEntryPath()));
+		Entry.SetEntryName(FDevMenuPaths::Combine(InLayoutContext.EmbeddedPath, InSourceEntry.GetEntryName()));
 		// TODO: Set duplicate flag.
 		return InstancedEntry;
 	}

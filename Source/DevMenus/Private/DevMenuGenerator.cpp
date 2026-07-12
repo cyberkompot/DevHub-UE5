@@ -45,7 +45,7 @@ void UDevMenuGenerator::PopulateMenuEntries(UDevMenu& InGeneratedMenu) const
 					: InLayoutContext.Outer;
 				const FName& NestedEmbeddedPath = (GeneratedBeginningEntry.IsValid())
 					? NAME_None
-					: Entry.GetEntryPath();
+					: Entry.GetEntryName();
 				const FDevMenuLayoutFactory::FLayoutContext NestedLayoutContext(InLayoutContext.Menu, NestedOuter, NestedEmbeddedPath);
 				const FDevMenuGetEntriesByPathQuery SubEntriesQuery(InQueryResult.Path, EDevMenuQueryDepth::FirstLevelSubEntries, FDevMenuQueryDelegate::CreateLambda([&MainDelegate](const FDevMenuQueryResult& InNestedQueryResult, const FDevMenuLayoutFactory::FLayoutContext& InNestedLayoutContext)
 				{
@@ -75,12 +75,12 @@ void UDevMenuGenerator::PopulateMenuEntries(UDevMenu& InGeneratedMenu) const
 	ON_SCOPE_EXIT { SectionsAndSubMenus.Reset(); };
 
 	const FDevMenuLayoutFactory::FLayoutContext LayoutContext(InGeneratedMenu);
-	const FDevMenuGetEntriesByPathQuery EntriesQuery(InGeneratedMenu.GetEntryPath(), EDevMenuQueryDepth::FirstLevelSubEntries, FDevMenuQueryDelegate::CreateLambda([&MainDelegate](const FDevMenuQueryResult& InQueryResult, const FDevMenuLayoutFactory::FLayoutContext& InLayoutContext)
+	const FDevMenuGetEntriesByPathQuery EntriesQuery(InGeneratedMenu.GetEntryName(), EDevMenuQueryDepth::FirstLevelSubEntries, FDevMenuQueryDelegate::CreateLambda([&MainDelegate](const FDevMenuQueryResult& InQueryResult, const FDevMenuLayoutFactory::FLayoutContext& InLayoutContext)
 	{
 		bool bIsSectionOrSubMenuAlreadyPresent = false;
 		if (InQueryResult.Entry->HasAnyEntryFlags(EDevMenuEntryFlags::Section | EDevMenuEntryFlags::SubMenu))
 		{
-			SectionsAndSubMenus.Emplace(InQueryResult.Entry->GetEntryPath(), &bIsSectionOrSubMenuAlreadyPresent);
+			SectionsAndSubMenus.Emplace(InQueryResult.Entry->GetEntryName(), &bIsSectionOrSubMenuAlreadyPresent);
 		}
 		if (!bIsSectionOrSubMenuAlreadyPresent)
 		{

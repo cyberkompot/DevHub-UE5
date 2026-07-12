@@ -13,13 +13,11 @@ namespace FDevMenuFactory
 {
 	template<typename TEntryType,
 			 typename = typename TEnableIf<
-			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value>::Type>
+			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value>>
 	static TEntryType CreateEntry(const TFunction<void(TEntryType&)>& OnConstruct = nullptr)
 	{
 		using T = typename TDecay<TEntryType>::Type;
 		T Entry{};
-		Entry.EntryId = FDevMenuEntryId::NewEntryId();
 		if (OnConstruct) { OnConstruct(Entry); }
 		return Forward<T>(Entry);
 	}
@@ -27,12 +25,10 @@ namespace FDevMenuFactory
 	template<typename TEntryType,
 			 typename = typename TEnableIf<
 			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::EntryName)>::Value>::Type>
 	static TEntryType CreateEntry(const FName InEntryName, const TFunction<void(TEntryType&)>& OnConstruct = nullptr)
 	{
 		TEntryType Entry{};
-		Entry.EntryId = FDevMenuEntryId::NewEntryId();
 		Entry.EntryName = InEntryName;
 		if (OnConstruct) { OnConstruct(Entry); }
 		return Entry;
@@ -41,13 +37,11 @@ namespace FDevMenuFactory
 	template<typename TEntryType,
 			 typename = typename TEnableIf<
 			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::EntryName)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::Label)>::Value>::Type>
 	static TEntryType CreateEntry(const FName InEntryName, const FText& InLabel, const TFunction<void(TEntryType&)>& OnConstruct = nullptr)
 	{
 		TEntryType Entry{};
-		Entry.EntryId = FDevMenuEntryId::NewEntryId();
 		Entry.EntryName = InEntryName;
 		Entry.Label = InLabel;
 		if (OnConstruct) { OnConstruct(Entry); }
@@ -57,14 +51,12 @@ namespace FDevMenuFactory
 	template<typename TEntryType,
 			 typename = typename TEnableIf<
 			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::EntryName)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::Label)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::ToolTip)>::Value>::Type>
 	static TEntryType CreateEntry(const FName InEntryName, const FText& InLabel, const FText& InToolTip, const TFunction<void(TEntryType&)>& OnConstruct = nullptr)
 	{
 		TEntryType Entry{};
-		Entry.EntryId = FDevMenuEntryId::NewEntryId();
 		Entry.EntryName = InEntryName;
 		Entry.Label = InLabel;
 		Entry.ToolTip = InToolTip;
@@ -75,7 +67,6 @@ namespace FDevMenuFactory
 	template<typename TEntryType,
 			 typename = typename TEnableIf<
 			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::EntryName)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::Label)>::Value &&
 				TIsMemberPointer<decltype(&TEntryType::ToolTip)>::Value &&
@@ -83,7 +74,6 @@ namespace FDevMenuFactory
 	static TEntryType CreateEntry(const FName InEntryName, const FText& InLabel, const FText& InToolTip, FDevInputShortcut InInputShortcut, const TFunction<void(TEntryType&)>& OnConstruct = nullptr)
 	{
 		TEntryType Entry{};
-		Entry.EntryId = FDevMenuEntryId::NewEntryId();
 		Entry.EntryName = InEntryName;
 		Entry.Label = InLabel;
 		Entry.ToolTip = InToolTip;
@@ -154,20 +144,4 @@ namespace FDevMenuFactory
 		return Menu;
 	}
 
-
-	template<typename TEntryType,
-			 typename = typename TEnableIf<
-			 	TIsDerivedFrom<typename TDecay<TEntryType>::Type, FDevMenuEntry>::Value &&
-				TIsMemberPointer<decltype(&TEntryType::EntryId)>::Value>::Type>
-	FORCEINLINE static TEntryType&& WithId(const FDevMenuEntryId InId, TEntryType&& InEntry) noexcept
-	{
-		InEntry.EntryId = InId;
-		return Forward<TEntryType>(InEntry);
-	};
-
-	FORCEINLINE static UDevMenu* WithId(const FDevMenuEntryId InId, UDevMenu* InMenu) noexcept
-	{
-		InMenu->MenuId = InId;
-		return InMenu;
-	};
 };

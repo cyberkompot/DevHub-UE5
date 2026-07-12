@@ -57,11 +57,6 @@ namespace DevMenus::Core
 using namespace DevMenus::Core;
 
 
-FDevMenuEntryId IDevMenuEntry::GetEntryId() const
-{
-	return FDevMenuEntryId::Empty;
-}
-
 FName IDevMenuEntry::GetEntryName() const
 {
 	return FName();
@@ -122,20 +117,9 @@ void IDevMenuEntry::ExecuteEntry(const UObject* WorldContextObject)
 	/** Nop */
 }
 
-void IDevMenuEntry::SetEntryId(const FDevMenuEntryId InId)
-{
-	/** Nop */
-}
-
 void IDevMenuEntry::SetEntryName(const FName InName)
 {
 	/** Nop */
-}
-
-FName IDevMenuEntry::GetEntryPath() const
-{
-	const FName Name = GetEntryName();
-	return (!Name.IsNone()) ? Name : GetEntryId().ToName();
 }
 
 void IDevMenuEntry::ResolveEntryPath()
@@ -151,14 +135,14 @@ void IDevMenuEntry::PopulateMenuBuilder(IDevMenuBuilderContext& InContext)
 FDevMenuInstancedEntry IDevMenuEntry::DuplicateEntry() const
 {
 	const UStruct* EntryType = GetEntryType();
-	if (const UScriptStruct* ScriptStruct = Cast<UScriptStruct>(EntryType))
+	if (const UScriptStruct* ScriptStruct = Cast<UScriptStruct>(EntryType); ScriptStruct && ScriptStruct->IsChildOf(FDevMenuEntry::StaticStruct()))
 	{
 		return FDevMenuInstancedEntry(FConstStructView(ScriptStruct, reinterpret_cast<const uint8*>(static_cast<const FDevMenuEntry*>(this))));
 	}
-	if (const UClass* Class = Cast<UClass>(EntryType))
+	if (const UClass* Class = Cast<UClass>(EntryType); Class && Class->IsChildOf(UDevMenu::StaticClass()))
 	{
 		UDevMenu* Menu = const_cast<UDevMenu*>(static_cast<const UDevMenu*>(this));
-		return FDevMenuInstancedEntry::Make(FDevMenuFactory::WithId(Menu->GetEntryId(), FDevMenuFactory::CreateProxy(Menu->GetEntryName(), Menu)));
+		return FDevMenuInstancedEntry::Make(FDevMenuFactory::CreateProxy(Menu->GetEntryName(), Menu));
 	}
 	return FDevMenuInstancedEntry();
 }
@@ -302,7 +286,7 @@ TAttribute<FText> FDevMenuItemBase::GetLabel() const
 void FDevMenuExecutionBase::PopulateMenuBuilder(IDevMenuBuilderContext& InContext)
 {
 	FMenuEntryParams EntryParams;
-	EntryParams.ExtensionHook = GetEntryPath();
+	EntryParams.ExtensionHook = GetEntryName();
 	EntryParams.Type = EMultiBlockType::MenuEntry;
 	EntryParams.LabelOverride = GetLabel();
 	EntryParams.ToolTipOverride = GetToolTip();
@@ -345,7 +329,7 @@ FDevMenuInstancedEntries& FDevMenuDynamicOuterBase::GetDynamicEntries()
 	}
 	else
 	{
-		UE_LOG_FUNCTION(LogDevMenus, Error, TEXT("Dynamic entries requested while caching is disabled: Entry = %s, Type = %s"), *GetEntryPath().ToString(), *GetNameSafe(GetEntryType()));
+		UE_LOG_FUNCTION(LogDevMenus, Error, TEXT("Dynamic entries requested while caching is disabled: Entry = %s, Type = %s"), *GetEntryName().ToString(), *GetNameSafe(GetEntryType()));
 		DynamicEntriesCache.Set(FDevMenuInstancedEntries()); // Fallback to avoid crashing.
 	}
 	return DynamicEntriesCache.Get();
@@ -431,7 +415,10 @@ void UDevMenu::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEven
 
 void UDevMenu::ResolveEntryPath()
 {
-	MenuId.Resolve();
+	if (MenuPath.IsNone())
+	{
+		MenuPath = FDevMenuEntryId::NewEntryId().ToName();
+	}
 	for (FDevMenuInstancedEntry& InstancedEntry : Entries)
 	{
 		if (FDevMenuEntry* Entry = InstancedEntry.GetMutablePtr<FDevMenuEntry>(); Entry)

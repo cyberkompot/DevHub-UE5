@@ -49,7 +49,7 @@ void UDevMenuRegistry::AddMenu(UDevMenu* InMenu) const
 		return;
 	}
 
-	AddRegistryEntry(RootMenu, InMenu, InMenu->GetEntryPath().ToString());
+	AddRegistryEntry(RootMenu, InMenu, InMenu->GetEntryName().ToString());
 }
 
 void UDevMenuRegistry::RemoveMenu(UDevMenu* InMenu)
@@ -60,7 +60,7 @@ void UDevMenuRegistry::RemoveMenu(UDevMenu* InMenu)
 		return;
 	}
 
-	const FName MenuPath = InMenu->GetEntryPath();
+	const FName MenuPath = InMenu->GetEntryName();
 	if (const TObjectPtr<UDevMenu>* RegisteredMenuPtr = RegisteredMenus.Find(MenuPath); RegisteredMenuPtr && *RegisteredMenuPtr == InMenu)
 	{
 		RegisteredMenus.Remove(MenuPath);
@@ -166,7 +166,7 @@ void UDevMenuRegistry::RemoveRegistryEntry(IDevMenuEntry* InOuter, UDevMenu* InM
 		}
 	}
 
-	const FString MenuPath = InMenu->GetEntryPath().ToString();
+	const FString MenuPath = InMenu->GetEntryName().ToString();
 	const FString MissingMenuPath = FDevMenuPaths::TrimPath(MenuPath.LeftChop(RemainingPath.Len()));
 	UE_LOG_FUNCTION(LogDevMenus, Warning, TEXT("Failed to remove menu. Menu not found: Menu = %s, Missing menu = %s"), *MenuPath, *MissingMenuPath);
 }

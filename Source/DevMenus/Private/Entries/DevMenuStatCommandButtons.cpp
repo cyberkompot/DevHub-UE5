@@ -33,7 +33,7 @@ FDevMenuInstancedEntries FDevMenuStatCommandGroup::CreateDynamicEntries() const
 		}
 		else
 		{
-			UE_LOG_FUNCTION(LogDevMenus, Warning, TEXT("Stat not found: Entity = %s, Stat = %s"), *GetEntryPath().ToString(), *StatName);
+			UE_LOG_FUNCTION(LogDevMenus, Warning, TEXT("Stat not found: Entity = %s, Stat = %s"), *GetEntryName().ToString(), *StatName);
 		}
 	}
 #endif // STATS

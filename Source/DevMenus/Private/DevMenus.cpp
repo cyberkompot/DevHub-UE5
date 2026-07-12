@@ -321,8 +321,8 @@ void UDevMenus::OnMenuAssetsLoaded(TArray<FSoftObjectPath> InMenuAssetPaths) con
 
 	Algo::Sort(MenusList,[](const UDevMenu* A, const UDevMenu* B)
 	{
-		const FName EntryPathA = A->GetEntryPath();
-		const FName EntryPathB = B->GetEntryPath();
+		const FName EntryPathA = A->GetEntryName();
+		const FName EntryPathB = B->GetEntryName();
 
 		const int32 PathDepthA = FDevMenuPaths::GetPathDepth(EntryPathA);
 		const int32 PathDepthB = FDevMenuPaths::GetPathDepth(EntryPathB);
@@ -334,7 +334,7 @@ void UDevMenus::OnMenuAssetsLoaded(TArray<FSoftObjectPath> InMenuAssetPaths) con
 
 	for (UDevMenu* Menu : MenusList)
 	{
-		UE_LOG_FUNCTION(LogDevMenus, VeryVerbose, TEXT("Dev Menu asset added to menu: %s → %s"), *Menu->GetPackage()->GetLoadedPath().GetPackageName(), *Menu->GetEntryPath().ToString());
+		UE_LOG_FUNCTION(LogDevMenus, VeryVerbose, TEXT("Dev Menu asset added to menu: %s → %s"), *Menu->GetPackage()->GetLoadedPath().GetPackageName(), *Menu->GetEntryName().ToString());
 		AddMenu(Menu);
 	}
 }

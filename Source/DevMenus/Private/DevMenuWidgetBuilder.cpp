@@ -28,15 +28,15 @@ TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeWidget(UDevMenu& InGeneratedMenu)
 
 TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeMainMenuWidget(UDevMenu& InGeneratedMenu)
 {
-	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Make main menu widget: Path = %s"), *InGeneratedMenu.GetEntryPath().ToString());
+	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Make main menu widget: Path = %s"), *InGeneratedMenu.GetEntryName().ToString());
 
-	FMenuBarBuilder MenuBuilder(TSharedPtr<FUICommandList>(), TSharedPtr<FExtender>(), &FCoreStyle::Get(), InGeneratedMenu.GetEntryPath());
+	FMenuBarBuilder MenuBuilder(TSharedPtr<FUICommandList>(), TSharedPtr<FExtender>(), &FCoreStyle::Get(), InGeneratedMenu.GetEntryName());
 	PopulateMainMenu(MenuBuilder, &InGeneratedMenu);
 	const TSharedRef<SWidget> MultiBoxWidget = MenuBuilder.MakeWidget();
 
 	const TSharedRef<SDevMenuMainMenuWidget> MainMenuWidget = SNew(SDevMenuMainMenuWidget)
 		.GeneratedMenu(&InGeneratedMenu)
-		.MenuPath(InGeneratedMenu.GetEntryPath())
+		.MenuPath(InGeneratedMenu.GetEntryName())
 		[
 			MultiBoxWidget
 		];
@@ -45,9 +45,9 @@ TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeMainMenuWidget(UDevMenu& InGenera
 
 TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeSubMenuWidget(UDevMenu& InGeneratedMenu)
 {
-	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Make sub menu widget: Path = %s"), *InGeneratedMenu.GetEntryPath().ToString());
+	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Make sub menu widget: Path = %s"), *InGeneratedMenu.GetEntryName().ToString());
 
-	FMenuBuilder MenuBuilder(true, TSharedPtr<FUICommandList>(), TSharedPtr<FExtender>(), false, &FCoreStyle::Get(), false, InGeneratedMenu.GetEntryPath());
+	FMenuBuilder MenuBuilder(true, TSharedPtr<FUICommandList>(), TSharedPtr<FExtender>(), false, &FCoreStyle::Get(), false, InGeneratedMenu.GetEntryName());
 	PopulateSubMenu(MenuBuilder, &InGeneratedMenu);
 	const TSharedRef<SWidget> MultiBoxWidget = MenuBuilder.MakeWidget();
 
@@ -63,7 +63,7 @@ void UDevMenuWidgetBuilder::PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, con
 
 void UDevMenuWidgetBuilder::PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, UDevMenu* InGeneratedMenu)
 {
-	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Populating main menu builder: Path = %s"), *InGeneratedMenu->GetEntryPath().ToString());
+	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Populating main menu builder: Path = %s"), *InGeneratedMenu->GetEntryName().ToString());
 
 	const TSharedRef<FMultiBox> MultiBox = InMenuBuilder.GetMultiBox();
 	MultiBox->WeakToolMenu = InGeneratedMenu;
@@ -74,10 +74,10 @@ void UDevMenuWidgetBuilder::PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, UDe
 	for (FDevMenuInstancedEntry& MenuInstancedEntry : *MenuInstancedEntries)
 	{
 		FDevMenuEntry& MenuEntry = MenuInstancedEntry.GetMutable<FDevMenuEntry>();
-		const FName MenuEntryPath = FDevMenuPaths::Combine(InGeneratedMenu->GetEntryPath(), MenuEntry.GetEntryPath());
+		const FName MenuEntryPath = FDevMenuPaths::Combine(InGeneratedMenu->GetEntryName(), MenuEntry.GetEntryName());
 
 		FMenuEntryParams EntryParams;
-		EntryParams.ExtensionHook = MenuEntry.GetEntryPath();
+		EntryParams.ExtensionHook = MenuEntry.GetEntryName();
 		EntryParams.Type = EMultiBlockType::MenuEntry;
 		EntryParams.LabelOverride = MenuEntry.GetLabel();
 		EntryParams.ToolTipOverride = MenuEntry.GetToolTip();
@@ -101,7 +101,7 @@ void UDevMenuWidgetBuilder::PopulateSubMenu(FMenuBuilder& InMenuBuilder, const F
 
 void UDevMenuWidgetBuilder::PopulateSubMenu(FMenuBuilder& InMenuBuilder, UDevMenu* InGeneratedMenu)
 {
-	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Populating sub menu builder: Path = %s"), *InGeneratedMenu->GetEntryPath().ToString());
+	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Populating sub menu builder: Path = %s"), *InGeneratedMenu->GetEntryName().ToString());
 
 	const TSharedRef<FMultiBox> MultiBox = InMenuBuilder.GetMultiBox();
 	MultiBox->WeakToolMenu = InGeneratedMenu;

@@ -62,7 +62,6 @@ enum struct EDevMenuEntryLayout : uint8
 struct DEVMENUS_API IDevMenuEntry
 {
 	//~ Begin IDevMenuEntry interface.
-	virtual FDevMenuEntryId GetEntryId() const;
 	virtual FName GetEntryName() const;
 	virtual EDevMenuEntryFlags GetEntryFlags() const;
 	virtual UStruct* GetEntryType() const;
@@ -74,15 +73,13 @@ struct DEVMENUS_API IDevMenuEntry
 	virtual bool IsEnabled(const UObject* WorldContextObject) const;
 	virtual bool IsVisible(const UObject* WorldContextObject) const;
 
+	virtual void ExecuteEntry(const UObject* WorldContextObject);
+
 	virtual FDevMenuInstancedEntries* GetSubEntries();
 	virtual void QuerySubEntries(const IDevMenuEntriesQuery& InQuery);
 
-	virtual void ExecuteEntry(const UObject* WorldContextObject);
-
-	virtual void SetEntryId(const FDevMenuEntryId InId);
 	virtual void SetEntryName(const FName InName);
 
-	virtual FName GetEntryPath() const;
 	virtual void ResolveEntryPath();
 
 	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext);
@@ -315,10 +312,6 @@ struct DEVMENUS_API FDevMenuItemBase : public FDevMenuEntry
 {
 	GENERATED_BODY()
 
-	/** Menu entry ID. */
-	UPROPERTY(VisibleAnywhere, Category = "Dev Menu", DisplayName = "Entry ID")
-	FDevMenuEntryId EntryId;
-
 	/** Menu entry name. */
 	UPROPERTY(EditAnywhere, Category = "Dev Menu")
 	FName EntryName;
@@ -332,17 +325,15 @@ struct DEVMENUS_API FDevMenuItemBase : public FDevMenuEntry
 	FText ToolTip;
 
 	//~ Begin IDevMenuEntry interface.
-	virtual FDevMenuEntryId GetEntryId() const override { return EntryId; }
 	virtual FName GetEntryName() const override { return EntryName; }
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 
 	virtual TAttribute<FText> GetLabel() const override;
 	virtual TAttribute<FText> GetToolTip() const override { return ToolTip; }
 
-	virtual void SetEntryId(const FDevMenuEntryId InId) override { EntryId = InId; }
 	virtual void SetEntryName(const FName InName) override { EntryName = InName; }
 
-	virtual void ResolveEntryPath() override { EntryId.Resolve(); }
+	virtual void ResolveEntryPath() override { if (EntryName.IsNone()) { EntryName = FDevMenuEntryId::NewEntryId().ToName(); } }
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -498,9 +489,6 @@ struct DEVMENUS_API FDevMenuProxy : public FDevMenuEntry
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Dev Menu", DisplayName = "Entry ID")
-	FDevMenuEntryId EntryId;
-
 	UPROPERTY(EditAnywhere, Category = "Dev Menu")
 	FName EntryName;
 
@@ -512,7 +500,6 @@ struct DEVMENUS_API FDevMenuProxy : public FDevMenuEntry
 	FORCEINLINE bool IsValid() const { return (!!Menu); }
 
 	//~ Begin IDevMenuEntry interface.
-	virtual FDevMenuEntryId GetEntryId() const override { return EntryId; }
 	virtual FName GetEntryName() const override { return EntryName; }
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return ((IsValid()) ? GetProxyEntry()->GetEntryFlags() : EDevMenuEntryFlags::NoFlags) | EDevMenuEntryFlags::ProxyEntry; }
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
@@ -528,10 +515,19 @@ struct DEVMENUS_API FDevMenuProxy : public FDevMenuEntry
 
 	virtual void ExecuteEntry(const UObject* WorldContextObject) override { if (IsValid()) { GetProxyEntry()->ExecuteEntry(WorldContextObject); } };
 
-	virtual void SetEntryId(const FDevMenuEntryId InId) override { EntryId = InId; }
 	virtual void SetEntryName(const FName InName) override { EntryName = InName; }
 
-	virtual void ResolveEntryPath() override { EntryId.Resolve(); if (IsValid()) { GetProxyEntry()->ResolveEntryPath(); } }
+	virtual void ResolveEntryPath() override
+	{
+		if (EntryName.IsNone())
+		{
+			EntryName = FDevMenuEntryId::NewEntryId().ToName();
+		}
+		if (IsValid())
+		{
+			GetProxyEntry()->ResolveEntryPath();
+		}
+	}
 
 	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { if (IsValid()) { GetProxyEntry()->PopulateMenuBuilder(InContext); } };
 	//~ End IDevMenuEntry interface.
@@ -546,18 +542,17 @@ struct DEVMENUS_API FDevMenuSeparator : public FDevMenuEntry
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Dev Menu", DisplayName = "Entry ID")
-	FDevMenuEntryId EntryId;
+	/** Menu entry name. */
+	UPROPERTY(EditAnywhere, Category = "Dev Menu")
+	FName EntryName;
 
 	//~ Begin IDevMenuEntry interface.
-	virtual FDevMenuEntryId GetEntryId() const override { return EntryId; }
+	virtual FName GetEntryName() const override { return EntryName; };
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 
-	virtual void SetEntryId(const FDevMenuEntryId InId) override { EntryId = InId; }
+	virtual void ResolveEntryPath() override { if (EntryName.IsNone()) { EntryName = FDevMenuEntryId::NewEntryId().ToName(); } }
 
-	virtual void ResolveEntryPath() override { EntryId.Resolve(); }
-
-	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSeparator(GetEntryPath()); };
+	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSeparator(GetEntryName()); };
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -647,10 +642,6 @@ class DEVMENUS_API UDevMenu : public UToolMenuBase
 public:
 	static const FPrimaryAssetType PrimaryAssetType;
 
-	/** Menu ID. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Menu", DisplayName = "Menu ID")
-	mutable FDevMenuEntryId MenuId;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Menu")
 	FName MenuPath;
 
@@ -682,7 +673,6 @@ public:
 	}
 
 	//~ Begin IDevMenuEntry interface.
-	virtual FDevMenuEntryId GetEntryId() const override { return MenuId; }
 	virtual FName GetEntryName() const override { return MenuPath; }
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return IDevMenuEntry::GetEntryFlags() | EDevMenuEntryFlags::SubMenu | EDevMenuEntryFlags::StaticEntries; };
 	virtual UStruct* GetEntryType() const override { return GetClass(); };
@@ -692,7 +682,6 @@ public:
 	virtual FDevMenuInstancedEntries* GetSubEntries() override { return &Entries; };
 	virtual void QuerySubEntries(const IDevMenuEntriesQuery& InQuery) override;
 
-	virtual void SetEntryId(const FDevMenuEntryId InId) override { MenuId = InId; }
 	virtual void SetEntryName(const FName InName) override { MenuPath = InName; }
 
 	virtual void ResolveEntryPath() override;

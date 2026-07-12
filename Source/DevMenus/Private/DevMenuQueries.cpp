@@ -47,8 +47,8 @@ void FDevMenuGetEntriesByPathQuery::ExecuteQuery(IDevMenuEntriesIterator& InEntr
 		if (IDevMenuEntry* Entry = *InEntriesIterator)
 		{
 			// No allocations while converting FName fot FString.
-			TStringBuilder<NAME_SIZE> EntryAddressBuilder;
-			Entry->GetEntryPath().AppendString(EntryAddressBuilder);
+			FNameBuilder EntryAddressBuilder;
+			Entry->GetEntryName().AppendString(EntryAddressBuilder);
 			const FStringView EntryAddress = EntryAddressBuilder.ToView();
 
 			if (const EMatchResult MatchResult = IsAddressMatch(EntryAddress); MatchResult == EMatchResult::PartialMatch)
@@ -96,6 +96,6 @@ FDevMenuQueryResult FDevMenuQueryResultFactory::CreateResult(IDevMenuEntry* InEn
 {
 	UDevMenu* Menu = InEntry->CastTo<UDevMenu>();
 	return (Menu)
-		? FDevMenuQueryResult(Menu, nullptr, InEntry, InEntry->GetEntryPath().ToString())
-		: FDevMenuQueryResult(InOuterQueryResult.Menu, InOuterQueryResult.Outer, InEntry, FDevMenuPaths::Combine(InOuterQueryResult.Path, InEntry->GetEntryPath().ToString()));
+		? FDevMenuQueryResult(Menu, nullptr, InEntry, InEntry->GetEntryName().ToString())
+		: FDevMenuQueryResult(InOuterQueryResult.Menu, InOuterQueryResult.Outer, InEntry, FDevMenuPaths::Combine(InOuterQueryResult.Path, InEntry->GetEntryName().ToString()));
 }

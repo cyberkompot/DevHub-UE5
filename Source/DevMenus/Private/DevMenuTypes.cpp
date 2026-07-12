@@ -72,17 +72,17 @@ UStruct* IDevMenuEntry::GetEntryType() const
 	return nullptr;
 }
 
-TAttribute<FText> IDevMenuEntry::GetLabel() const
+TAttribute<FText> IDevMenuEntry::GetLabel(const UObject* WorldContextObject) const
 {
 	return TAttribute<FText>();
 }
 
-TAttribute<FText> IDevMenuEntry::GetToolTip() const
+TAttribute<FText> IDevMenuEntry::GetToolTip(const UObject* WorldContextObject) const
 {
 	return TAttribute<FText>();
 }
 
-TAttribute<FDevInputShortcut> IDevMenuEntry::GetInputShortcut() const
+TAttribute<FDevInputShortcut> IDevMenuEntry::GetInputShortcut(const UObject* WorldContextObject) const
 {
 	return TAttribute<FDevInputShortcut>();
 }
@@ -278,20 +278,21 @@ IDevMenuEntry* FDevMenuProxy::GetProxyEntry() const
 }
 
 
-TAttribute<FText> FDevMenuItemBase::GetLabel() const
+TAttribute<FText> FDevMenuItemBase::GetLabel(const UObject* WorldContextObject) const
 {
 	return (Label.IsEmpty()) ? TAttribute<FText>(FDevMenuUtils::EntryPathToDisplayText(EntryName)) : TAttribute<FText>(Label);
 }
 
 void FDevMenuExecutionBase::PopulateMenuBuilder(IDevMenuBuilderContext& InContext)
 {
+	const UObject* WorldContextObject = InContext.GetWorldContextObject();
 	FMenuEntryParams EntryParams;
 	EntryParams.ExtensionHook = GetEntryName();
 	EntryParams.Type = EMultiBlockType::MenuEntry;
-	EntryParams.LabelOverride = GetLabel();
-	EntryParams.ToolTipOverride = GetToolTip();
-	EntryParams.InputBindingOverride = GetInputShortcut().Get().ToText();
-	EntryParams.UserInterfaceActionType = GetUserInterfaceType(InContext.GetWorldContextObject());
+	EntryParams.LabelOverride = GetLabel(WorldContextObject);
+	EntryParams.ToolTipOverride = GetToolTip(WorldContextObject);
+	EntryParams.InputBindingOverride = GetInputShortcut(WorldContextObject).Get().ToText();
+	EntryParams.UserInterfaceActionType = GetUserInterfaceType(WorldContextObject);
 	EntryParams.DirectActions.ExecuteAction = InContext.CreateExecuteEntryDelegate(*this);
 	EntryParams.DirectActions.CanExecuteAction = InContext.CreateGetEntryEnabledStateDelegate(*this);
 	EntryParams.DirectActions.GetActionCheckState = InContext.CreateGetEntryCheckStateDelegate(*this);
@@ -350,21 +351,37 @@ void FDevMenuDynamicOuterBase::QuerySubEntries(const IDevMenuEntriesQuery& InQue
 }
 
 
+TAttribute<FText> FDevMenuActionButton::GetLabel(const UObject* WorldContextObject) const
+{
+	const FDevAction* ActionPtr = Action.GetPtr<FDevAction>();
+	const TAttribute<FText> LabelAttribute = (ActionPtr) ? ActionPtr->GetActionLabel(WorldContextObject) : FText::GetEmpty();
+	return (LabelAttribute.IsSet() && !LabelAttribute.Get().IsEmpty()) ? LabelAttribute : FDevMenuUtils::EntryPathToDisplayText(GetEntryName());
+
+}
+
+TAttribute<FText> FDevMenuActionButton::GetToolTip(const UObject* WorldContextObject) const
+{
+	const FDevAction* ActionPtr = Action.GetPtr<FDevAction>();
+	return (ActionPtr) ? ActionPtr->GetActionToolTip(WorldContextObject) : TAttribute<FText>();
+}
+
 ECheckBoxState FDevMenuActionButton::GetCheckState(const UObject* WorldContextObject) const
 {
-	return (Action.IsValid()) ? Action.Get<FDevAction>().GetActionCheckState(WorldContextObject) : ECheckBoxState::Unchecked;
+	const FDevAction* ActionPtr = Action.GetPtr<FDevAction>();
+	return (ActionPtr) ? ActionPtr->GetActionCheckState(WorldContextObject) : ECheckBoxState::Unchecked;
 }
 
 bool FDevMenuActionButton::IsVisible(const UObject* WorldContextObject) const
 {
-	return (Action.IsValid()) ? Action.Get<FDevAction>().GetActionVisibility(WorldContextObject) : true;
+	const FDevAction* ActionPtr = Action.GetPtr<FDevAction>();
+	return (ActionPtr) ? ActionPtr->GetActionVisibility(WorldContextObject) : true;
 }
 
 void FDevMenuActionButton::ExecuteEntry(const UObject* WorldContextObject)
 {
-	if (Action.IsValid())
+	if (const FDevAction* ActionPtr = Action.GetPtr<FDevAction>())
 	{
-		Action.Get<FDevAction>().ExecuteAction(WorldContextObject);
+		ActionPtr->ExecuteAction(WorldContextObject);
 	}
 	else
 	{
@@ -374,7 +391,8 @@ void FDevMenuActionButton::ExecuteEntry(const UObject* WorldContextObject)
 
 EUserInterfaceActionType FDevMenuActionButton::GetUserInterfaceType(const UObject* WorldContextObject) const
 {
-	return (Action.IsValid()) ? Action.Get<FDevAction>().GetActionUserInterfaceType(WorldContextObject) : EUserInterfaceActionType::Button;
+	const FDevAction* ActionPtr = Action.GetPtr<FDevAction>();
+	return (ActionPtr) ? ActionPtr->GetActionUserInterfaceType(WorldContextObject) : EUserInterfaceActionType::Button;
 }
 
 
@@ -439,7 +457,7 @@ FPrimaryAssetId UDevMenu::GetPrimaryAssetId() const
 	return FPrimaryAssetId(PrimaryAssetType, GetFName());
 }
 
-TAttribute<FText> UDevMenu::GetLabel() const
+TAttribute<FText> UDevMenu::GetLabel(const UObject* WorldContextObject) const
 {
 	return TAttribute<FText>(FDevMenuUtils::EntryPathToDisplayText(MenuPath));
 }

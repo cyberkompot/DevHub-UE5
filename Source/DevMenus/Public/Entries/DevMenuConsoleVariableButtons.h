@@ -37,7 +37,7 @@ struct DEVMENUS_API FDevMenuConsoleVariableButton : public FDevMenuExecutionBase
 
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
-	virtual TAttribute<FText> GetToolTip() const override { return (CVarName.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleVariableView(CVarName, CVarValue, UserInterfaceType).GetActionToolTip())); }
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return (CVarName.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleVariableView(CVarName, CVarValue, UserInterfaceType).GetActionToolTip())); }
 	virtual ECheckBoxState GetCheckState(const UObject* WorldContextObject) const override { return FDevActionConsoleVariableView(CVarName, CVarValue, UserInterfaceType).GetActionCheckState(WorldContextObject); }
 	virtual bool IsEnabled(const UObject* WorldContextObject) const override { return FDevActionConsoleVariableView(CVarName, CVarValue, UserInterfaceType).IsActionEnabled(WorldContextObject); }
 	virtual bool IsVisible(const UObject* WorldContextObject) const override { return FDevActionConsoleVariableView(CVarName, CVarValue, UserInterfaceType).IsActionVisible(WorldContextObject); }
@@ -82,7 +82,7 @@ struct DEVMENUS_API FDevMenuConsoleVariableGroup : public FDevMenuDynamicOuterWi
 
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
-	virtual TAttribute<FText> GetToolTip() const override { return (CVarName.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleVariableView(CVarName, FString(), EDevActionCVarUserInterfaceType::ToggleButton).GetActionToolTip())); }
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return (CVarName.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleVariableView(CVarName, FString(), EDevActionCVarUserInterfaceType::ToggleButton).GetActionToolTip())); }
 	virtual bool IsEnabled(const UObject* WorldContextObject) const override { return FDevActionConsoleVariableView(CVarName, FString(), EDevActionCVarUserInterfaceType::ToggleButton).IsActionEnabled(WorldContextObject); }
 	virtual bool IsVisible(const UObject* WorldContextObject) const override { return FDevActionConsoleVariableView(CVarName, FString(), EDevActionCVarUserInterfaceType::ToggleButton).IsActionVisible(WorldContextObject); }
 	//~ End IDevMenuEntry interface.

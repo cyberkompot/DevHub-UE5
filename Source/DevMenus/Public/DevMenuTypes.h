@@ -66,9 +66,9 @@ struct DEVMENUS_API IDevMenuEntry
 	virtual EDevMenuEntryFlags GetEntryFlags() const;
 	virtual UStruct* GetEntryType() const;
 
-	virtual TAttribute<FText> GetLabel() const;
-	virtual TAttribute<FText> GetToolTip() const;
-	virtual TAttribute<FDevInputShortcut> GetInputShortcut() const;
+	virtual TAttribute<FText> GetLabel(const UObject* WorldContextObject) const;
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const;
+	virtual TAttribute<FDevInputShortcut> GetInputShortcut(const UObject* WorldContextObject) const;
 	virtual ECheckBoxState GetCheckState(const UObject* WorldContextObject) const;
 	virtual bool IsEnabled(const UObject* WorldContextObject) const;
 	virtual bool IsVisible(const UObject* WorldContextObject) const;
@@ -328,8 +328,8 @@ struct DEVMENUS_API FDevMenuItemBase : public FDevMenuEntry
 	virtual FName GetEntryName() const override { return EntryName; }
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 
-	virtual TAttribute<FText> GetLabel() const override;
-	virtual TAttribute<FText> GetToolTip() const override { return ToolTip; }
+	virtual TAttribute<FText> GetLabel(const UObject* WorldContextObject) const override;
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return ToolTip; }
 
 	virtual void SetEntryName(const FName InName) override { EntryName = InName; }
 
@@ -351,7 +351,7 @@ struct DEVMENUS_API FDevMenuExecutionBase : public FDevMenuItemBase
 
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
-	virtual TAttribute<FDevInputShortcut> GetInputShortcut() const override { return InputShortcut; }
+	virtual TAttribute<FDevInputShortcut> GetInputShortcut(const UObject* WorldContextObject) const override { return InputShortcut; }
 	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override;
 	//~ End IDevMenuEntry interface.
 
@@ -504,9 +504,9 @@ struct DEVMENUS_API FDevMenuProxy : public FDevMenuEntry
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return ((IsValid()) ? GetProxyEntry()->GetEntryFlags() : EDevMenuEntryFlags::NoFlags) | EDevMenuEntryFlags::ProxyEntry; }
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
 
-	virtual TAttribute<FText> GetLabel() const override { return (IsValid()) ? GetProxyEntry()->GetLabel() : FText::GetEmpty(); };
-	virtual TAttribute<FText> GetToolTip() const override { return (IsValid()) ? GetProxyEntry()->GetToolTip() : FText::GetEmpty(); };
-	virtual TAttribute<FDevInputShortcut> GetInputShortcut() const override { return (IsValid()) ? GetProxyEntry()->GetInputShortcut() : FDevInputShortcut::GetEmpty(); };
+	virtual TAttribute<FText> GetLabel(const UObject* WorldContextObject) const override { return (IsValid()) ? GetProxyEntry()->GetLabel(WorldContextObject) : FText::GetEmpty(); };
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return (IsValid()) ? GetProxyEntry()->GetToolTip(WorldContextObject) : FText::GetEmpty(); };
+	virtual TAttribute<FDevInputShortcut> GetInputShortcut(const UObject* WorldContextObject) const override { return (IsValid()) ? GetProxyEntry()->GetInputShortcut(WorldContextObject) : FDevInputShortcut::GetEmpty(); };
 	virtual ECheckBoxState GetCheckState(const UObject* WorldContextObject) const override { return (IsValid()) ? GetProxyEntry()->GetCheckState(WorldContextObject) : ECheckBoxState::Unchecked; };
 	virtual bool IsVisible(const UObject* WorldContextObject) const override { return (IsValid()) ? GetProxyEntry()->IsVisible(WorldContextObject) : false; };
 
@@ -603,10 +603,12 @@ struct DEVMENUS_API FDevMenuActionButton : public FDevMenuExecutionBase
 
 	UPROPERTY(EditAnywhere, Category = "Dev Menu", Meta = (NoClear, BaseStruct = "/Script/DevActions.DevAction", ExcludeBaseStruct, DisplayAfter = "InputShortcut"))
 	FInstancedStruct Action;
-
+	
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 
+	virtual TAttribute<FText> GetLabel(const UObject* WorldContextObject) const override;
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override;
 	virtual ECheckBoxState GetCheckState(const UObject* WorldContextObject) const override;
 	virtual bool IsVisible(const UObject* WorldContextObject) const override;
 	virtual void ExecuteEntry(const UObject* WorldContextObject) override;
@@ -664,7 +666,7 @@ public:
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return IDevMenuEntry::GetEntryFlags() | EDevMenuEntryFlags::SubMenu | EDevMenuEntryFlags::StaticEntries; };
 	virtual UStruct* GetEntryType() const override { return GetClass(); };
 
-	virtual TAttribute<FText> GetLabel() const override;
+	virtual TAttribute<FText> GetLabel(const UObject* WorldContextObject) const override;
 
 	virtual FDevMenuInstancedEntries* GetSubEntries() override { return &Entries; };
 	virtual void QuerySubEntries(const IDevMenuEntriesQuery& InQuery) override;

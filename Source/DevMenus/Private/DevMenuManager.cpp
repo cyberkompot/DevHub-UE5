@@ -242,7 +242,7 @@ void UDevMenuManager::BindMenuShortcuts(const FName InMenuPath)
 		const FDevInputOwner InputOwner(InMenuPath);
 		MenuRegistry->QueryEntries(FDevMenuGetEntriesByPathQuery(InMenuPath.ToString(), EDevMenuQueryDepth::AllEntries, FDevMenuQueryDelegate::CreateLambda([this, DevInputs, &InputOwner](const FDevMenuQueryResult& QueryResult)
 		{
-			if (const FDevInputShortcut& InputShortcut = QueryResult.Entry->GetInputShortcut().Get(); !InputShortcut.IsNone())
+			if (const FDevInputShortcut& InputShortcut = QueryResult.Entry->GetInputShortcut(this).Get(); !InputShortcut.IsNone())
 			{
 				FDevInputShortcutDelegateBinding& Binding = DevInputs->BindShortcut(InputShortcut);
 				Binding.Owner = InputOwner;

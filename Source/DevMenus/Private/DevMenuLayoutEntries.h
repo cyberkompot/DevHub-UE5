@@ -14,7 +14,7 @@ struct FDevMenuLayoutBeginSection : public FDevMenuItemBase
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return Super::GetEntryFlags() | EDevMenuEntryFlags::Section | EDevMenuEntryFlags::ProxyEntry; };
-	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().BeginSection(GetEntryName(), GetLabel()); };
+	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().BeginSection(GetEntryName(), GetLabel(InContext.GetWorldContextObject())); };
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -45,7 +45,7 @@ struct FDevMenuLayoutSubMenu : public FDevMenuItemBase
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); };
 	virtual EDevMenuEntryFlags GetEntryFlags() const override { return Super::GetEntryFlags() | EDevMenuEntryFlags::SubMenu | EDevMenuEntryFlags::ProxyEntry; };
-	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSubMenu(GetLabel(), GetToolTip(), InContext.CreatePopulateNewMenuDelegate(*this), false, FSlateIcon(), false,GetEntryName()); };
+	virtual void PopulateMenuBuilder(IDevMenuBuilderContext& InContext) override { InContext.GetMenuBuilder().AddSubMenu(GetLabel(InContext.GetWorldContextObject()), GetToolTip(InContext.GetWorldContextObject()), InContext.CreatePopulateNewMenuDelegate(*this), false, FSlateIcon(), false,GetEntryName()); };
 	//~ End IDevMenuEntry interface.
 
 private:
@@ -78,8 +78,8 @@ struct FDevMenuLayoutFactory final
 	{
 		TEntryType Entry{};
 		Entry.EntryName = FDevMenuPaths::Combine(InLayoutContext.EmbeddedPath, InSourceEntry.GetEntryName());
-		Entry.Label = InSourceEntry.GetLabel().Get();
-		Entry.ToolTip = InSourceEntry.GetToolTip().Get();
+		Entry.Label = InSourceEntry.GetLabel(nullptr).Get();
+		Entry.ToolTip = InSourceEntry.GetToolTip(nullptr).Get();
 		// TODO: Set duplicate flag.
 		return Entry;
 	}

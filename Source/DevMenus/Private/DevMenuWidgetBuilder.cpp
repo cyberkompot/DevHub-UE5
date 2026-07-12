@@ -73,8 +73,8 @@ void UDevMenuWidgetBuilder::PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, UDe
 		FMenuEntryParams EntryParams;
 		EntryParams.ExtensionHook = MenuEntry.GetEntryName();
 		EntryParams.Type = EMultiBlockType::MenuEntry;
-		EntryParams.LabelOverride = MenuEntry.GetLabel();
-		EntryParams.ToolTipOverride = MenuEntry.GetToolTip();
+		EntryParams.LabelOverride = MenuEntry.GetLabel(InGeneratedMenu);
+		EntryParams.ToolTipOverride = MenuEntry.GetToolTip(InGeneratedMenu);
 		EntryParams.EntryBuilder = FNewMenuDelegate::CreateUObject(this, &ThisClass::PopulateSubMenu, MenuEntryPath);
 		EntryParams.UserInterfaceActionType = EUserInterfaceActionType::Button;
 		EntryParams.bIsSubMenu = false; // Menu bar items cannot be sub-menus.

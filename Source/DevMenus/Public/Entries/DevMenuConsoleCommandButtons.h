@@ -17,7 +17,7 @@ struct DEVMENUS_API FDevMenuConsoleCommandButton : public FDevMenuExecutionBase
 
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
-	virtual TAttribute<FText> GetToolTip() const override { return (Command.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleCommandView(Command).GetActionToolTip())); }
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return (Command.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleCommandView(Command).GetActionToolTip())); }
 	virtual bool IsEnabled(const UObject* WorldContextObject) const override { return FDevActionConsoleCommandView(Command).IsActionEnabled(WorldContextObject); }
 	virtual bool IsVisible(const UObject* WorldContextObject) const override { return FDevActionConsoleCommandView(Command).IsActionVisible(WorldContextObject); }
 	virtual void ExecuteEntry(const UObject* WorldContextObject) override { return FDevActionConsoleCommandView(Command).ExecuteAction(WorldContextObject); }
@@ -57,7 +57,7 @@ struct DEVMENUS_API FDevMenuConsoleCommandGroup : public FDevMenuDynamicOuterWit
 
 	//~ Begin IDevMenuEntry interface.
 	virtual UStruct* GetEntryType() const override { return StaticStruct(); }
-	virtual TAttribute<FText> GetToolTip() const override { return (Command.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleCommandView(Command).GetActionToolTip())); }
+	virtual TAttribute<FText> GetToolTip(const UObject* WorldContextObject) const override { return (Command.IsEmpty()) ? TAttribute<FText>() : TAttribute<FText>(FText::FromStringView(FDevActionConsoleCommandView(Command).GetActionToolTip())); }
 	virtual bool IsEnabled(const UObject* WorldContextObject) const override { return FDevActionConsoleCommandView(Command).IsActionEnabled(WorldContextObject); }
 	virtual bool IsVisible(const UObject* WorldContextObject) const override { return FDevActionConsoleCommandView(Command).IsActionVisible(WorldContextObject); }
 	//~ End IDevMenuEntry interface.

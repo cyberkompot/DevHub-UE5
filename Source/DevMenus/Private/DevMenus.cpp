@@ -254,7 +254,6 @@ void UDevMenus::LoadMenuSettings(const UDevMenuSettings& InSettings) const
 	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Loading Dev Menu settings"));
 
 	UDevMenu* DevMenu = CreateMenu(EDevMenuPaths::MainMenu);
-	DevMenu->MenuType = EDevMenuType::MenuBar;
 	DevMenu->Entries = InSettings.MainMenuEntries;
 	AddMenu(DevMenu);
 }

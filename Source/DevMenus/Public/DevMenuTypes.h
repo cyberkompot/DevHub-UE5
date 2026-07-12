@@ -621,16 +621,6 @@ private:
 };
 
 
-UENUM(BlueprintType, Category = "DevHub|Menu")
-enum class EDevMenuType : uint8
-{
-	/** Horizontal menu bar (main menu). */
-	MenuBar UMETA(DisplayName = "Main Menu"),
-
-	/** Vertical menu (pull-down menu, or context menu) */
-	Menu UMETA(DisplayName = "Context Menu"),
-};
-
 UCLASS(BlueprintType, Blueprintable, Category = "DevHub|Menu", EditInlineNew, CollapseCategories, Meta = (LoadBehavior = "LazyOnDemand"))
 class DEVMENUS_API UDevMenu : public UToolMenuBase
 #if CPP
@@ -644,9 +634,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Menu")
 	FName MenuPath;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dev Menu")
-	EDevMenuType MenuType = EDevMenuType::Menu;
 
 #pragma warning(push)
 #pragma warning(disable: 5101)

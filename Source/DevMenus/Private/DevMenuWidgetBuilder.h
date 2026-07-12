@@ -18,8 +18,11 @@ class UDevMenuWidgetBuilder final : public UObject
 	GENERATED_BODY()
 
 public:
-	TSharedRef<SWidget> MakeWidget(const FName InMenuPath);
-	TSharedRef<SWidget> MakeWidget(UDevMenu& InGeneratedMenu);
+	TSharedRef<SWidget> MakeMainMenuWidget(const FName InMenuPath);
+	TSharedRef<SWidget> MakeMainMenuWidget(UDevMenu& InGeneratedMenu);
+
+	TSharedRef<SWidget> MakeSubMenuWidget(const FName InMenuPath);
+	TSharedRef<SWidget> MakeSubMenuWidget(UDevMenu& InGeneratedMenu);
 
 	void Dispose();
 
@@ -36,9 +39,6 @@ private:
 	UDevMenuGenerator* MenuGenerator;
 
 	TArray<TWeakPtr<FMultiBox>> WidgetObjectReferences;
-
-	TSharedRef<SWidget> MakeMainMenuWidget(UDevMenu& InGeneratedMenu);
-	TSharedRef<SWidget> MakeSubMenuWidget(UDevMenu& InGeneratedMenu);
 
 	void PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, const FName InMenuPath);
 	void PopulateMainMenu(FMenuBarBuilder& InMenuBuilder, UDevMenu* InGeneratedMenu);

@@ -8,22 +8,10 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/SDevMenuMainMenuWidget.h"
 
-TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeWidget(const FName InMenuPath)
+TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeMainMenuWidget(const FName InMenuPath)
 {
 	UDevMenu* GeneratedMenu = MenuGenerator->GenerateMenu(InMenuPath);
-	return MakeWidget(*GeneratedMenu);
-}
-
-TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeWidget(UDevMenu& InGeneratedMenu)
-{
-	if (InGeneratedMenu.MenuType == EDevMenuType::Menu)
-	{
-		return MakeSubMenuWidget(InGeneratedMenu);
-	}
-	else
-	{
-		return MakeMainMenuWidget(InGeneratedMenu);
-	}
+	return MakeMainMenuWidget(*GeneratedMenu);
 }
 
 TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeMainMenuWidget(UDevMenu& InGeneratedMenu)
@@ -41,6 +29,12 @@ TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeMainMenuWidget(UDevMenu& InGenera
 			MultiBoxWidget
 		];
 	return MainMenuWidget;
+}
+
+TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeSubMenuWidget(const FName InMenuPath)
+{
+	UDevMenu* GeneratedMenu = MenuGenerator->GenerateMenu(InMenuPath);
+	return MakeSubMenuWidget(*GeneratedMenu);
 }
 
 TSharedRef<SWidget> UDevMenuWidgetBuilder::MakeSubMenuWidget(UDevMenu& InGeneratedMenu)

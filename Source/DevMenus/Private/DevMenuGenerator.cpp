@@ -16,7 +16,6 @@ UDevMenu* UDevMenuGenerator::GenerateMenu(const FName InMenuPath)
 	UE_LOG_FUNCTION(LogDevMenus, Verbose, TEXT("Generating menu: Path = %s"), *InMenuPath.ToString());
 
 	UDevMenu* GeneratedMenu = UDevMenu::CreateMenu(InMenuPath, this, GeneratedMenuName);
-	GeneratedMenu->MenuType = EDevMenuType::MenuBar;
 	PopulateMenuEntries(*GeneratedMenu);
 
 	return GeneratedMenu;

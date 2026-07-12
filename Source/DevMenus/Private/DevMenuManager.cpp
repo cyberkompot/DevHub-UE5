@@ -94,7 +94,7 @@ void UDevMenuManager::ShowMenu(const FName InMenuPath)
 	}
 	else
 	{
-		const TSharedRef<SWidget> NewMenuWidget = MenuWidgetBuilder->MakeWidget(InMenuPath);
+		const TSharedRef<SWidget> NewMenuWidget = MenuWidgetBuilder->MakeMainMenuWidget(InMenuPath);
 		AddMenu(FDisplayedMenuDetails(InMenuPath, NewMenuWidget));
 	}
 }
